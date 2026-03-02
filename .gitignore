@@ -1,0 +1,33 @@
+# Ignore everything in the vault (except the repo structure itself)
+# Vault content shouldn't be here!
+*.md
+!README.md
+!docs/**/*.md
+!systemd/user/**/*.md
+!contracts/**/*.md
+
+# Do not commit personal notes or attachments
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.zip
+*.tar.gz
+*.docx
+*.xlsx
+
+# Temporary/Cache files
+.obsidian/
+.trash/
+*.log
+.env
+config/profiles/*.env
+!config/obsidian.env.example
+!config/profiles/home.env
+!config/profiles/work.env
+
+# Typical Python / OS ignores
+__pycache__/
+*.pyc
+.DS_Store
