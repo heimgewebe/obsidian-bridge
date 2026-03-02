@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# obsidian-doctor
+# Diagnostics tool to ensure environment health (Flatpak, DBus, PATH, CLI)
+
+set -uo pipefail
+
+echo "Running Obsidian Doctor diagnostics..."
+
+# Check required commands
+MISSING_CMDS=0
+for cmd in jq awk bats shellcheck flatpak; do
+  if ! command -v "$cmd" &> /dev/null; then
+    echo "[FAIL] Command missing: $cmd"
+    MISSING_CMDS=1
+  else
+    echo "[PASS] Command found: $cmd"
+  fi
+done
+
+# Check if obsidian is installed via flatpak or path
+if command -v obsidian &> /dev/null; then
+    echo "[PASS] Obsidian executable found in PATH"
+elif command -v flatpak &> /dev/null && flatpak list | grep -q md.obsidian.Obsidian; then
+    echo "[PASS] Obsidian found via Flatpak"
+else
+    echo "[FAIL] Obsidian installation not found (PATH or Flatpak)"
+    MISSING_CMDS=1
+fi
+
+# Determine overall health status
+if [ "$MISSING_CMDS" -ne 0 ]; then
+    echo "[ERROR] System checks failed. Please fix dependencies."
+    exit 1
+else
+    echo "[OK] System environment is healthy."
+    exit 0
+fi

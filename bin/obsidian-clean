@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# obsidian-clean
+# Wrapper to discard stderr logging noise from Obsidian and only output stdout
+# Usage: obsidian-clean <command> [args...]
+
+LOG_FILE="${OBSIDIAN_LOG_FILE:-/tmp/obsidian_clean.log}"
+
+# If no command is given, assume we're just running obsidian directly (as flatpak or appimage)
+if [ "$#" -eq 0 ]; then
+  # Try to find obsidian in PATH or as flatpak
+  if command -v obsidian &> /dev/null; then
+    obsidian "$@" 2>> "$LOG_FILE"
+  elif command -v flatpak &> /dev/null && flatpak list | grep -q md.obsidian.Obsidian; then
+    flatpak run md.obsidian.Obsidian "$@" 2>> "$LOG_FILE"
+  else
+    echo "Error: obsidian executable not found." >&2
+    exit 1
+  fi
+else
+  # Execute the command, redirecting stderr
+  "$@" 2>> "$LOG_FILE"
+fi

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# obsidian-env
+# Reads configuration and sets VAULT/VAULT_PATH for other commands
+
+set -euo pipefail
+
+# Find repo root
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Determine which profile to load (default to home)
+PROFILE="${OBSIDIAN_PROFILE:-home}"
+ENV_FILE="$REPO_ROOT/config/profiles/${PROFILE}.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Error: Profile file not found at $ENV_FILE" >&2
+    exit 1
+fi
+
+# Export variables from the environment file (safe parsing)
+while IFS='=' read -r key value; do
+    if [[ "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+        # Evaluate value safely (removing surrounding quotes)
+        value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//')
+        export "$key"="$value"
+    fi
+done < <(grep -v '^#' "$ENV_FILE" | grep '=')
+
+echo "Loaded profile: $PROFILE"
+echo "VAULT_PATH: $VAULT_PATH"

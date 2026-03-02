@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# obsidian-json
+# Extracts JSON from noisy stdout/stderr. Used when plugins dump extra non-JSON noise.
+
+set -euo pipefail
+
+# Read from stdin, parse raw JSON object line by line
+awk '
+/^{/ {
+  in_json=1;
+  print;
+  next;
+}
+/^}/ {
+  if(in_json) {
+    print;
+    in_json=0;
+    next;
+  }
+}
+{
+  if(in_json) print;
+}
+' | jq -s 'if length == 1 then .[0] else . end'
