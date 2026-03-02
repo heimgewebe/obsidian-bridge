@@ -4,6 +4,8 @@ setup() {
   export PATH="$(pwd)/bin:$PATH"
   export FIXTURE_FILE="$(pwd)/tests/fixtures/noisy_cli_output.txt"
 
+  mkdir -p "$(dirname "$FIXTURE_FILE")"
+
   cat << 'EOF' > "$FIXTURE_FILE"
 Gtk-Message: 12:04:32.411: Failed to load module "canberra-gtk-module"
 Warning: obsidian loaded a legacy extension
