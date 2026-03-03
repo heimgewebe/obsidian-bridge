@@ -11,14 +11,14 @@ Mission: Obsidian als UI-Schicht für maschinelle Artefakte betreiben (Observato
 
 ## Was ist „intelligent“ daran?
 
-### 1) bin/ als stabile API
+### 1) bin/ als v1 Command Surface (minimal, kompatibel gehalten)
 Alles, was andere Tools aufrufen, liegt in bin/:
 - `obsidian-clean` (stderr → log)
-- `obsidian-json` (JSON-Extraktor)
-- `obsidian-env` (liest config, setzt VAULT/VAULT_PATH)
-- `obsidian-doctor` (Diagnose: Flatpak, D-Bus, PATH, CLI enabled)
+- `obsidian-json` (JSON-Extraktor für Arrays und Objekte)
+- `obsidian-env` (liest config, exportiert Env-Variablen: nutzbar via `eval "$(obsidian-env --print)"`)
+- `obsidian-doctor` (Basis-Diagnose: CLI erreichbar, Dependencies)
 
-Damit ist das Repo nicht „Skript-Sammlung“, sondern Command Surface.
+Damit ist das Repo nicht „Skript-Sammlung“, sondern eine verlässliche Brücke.
 
 ### 2) contracts/ als Wahrheitsschicht
 Wir standardisieren Artefakte, z.B.:
@@ -37,7 +37,7 @@ User-Timer sind sauberer als Cron im Desktop-Kontext.
 
 ### 5) Tests als Guardrail
 Minimal, aber gezielt:
-- Smoke: create/read/append/prepend im Test-Vault
+- Smoke: Basic CLI Executability (headless-safe)
 - JSON guard: noisy output → extrahiertes JSON parsebar
 - Repo-Scope: harte Regeln (damit es nicht kippt)
 
