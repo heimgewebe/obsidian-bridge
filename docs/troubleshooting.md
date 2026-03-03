@@ -12,7 +12,7 @@ obsidian-json vault="vault-gewebe" search "query" format=json
 **Why it exists:** Similar to `obsidian-json`, but for human-readable outputs. It redirects `stderr` (which contains most UI noise and warnings) directly into a daily log file, leaving `stdout` perfectly clean for the console or a pipeline.
 
 **Where do the logs go?**
-By default, logs are written to `$HOME/logs/obsidian-cli/stderr-YYYY-MM-DD.log`. You can override this by setting the `OBSIDIAN_LOG_FILE` environment variable.
+By default, logs are written to `$HOME/logs/obsidian-cli/obsidian-stderr-YYYY-MM-DD.log`. You can override this by setting the `OBSIDIAN_LOG_FILE` environment variable.
 
 **Usage:** Use it exactly like the `obsidian` binary:
 ```bash

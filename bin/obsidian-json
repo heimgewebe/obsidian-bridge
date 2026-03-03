@@ -12,15 +12,23 @@ REPO_BIN="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Define the extraction logic
 extract_json() {
-  awk '
+  # We pipe awk directly into jq.
+  # awk exits with 0 if it successfully extracted a JSON object,
+  # and exits with 2 if it reached the end without finding anything.
+  # We use pipefail so that the exit code of awk is preserved if jq succeeds,
+  # or if jq fails we catch it.
+
+  if ! awk '
   BEGIN {
     in_json = 0
     depth = 0
+    found = 0
   }
   {
     if (!in_json) {
       if ($0 ~ /^[ \t]*[{[]/) {
         in_json = 1
+        found = 1
         # Count depth on the first line
         for (i = 1; i <= length($0); i++) {
           c = substr($0, i, 1)
@@ -28,7 +36,7 @@ extract_json() {
           if (c == "}" || c == "]") depth--
         }
         print $0
-        if (depth == 0) exit
+        if (depth == 0) { exit 0 }
       }
     } else {
       for (i = 1; i <= length($0); i++) {
@@ -37,10 +45,23 @@ extract_json() {
         if (c == "}" || c == "]") depth--
       }
       print $0
-      if (depth == 0) exit
+      if (depth == 0) { exit 0 }
     }
   }
-  ' | jq -c .
+  END {
+    if (!found) {
+      exit 2
+    }
+  }
+  ' | jq -c .; then
+    # If awk exits with 2, we know it didn't find any JSON.
+    # If the pipeline fails for other reasons (like jq parse error), it also fails here.
+    # But specifically if PIPESTATUS[0] is 2, it means no JSON was found.
+    if [ "${PIPESTATUS[0]}" -eq 2 ]; then
+      echo "Error: No valid JSON object or array found in output." >&2
+    fi
+    exit 1
+  fi
 }
 
 if [ "$#" -gt 0 ]; then

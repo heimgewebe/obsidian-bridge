@@ -11,7 +11,7 @@ setup() {
   mkdir -p "$TEMP_CONFIG_DIR/profiles"
   cat << 'EOF' > "$TEMP_CONFIG_DIR/profiles/ci.env"
 # CI profile test settings
-VAULT_NAME="test-vault"
+VAULT_NAME="test vault with spaces"
 VAULT_PATH="/tmp/test-vault-path"
 EOF
 
@@ -32,11 +32,17 @@ teardown() {
   run obsidian-env --print
   [ "$status" -eq 0 ]
 
-  # Check if VAULT_NAME export is present
-  [[ "$output" =~ export\ VAULT_NAME=\"test-vault\" ]]
+  # Ensure all non-empty lines start with 'export ' before evaluating
+  while IFS= read -r line; do
+    if [ -n "$line" ]; then
+      [[ "$line" =~ ^export\  ]] || fail "Output line does not start with 'export ': $line"
+    fi
+  done <<< "$output"
 
-  # Check if VAULT_PATH export is present
-  [[ "$output" =~ export\ VAULT_PATH=\"/tmp/test-vault-path\" ]]
+  # Evaluate output and verify semantics instead of regex
+  eval "$output"
+  [ "$VAULT_NAME" = "test vault with spaces" ]
+  [ "$VAULT_PATH" = "/tmp/test-vault-path" ]
 }
 
 @test "obsidian-doctor checks pass or warn correctly in headless mode" {
