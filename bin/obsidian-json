@@ -48,7 +48,7 @@ extract_json() {
     exit 1
   fi
 
-  echo "$extracted" | jq -c .
+  printf '%s\n' "$extracted" | jq -c .
 }
 
 if [ "$#" -gt 0 ]; then
