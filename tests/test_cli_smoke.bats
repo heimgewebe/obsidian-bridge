@@ -11,7 +11,7 @@ setup() {
   mkdir -p "$TEMP_CONFIG_DIR/profiles"
   cat << 'EOF' > "$TEMP_CONFIG_DIR/profiles/ci.env"
 # CI profile test settings
-VAULT_NAME="test-vault"
+VAULT_NAME="test vault with spaces"
 VAULT_PATH="/tmp/test-vault-path"
 EOF
 
@@ -34,7 +34,7 @@ teardown() {
 
   # Evaluate output and verify semantics instead of regex
   eval "$output"
-  [ "$VAULT_NAME" = "test-vault" ]
+  [ "$VAULT_NAME" = "test vault with spaces" ]
   [ "$VAULT_PATH" = "/tmp/test-vault-path" ]
 }
 
