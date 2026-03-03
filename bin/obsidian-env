@@ -43,7 +43,7 @@ while IFS='=' read -r key value; do
 
         export "$key"="$value"
         if [ "$PRINT_MODE" -eq 1 ]; then
-            echo "export $key=\"$value\""
+            printf "export %s=%q\n" "$key" "$value"
         fi
     fi
 done < "$ENV_FILE"

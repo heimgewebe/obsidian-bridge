@@ -12,7 +12,8 @@ REPO_BIN="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Define the extraction logic
 extract_json() {
-  awk '
+  local extracted
+  extracted=$(awk '
   BEGIN {
     in_json = 0
     depth = 0
@@ -40,7 +41,14 @@ extract_json() {
       if (depth == 0) exit
     }
   }
-  ' | jq -c .
+  ')
+
+  if [ -z "$extracted" ]; then
+    echo "Error: No valid JSON object or array found in output." >&2
+    exit 1
+  fi
+
+  echo "$extracted" | jq -c .
 }
 
 if [ "$#" -gt 0 ]; then

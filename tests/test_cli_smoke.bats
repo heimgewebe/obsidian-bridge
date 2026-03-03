@@ -33,10 +33,10 @@ teardown() {
   [ "$status" -eq 0 ]
 
   # Check if VAULT_NAME export is present
-  [[ "$output" =~ export\ VAULT_NAME=\"test-vault\" ]]
+  [[ "$output" =~ export\ VAULT_NAME=test-vault ]]
 
   # Check if VAULT_PATH export is present
-  [[ "$output" =~ export\ VAULT_PATH=\"/tmp/test-vault-path\" ]]
+  [[ "$output" =~ export\ VAULT_PATH=/tmp/test-vault-path ]]
 }
 
 @test "obsidian-doctor checks pass or warn correctly in headless mode" {

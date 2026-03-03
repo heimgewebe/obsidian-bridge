@@ -84,6 +84,12 @@ teardown() {
   [ "$result" = "work" ]
 }
 
+@test "obsidian-json fails with non-zero exit code if no JSON is found" {
+  run bash -c "echo 'Just some random text without json' | obsidian-json"
+  [ "$status" -eq 1 ]
+  [[ "$output" =~ "Error: No valid JSON object or array found in output." ]]
+}
+
 @test "obsidian-json extracts JSON object from noisy output (wrapper args)" {
   # Call obsidian-json with arguments, simulating obsidian obj
   run obsidian-json obj
