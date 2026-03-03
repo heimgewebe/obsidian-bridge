@@ -32,6 +32,13 @@ teardown() {
   run obsidian-env --print
   [ "$status" -eq 0 ]
 
+  # Ensure all non-empty lines start with 'export ' before evaluating
+  while IFS= read -r line; do
+    if [ -n "$line" ]; then
+      [[ "$line" =~ ^export\  ]] || fail "Output line does not start with 'export ': $line"
+    fi
+  done <<< "$output"
+
   # Evaluate output and verify semantics instead of regex
   eval "$output"
   [ "$VAULT_NAME" = "test vault with spaces" ]
