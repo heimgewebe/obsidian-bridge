@@ -4,7 +4,8 @@ test:
 	bats tests/*.bats
 
 lint:
-	shellcheck bin/* scripts/*.sh
+	find bin scripts -type f -name "*.sh" -print0 | xargs -0 -r shellcheck
+	find scripts -type f -name "*.py" -print0 | xargs -0 -r python3 -m py_compile
 
 clean:
 	rm -rf __pycache__
