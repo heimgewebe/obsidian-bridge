@@ -54,11 +54,15 @@ extract_json() {
     }
   }
   ' | jq -c .; then
+    local pipe_status=("${PIPESTATUS[@]}")
+    local awk_status="${pipe_status[0]:-0}"
+    local jq_status="${pipe_status[1]:-0}"
+
     # If awk exits with 2, we know it didn't find any JSON.
-    # If the pipeline fails for other reasons (like jq parse error), it also fails here.
-    # But specifically if PIPESTATUS[0] is 2, it means no JSON was found.
-    if [ "${PIPESTATUS[0]}" -eq 2 ]; then
+    if [ "$awk_status" -eq 2 ]; then
       echo "Error: No valid JSON object or array found in output." >&2
+    elif [ "$jq_status" -ne 0 ]; then
+      echo "Error: Extracted JSON failed to parse (jq exit $jq_status)." >&2
     fi
     exit 1
   fi

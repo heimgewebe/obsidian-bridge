@@ -84,6 +84,12 @@ teardown() {
   [ "$result" = "work" ]
 }
 
+@test "obsidian-json clarifies jq parse failures with invalid JSON" {
+  run bash -c "echo '{ nope }' | obsidian-json"
+  [ "$status" -eq 1 ]
+  [[ "$output" =~ "Error: Extracted JSON failed to parse (jq exit" ]]
+}
+
 @test "obsidian-json fails with non-zero exit code if no JSON is found" {
   run bash -c "echo 'Just some random text without json' | obsidian-json"
   [ "$status" -eq 1 ]
