@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# obsidian-json
+# Wrapper that executes obsidian and extracts JSON (both objects {...} and arrays [...])
+# from its noisy stdout/stderr.
+# Usage: obsidian-json [args...]
+
+set -euo pipefail
+
+# Find obsidian command
+if command -v obsidian >/dev/null 2>&1; then
+  CMD=(obsidian)
+elif command -v flatpak >/dev/null 2>&1 && flatpak list | grep -q md.obsidian.Obsidian; then
+  CMD=(flatpak run md.obsidian.Obsidian)
+else
+  echo "Error: obsidian executable not found in PATH or Flatpak." >&2
+  exit 1
+fi
+
+# Execute command, redirect stderr to stdout, and pipe to awk
+"${CMD[@]}" "$@" 2>&1 | awk '
+BEGIN {
+  in_json = 0
+  depth = 0
+}
+{
+  if (!in_json) {
+    if ($0 ~ /^[ \t]*[{[]/) {
+      in_json = 1
+      # Count depth on the first line
+      for (i = 1; i <= length($0); i++) {
+        c = substr($0, i, 1)
+        if (c == "{" || c == "[") depth++
+        if (c == "}" || c == "]") depth--
+      }
+      print $0
+      if (depth == 0) exit
+    }
+  } else {
+    for (i = 1; i <= length($0); i++) {
+      c = substr($0, i, 1)
+      if (c == "{" || c == "[") depth++
+      if (c == "}" || c == "]") depth--
+    }
+    print $0
+    if (depth == 0) exit
+  }
+}
+' | jq -c .

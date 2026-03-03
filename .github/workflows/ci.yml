@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup shell environment
+        run: sudo apt-get update && sudo apt-get install -y shellcheck bats jq
+
+      - name: Lint shell scripts
+        run: make lint
+
+      - name: Run bats tests
+        run: make test

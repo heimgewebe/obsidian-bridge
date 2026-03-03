@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# obsidian-env
+# Reads configuration and sets VAULT/VAULT_PATH for other commands.
+# Only outputs text if --print is specified.
+
+set -euo pipefail
+
+PRINT_MODE=0
+if [ "${1:-}" == "--print" ]; then
+    PRINT_MODE=1
+fi
+
+# Find repo root
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Determine which profile to load (default to home)
+PROFILE="${OBSIDIAN_PROFILE:-home}"
+ENV_FILE="$REPO_ROOT/config/profiles/${PROFILE}.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Error: Profile file not found at $ENV_FILE" >&2
+    exit 1
+fi
+
+# Export variables from the environment file (safe parsing)
+while IFS='=' read -r key value; do
+    # Skip comments and empty lines
+    if [[ -z "$key" ]] || [[ "$key" =~ ^[[:space:]]*# ]]; then
+        continue
+    fi
+
+    # Trim leading/trailing spaces
+    key=$(echo "$key" | xargs)
+    value=$(echo "$value" | xargs)
+
+    if [[ "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+        # Evaluate value safely (removing surrounding single/double quotes)
+        value=$(echo "$value" | sed -e "s/^'//" -e "s/'$//" -e 's/^"//' -e 's/"$//')
+        export "$key"="$value"
+    fi
+done < "$ENV_FILE"
+
+if [ "$PRINT_MODE" -eq 1 ]; then
+    echo "Loaded profile: $PROFILE"
+    echo "VAULT_PATH: $VAULT_PATH"
+fi
