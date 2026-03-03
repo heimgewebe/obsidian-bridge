@@ -36,9 +36,12 @@ So kannst du später heimgeist/leitstand sauber anbinden.
 User-Timer sind sauberer als Cron im Desktop-Kontext.
 
 ### 5) Tests als Guardrail
-Minimal, aber gezielt:
+Derzeit implementiert:
 - Smoke: Basic CLI Executability (headless-safe)
-- JSON guard: noisy output → extrahiertes JSON parsebar
+- JSON guard: noisy output → extrahiertes JSON parsebar (sowohl Array als auch Object)
+
+Geplant:
+- Smoke: create/read/append/prepend im Test-Vault
 - Repo-Scope: harte Regeln (damit es nicht kippt)
 
 ## Verboten
