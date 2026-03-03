@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# obsidian-doctor
+# Diagnostics tool to ensure environment health (Obsidian, jq, awk)
+# Runs without hard dependencies on testing tools (bats, shellcheck).
+
+set -uo pipefail
+
+echo "Running Obsidian Doctor diagnostics..."
+
+MISSING_CMDS=0
+
+# Core utilities needed by wrappers
+for cmd in jq awk; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "[FAIL] Required command missing: $cmd"
+    MISSING_CMDS=1
+  else
+    echo "[PASS] Found: $cmd"
+  fi
+done
+
+# Check if obsidian is installed via PATH or Flatpak
+OBSIDIAN_AVAILABLE=0
+if command -v obsidian >/dev/null 2>&1; then
+    echo "[PASS] Obsidian executable found in PATH"
+    OBSIDIAN_AVAILABLE=1
+elif command -v flatpak >/dev/null 2>&1 && flatpak list | grep -q md.obsidian.Obsidian; then
+    echo "[PASS] Obsidian found via Flatpak"
+    OBSIDIAN_AVAILABLE=1
+else
+    echo "[FAIL] Obsidian installation not found (PATH or Flatpak)"
+    MISSING_CMDS=1
+fi
+
+if [ "$OBSIDIAN_AVAILABLE" -eq 1 ]; then
+    # Test if CLI is responsive
+    if command -v obsidian >/dev/null 2>&1; then
+        obsidian --version >/dev/null 2>&1
+        exit_code=$?
+    else
+        flatpak run md.obsidian.Obsidian --version >/dev/null 2>&1
+        exit_code=$?
+    fi
+
+    if [ $exit_code -eq 0 ]; then
+        echo "[PASS] Obsidian CLI responded to --version"
+    else
+        echo "[WARN] Obsidian CLI failed to respond to --version (exit code $exit_code)"
+    fi
+fi
+
+# Determine overall health status
+if [ "$MISSING_CMDS" -ne 0 ]; then
+    echo "[ERROR] System checks failed. Please fix missing dependencies."
+    exit 1
+else
+    echo "[OK] System environment is healthy. Note: GTK/DBus warnings when running Obsidian are normal and safe to ignore."
+    exit 0
+fi

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# obsidian-env
+# Reads configuration and sets VAULT/VAULT_PATH for other commands.
+# If --print is specified, it outputs `export KEY="VALUE"` so it can be evaluated by the shell:
+#   eval "$(obsidian-env --print)"
+
+set -euo pipefail
+
+PRINT_MODE=0
+if [ "${1:-}" == "--print" ]; then
+    PRINT_MODE=1
+fi
+
+# Find repo root
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Determine which profile to load (default to home)
+PROFILE="${OBSIDIAN_PROFILE:-home}"
+
+# Use custom config dir if specified, otherwise default to REPO_ROOT/config
+CONFIG_DIR="${OBSIDIAN_CONFIG_DIR:-$REPO_ROOT/config}"
+ENV_FILE="$CONFIG_DIR/profiles/${PROFILE}.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Error: Profile file not found at $ENV_FILE" >&2
+    exit 1
+fi
+
+# Export variables from the environment file (safe parsing)
+while IFS='=' read -r key value; do
+    # Skip comments and empty lines
+    if [[ -z "$key" ]] || [[ "$key" =~ ^[[:space:]]*# ]]; then
+        continue
+    fi
+
+    # Trim leading/trailing spaces
+    key=$(echo "$key" | xargs)
+    value=$(echo "$value" | xargs)
+
+    if [[ "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+        # Evaluate value safely (removing surrounding single/double quotes)
+        value=$(echo "$value" | sed -e "s/^'//" -e "s/'$//" -e 's/^"//' -e 's/"$//')
+
+        export "$key"="$value"
+        if [ "$PRINT_MODE" -eq 1 ]; then
+            echo "export $key=\"$value\""
+        fi
+    fi
+done < "$ENV_FILE"

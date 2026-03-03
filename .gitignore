@@ -1,0 +1,29 @@
+# Do not commit the actual Obsidian vault data
+vault/
+# General ignore for Obsidian configuration inside vaults
+.obsidian/
+
+# Do not commit personal notes or attachments
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.zip
+*.tar.gz
+*.docx
+*.xlsx
+
+# Temporary/Cache files
+.trash/
+*.log
+.env
+config/profiles/*.env
+!config/obsidian-bridge.env.example
+!config/profiles/home.env
+!config/profiles/work.env
+
+# Typical Python / OS ignores
+__pycache__/
+*.pyc
+.DS_Store

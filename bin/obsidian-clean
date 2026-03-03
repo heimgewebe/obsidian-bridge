@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# obsidian-clean
+# Wrapper to discard stderr logging noise from Obsidian and only output stdout
+# Usage: obsidian-clean [args...]
+
+set -euo pipefail
+
+LOG_DIR="${HOME}/logs/obsidian-cli"
+LOG_FILE="${OBSIDIAN_LOG_FILE:-${LOG_DIR}/obsidian-stderr-$(date +%Y-%m-%d).log}"
+mkdir -p "$(dirname "$LOG_FILE")"
+
+# Try to find obsidian in PATH or as flatpak
+if command -v obsidian >/dev/null 2>&1; then
+  obsidian "$@" 2>> "$LOG_FILE"
+elif command -v flatpak >/dev/null 2>&1 && flatpak list | grep -q md.obsidian.Obsidian; then
+  flatpak run md.obsidian.Obsidian "$@" 2>> "$LOG_FILE"
+else
+  echo "Error: obsidian executable not found in PATH or Flatpak." >&2
+  exit 1
+fi
