@@ -6,8 +6,8 @@
 set -euo pipefail
 
 LOG_DIR="${HOME}/logs/obsidian-cli"
-mkdir -p "$LOG_DIR"
-LOG_FILE="${OBSIDIAN_LOG_FILE:-${LOG_DIR}/stderr-$(date +%Y-%m-%d).log}"
+LOG_FILE="${OBSIDIAN_LOG_FILE:-${LOG_DIR}/obsidian-stderr-$(date +%Y-%m-%d).log}"
+mkdir -p "$(dirname "$LOG_FILE")"
 
 # Try to find obsidian in PATH or as flatpak
 if command -v obsidian >/dev/null 2>&1; then
