@@ -53,7 +53,7 @@ extract_json() {
       exit 2
     }
   }
-  ' | jq -c .; then
+  ' | jq -c . 2>/dev/null; then
     local pipe_status=("${PIPESTATUS[@]}")
     local awk_status="${pipe_status[0]:-0}"
     local jq_status="${pipe_status[1]:-0}"
