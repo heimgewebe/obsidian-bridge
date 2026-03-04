@@ -18,7 +18,8 @@ extract_json() {
   # We use pipefail so that the exit code of awk is preserved if jq succeeds,
   # or if jq fails we catch it.
 
-  if ! awk '
+  # Define the awk script variable so we can use it in conditional pipelines.
+  local awk_script='
   BEGIN {
     in_json = 0
     depth = 0
@@ -53,14 +54,40 @@ extract_json() {
       exit 2
     }
   }
-  ' | jq -c .; then
-    # If awk exits with 2, we know it didn't find any JSON.
-    # If the pipeline fails for other reasons (like jq parse error), it also fails here.
-    # But specifically if PIPESTATUS[0] is 2, it means no JSON was found.
-    if [ "${PIPESTATUS[0]}" -eq 2 ]; then
-      echo "Error: No valid JSON object or array found in output." >&2
+  '
+
+  # Run the pipeline based on debug flag. We use a function or eval-like approach
+  # to correctly handle the piping and status. Actually, we can just conditionally
+  # set the jq command and run it. However, the simplest way is an if statement
+  # wrapping the full pipeline execution to capture PIPESTATUS properly.
+
+  # Run the pipeline and capture status properly
+  if [ "${OBSIDIAN_JSON_DEBUG:-0}" = "1" ]; then
+    if ! awk "$awk_script" | jq -c .; then
+      local pipe_status=("${PIPESTATUS[@]}")
+      local awk_status="${pipe_status[0]:-0}"
+      local jq_status="${pipe_status[1]:-0}"
+
+      if [ "$awk_status" -eq 2 ]; then
+        echo "Error: No valid JSON object or array found in output." >&2
+      elif [ "$jq_status" -ne 0 ]; then
+        echo "Error: Extracted JSON failed to parse (jq exit $jq_status)." >&2
+      fi
+      exit 1
     fi
-    exit 1
+  else
+    if ! awk "$awk_script" | jq -c . 2>/dev/null; then
+      local pipe_status=("${PIPESTATUS[@]}")
+      local awk_status="${pipe_status[0]:-0}"
+      local jq_status="${pipe_status[1]:-0}"
+
+      if [ "$awk_status" -eq 2 ]; then
+        echo "Error: No valid JSON object or array found in output." >&2
+      elif [ "$jq_status" -ne 0 ]; then
+        echo "Error: Extracted JSON failed to parse (jq exit $jq_status)." >&2
+      fi
+      exit 1
+    fi
   fi
 }
 
