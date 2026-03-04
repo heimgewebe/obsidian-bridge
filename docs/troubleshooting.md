@@ -3,6 +3,8 @@
 ## `obsidian-json`
 **Why it exists:** When interacting with the Obsidian CLI (especially via plugins), the standard output often contains noisy messages (like GTK or DBus warnings, legacy extension notices, etc.). `obsidian-json` strips this noise out deterministically and extracts only the relevant JSON payload (whether formatted as an object `{...}` or an array `[...]`).
 
+Note: `obsidian-json` cleanly distinguishes between situations where no JSON could be found ("No valid JSON object or array found in output.") and cases where extracted content failed to parse ("Extracted JSON but jq failed to parse it.").
+
 **Usage:** Use it exactly like the `obsidian` binary:
 ```bash
 obsidian-json vault="vault-gewebe" search "query" format=json

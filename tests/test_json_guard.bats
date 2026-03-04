@@ -90,6 +90,14 @@ teardown() {
   [[ "$output" =~ "Error: No valid JSON object or array found in output." ]]
 }
 
+@test "obsidian-json prints clear error on jq parse failure" {
+  # We construct an output that starts like JSON but is structurally invalid (missing bracket)
+  run bash -c "echo '{ \"bad\": \"json\"' | obsidian-json"
+  [ "$status" -eq 1 ]
+  [[ "$output" =~ "Error: Extracted JSON but jq failed to parse it." ]]
+  [[ "$output" =~ "Input may contain incomplete JSON or braces inside strings." ]]
+}
+
 @test "obsidian-json extracts JSON object from noisy output (wrapper args)" {
   # Call obsidian-json with arguments, simulating obsidian obj
   run obsidian-json obj
