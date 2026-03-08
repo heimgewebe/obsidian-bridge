@@ -24,9 +24,11 @@ Alles, was andere Tools aufrufen, liegt in `bin/` und verändert sich in seinen 
 
 **Contract für `obsidian-json`:**
 - **`stdout`:** Liefert ausschließlich gültiges JSON.
-- **`stderr`:** Liefert bei Fehlern deterministische Meldungen:
+- **`stderr`:** Liefert bei Fehlern in der JSON-Extraktion deterministische Meldungen:
   - `"Error: No valid JSON object or array found in output."`
   - `"Error: Extracted JSON failed to parse (jq exit X)."`
+
+  *Hinweis (Wrapper-Modus):* Wenn `obsidian-json` über Wrapper wie `obsidian-clean` oder `obsidian` aufgerufen wird und diese selbst fehlschlagen (z.B. fehlende Executables), können zusätzliche Fehlermeldungen dieser Befehle auf stderr erscheinen. Diese werden unverändert durchgereicht.
 - **Exit Codes:** Beendet sich mit `1` im Fehlerfall, sonst `0`.
 - **Debug-Modus:** Durch Setzen von `OBSIDIAN_JSON_DEBUG=1` werden die nativen (und sonst unterdrückten) `jq`-Parse-Fehler zusätzlich ausgegeben.
 
