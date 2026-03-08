@@ -1,7 +1,12 @@
 # Troubleshooting & Operations
 
 ## `obsidian-json`
-**Why it exists:** When interacting with the Obsidian CLI (especially via plugins), the standard output often contains noisy messages (like GTK or DBus warnings, legacy extension notices, etc.). `obsidian-json` strips this noise out deterministically and extracts only the relevant JSON payload (whether formatted as an object `{...}` or an array `[...]`).
+**Why it exists:** When interacting with the Obsidian CLI (especially via plugins), the standard output often contains noisy messages (like GTK or DBus warnings, legacy extension notices, etc.). `obsidian-json` strips this noise out deterministically and extracts only the relevant JSON payload (whether formatted as an object `{...}` or an array `[...]`). It works by counting braces to determine the depth of the JSON structure.
+
+**Extraction Limits & Debugging:**
+- **Standard Behavior:** `jq` error output is suppressed by default to prevent leaking it into pipelines.
+- **Debug Mode:** If you need to see `jq` diagnostics (e.g. for a parse error), you can set `OBSIDIAN_JSON_DEBUG=1`.
+- **Edge Cases:** Because `obsidian-json` relies on simple brace-counting (`{`, `[`), stray brace characters in the noisy output outside of the actual JSON payload might occasionally confuse the depth calculation.
 
 **Usage:** Use it exactly like the `obsidian` binary:
 ```bash

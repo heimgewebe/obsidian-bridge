@@ -9,16 +9,28 @@ Mission: Obsidian als UI-Schicht für maschinelle Artefakte betreiben (Observato
 - **Keine Vault-Daten im Repo:** nur Tools + Doku + Schemas
 - **Tests statt Hoffnung:** minimal, aber vorhanden
 
+## Aktueller Umfang
+
+Das Repository stellt vier Kernwerkzeuge unter `bin/` als stabile Schnittstelle bereit:
+- `obsidian-clean`: Leitet den gesamten `stderr`-Müll der Obsidian-Ausgabe in ein tägliches Logfile um.
+- `obsidian-json`: Extrahiert deterministisch gültiges JSON aus sonstiger CLI-Geräuschkulisse.
+- `obsidian-env`: Lädt das korrekte Obsidian-Profil und stellt Umgebungsvariablen bereit.
+- `obsidian-doctor`: Prüft unaufgeregt, ob alle nötigen Befehle (wie `jq`, `awk`, Obsidian) im Pfad existieren.
+
 ## Was ist „intelligent“ daran?
 
 ### 1) bin/ als v1 Command Surface (minimal, kompatibel gehalten)
-Alles, was andere Tools aufrufen, liegt in bin/:
-- `obsidian-clean` (stderr → log)
-- `obsidian-json` (JSON-Extraktor für Arrays und Objekte)
-- `obsidian-env` (liest config, exportiert Env-Variablen: nutzbar via `eval "$(obsidian-env --print)"`)
-- `obsidian-doctor` (Basis-Diagnose: CLI erreichbar, Dependencies)
+Alles, was andere Tools aufrufen, liegt in `bin/` und verändert sich in seinen Contracts nicht leichtfertig. Damit ist das Repo nicht „Skript-Sammlung“, sondern eine verlässliche Brücke.
 
-Damit ist das Repo nicht „Skript-Sammlung“, sondern eine verlässliche Brücke.
+**Contract für `obsidian-json`:**
+- **`stdout`:** Liefert ausschließlich gültiges JSON.
+- **`stderr`:** Liefert bei Fehlern in der JSON-Extraktion deterministische Meldungen:
+  - `"Error: No valid JSON object or array found in output."`
+  - `"Error: Extracted JSON failed to parse (jq exit X)."`
+
+  *Hinweis (Wrapper-Modus):* Wenn `obsidian-json` über Wrapper wie `obsidian-clean` oder `obsidian` aufgerufen wird und diese selbst fehlschlagen (z.B. fehlende Executables), können zusätzliche Fehlermeldungen dieser Befehle auf stderr erscheinen. Diese werden unverändert durchgereicht.
+- **Exit Codes:** Beendet sich mit `1` im Fehlerfall, sonst `0`.
+- **Debug-Modus:** Durch Setzen von `OBSIDIAN_JSON_DEBUG=1` werden die nativen (und sonst unterdrückten) `jq`-Parse-Fehler zusätzlich ausgegeben.
 
 ### 2) contracts/ als Wahrheitsschicht
 Wir standardisieren Artefakte, z.B.:

@@ -1,12 +1,16 @@
 #!/usr/bin/env bats
 
 setup() {
-  export FIXTURE_DIR="$(pwd)/tests/fixtures"
-  export FAKE_OBSIDIAN="$(pwd)/tests/helpers/fake-obsidian.sh"
-  export FAKE_BIN="$(pwd)/tests/helpers/bin"
+  export FIXTURE_DIR
+  FIXTURE_DIR="$(pwd)/tests/fixtures"
+  export FAKE_OBSIDIAN
+  FAKE_OBSIDIAN="$(pwd)/tests/helpers/fake-obsidian.sh"
+  export FAKE_BIN
+  FAKE_BIN="$(pwd)/tests/helpers/bin"
 
   # Temporarily override PATH to prioritize our fake obsidian
-  export PATH="$FAKE_BIN:$(pwd)/bin:$PATH"
+  export PATH
+  PATH="$FAKE_BIN:$(pwd)/bin:$PATH"
 
   export FIXTURE_OBJ="$FIXTURE_DIR/noisy_cli_output.txt"
   export FIXTURE_ARR="$FIXTURE_DIR/noisy_cli_array.txt"
@@ -87,21 +91,21 @@ teardown() {
 @test "obsidian-json clarifies jq parse failures with invalid JSON" {
   run bash -c "echo '{ nope }' | obsidian-json 2>&1"
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "Error: Extracted JSON failed to parse (jq exit" ]]
-  [[ ! "$output" =~ "parse error:" ]]
+  [[ "$output" =~ Error:\ Extracted\ JSON\ failed\ to\ parse\ \(jq\ exit ]]
+  [[ ! "$output" =~ parse\ error: ]]
 }
 
 @test "obsidian-json debug mode preserves jq diagnostics" {
   run bash -c "echo '{ nope }' | OBSIDIAN_JSON_DEBUG=1 obsidian-json 2>&1"
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "Error: Extracted JSON failed to parse (jq exit" ]]
-  [[ "$output" =~ "parse error" ]]
+  [[ "$output" =~ Error:\ Extracted\ JSON\ failed\ to\ parse\ \(jq\ exit ]]
+  [[ "$output" =~ parse\ error ]]
 }
 
 @test "obsidian-json fails with non-zero exit code if no JSON is found" {
   run bash -c "echo 'Just some random text without json' | obsidian-json"
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "Error: No valid JSON object or array found in output." ]]
+  [[ "$output" =~ Error:\ No\ valid\ JSON\ object\ or\ array\ found\ in\ output\. ]]
 }
 
 @test "obsidian-json extracts JSON object from noisy output (wrapper args)" {

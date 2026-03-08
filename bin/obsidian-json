@@ -19,6 +19,7 @@ extract_json() {
   # or if jq fails we catch it.
 
   # Define the awk script variable so we can use it in conditional pipelines.
+  # shellcheck disable=SC2016
   local awk_script='
   BEGIN {
     in_json = 0
