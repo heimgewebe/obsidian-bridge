@@ -1,10 +1,12 @@
 #!/usr/bin/env bats
 
 setup() {
-  export PATH="$(pwd)/bin:$PATH"
+  export PATH
+  PATH="$(pwd)/bin:$PATH"
 
   # Setup temp directory for testing `obsidian-env` config override
-  export TEMP_CONFIG_DIR="$(mktemp -d)"
+  export TEMP_CONFIG_DIR
+  TEMP_CONFIG_DIR="$(mktemp -d)"
   export OBSIDIAN_CONFIG_DIR="$TEMP_CONFIG_DIR"
 
   # Create a profile structure similar to repo root

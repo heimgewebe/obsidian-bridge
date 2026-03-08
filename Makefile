@@ -4,7 +4,7 @@ test:
 	bats tests/*.bats
 
 lint:
-	find bin scripts -type f -name "*.sh" -print0 | xargs -0 -r shellcheck
+	find bin scripts -type f -print0 | xargs -0 -r file | grep -E 'shell script|POSIX shell script' | cut -d: -f1 | tr '\n' '\0' | xargs -0 -r shellcheck
 	find scripts -type f -name "*.py" -print0 | xargs -0 -r python3 -m py_compile
 
 clean:
