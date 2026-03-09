@@ -1,6 +1,6 @@
 # Roadmap: Obsidian-Bridge & Automatische Canvas-Erzeugung
 
-*Dieses Dokument vereint alle Details, Architekturentscheidungen, Code-Blöcke und Rationale der `bridge-blaupause.md` und `canvas-blaupause.md`. Es dient als detaillierte und abhakbare Umsetzungs-Roadmap. Ziel ist es, die Obsidian-Bridge so zu bauen, dass sie Heimgewebe-Artefakte deterministisch in einen explorativen Wissensraum (Markdown & Canvas) übersetzt.*
+*Dieses Dokument vereint alle Details, Architekturentscheidungen, Code-Blöcke und Rationale der Blaupausen [bridge-blaupause.md](./bridge-blaupause.md) und [canvas-blaupause.md](./canvas-blaupause.md). Es dient als detaillierte und abhakbare Umsetzungs-Roadmap. Ziel ist es, die Obsidian-Bridge so zu bauen, dass sie Heimgewebe-Artefakte deterministisch in einen explorativen Wissensraum (Markdown & Canvas) übersetzt. Bei detaillierten konzeptionellen Fragen ist weiterhin in den Original-Blaupausen nachzuschlagen.*
 
 ---
 
