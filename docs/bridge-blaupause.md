@@ -3,7 +3,7 @@
 ## 1. Ziel
 
 Die Obsidian-Bridge stellt eine epistemische Oberfläche für Heimgewebe-Artefakte bereit.
-Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-Notizen und generiert daraus automatisch Canvas-Modelle zur visuellen Exploration des Artefakt-Graphen.
+Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-Notizen und generiert automatisch Canvas-Modelle zur visuellen Exploration des zugrunde liegenden Artefakt-Graphen.
 Die Bridge erzeugt keine Wahrheitsschicht, sondern einen explorativen Wissensraum.
 
 **Datenfluss:**
@@ -201,7 +201,7 @@ views/
 
 ---
 
-## meta/
+## 12. meta/
 
 Dieser Ordner enthält Metadaten der Obsidian-Bridge selbst (z. B. Synchronisationsstatus oder Export-Manifeste).
 Er gehört nicht zum epistemischen Wissensraum, sondern zur technischen Infrastruktur der Bridge.
@@ -222,7 +222,7 @@ meta/
 
 ---
 
-## 12. canvases/
+## 13. canvases/
 
 Mehrdimensionale Wissensmodelle.
 
@@ -241,7 +241,7 @@ Canvas-Dateien stellen graphische Wissensmodelle dar.
 
 ---
 
-## 13. Rolle von Canvas
+## 14. Rolle von Canvas
 
 Markdown bildet lineare Wissensrepräsentation.
 Canvas ergänzt dies durch graphische Wissensräume.
@@ -254,7 +254,7 @@ Canvas ergänzt dies durch graphische Wissensräume.
 
 ---
 
-## 14. Canvas-Typen
+## 15. Canvas-Typen
 
 ### System-Maps
 `canvases/system/system-architecture.canvas`
@@ -265,7 +265,7 @@ Canvas ergänzt dies durch graphische Wissensräume.
 * Systemstruktur
 
 ### Entscheidungs-Maps
-`canvases/decisions/decision-42.canvas`
+`canvases/decisions/decision--2026-03-08--dec-42.canvas`
 
 **Visualisiert:**
 * Kontext
@@ -293,7 +293,7 @@ Dienen der explorativen Analyse.
 
 ---
 
-## 15. Canvas-Strukturprinzip
+## 16. Canvas-Strukturprinzip
 
 Canvas-Knoten verlinken direkt auf Artefaktseiten.
 
@@ -308,7 +308,7 @@ Dadurch entsteht ein mehrdimensionaler Wissensgraph.
 
 ---
 
-## 16. Artefakt-Rendering
+## 17. Artefakt-Rendering
 
 Obsidian-Bridge erzeugt Markdown-Notizen aus Heimgewebe-Artefakten.
 
@@ -326,7 +326,7 @@ Canvas-Modelle werden automatisch generiert, um eine visuelle Exploration zu erm
 
 ---
 
-## 17. Dateinamen-Schema
+## 18. Dateinamen-Schema
 
 **Empfohlen:**
 `<artifact-type>--<date>--<id>.md`
@@ -338,7 +338,7 @@ Canvas-Modelle werden automatisch generiert, um eine visuelle Exploration zu erm
 
 ---
 
-## 18. Frontmatter
+## 19. Frontmatter
 
 Jede generierte Notiz enthält Metadaten.
 
@@ -356,7 +356,7 @@ confidence: medium
 
 ---
 
-## 19. Synchronisationsprinzip
+## 20. Synchronisationsprinzip
 
 Die Bridge arbeitet deterministisch.
 
@@ -369,7 +369,7 @@ Vault-Aktualisierungen verändern keine bestehenden Inhalte inkonsistent.
 
 ---
 
-## 20. Erweiterbarkeit
+## 21. Erweiterbarkeit
 
 Neue Wissensebenen können ergänzt werden.
 
@@ -382,7 +382,7 @@ Die Struktur bleibt stabil.
 
 ---
 
-## 21. Essenz
+## 22. Essenz
 
 Die Obsidian-Bridge erzeugt einen explorativen Wissensraum über Heimgewebe-Artefakte.
 

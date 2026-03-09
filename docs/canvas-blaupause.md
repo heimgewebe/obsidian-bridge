@@ -2,6 +2,11 @@
 
 ## 1. Ziel
 
+Dieses Dokument vertieft die allgemeine Bridge-Blaupause technisch um den automatischen Canvas-Renderpfad.
+* `bridge-blaupause.md` beschreibt die funktionale Rolle der Bridge.
+* `canvas-blaupause.md` beschreibt die technische Architektur der automatischen Canvas-Erzeugung.
+Die Canvas-Blaupause fokussiert die automatisch generierten Bereiche; manuelle Räume wie `scratch/` werden hier nicht vertieft.
+
 Die Obsidian-Bridge erzeugt künftig zwei deterministische Darstellungsarten aus denselben Heimgewebe-Artefakten:
 1. Markdown-Notizen
 2. `.canvas`-Dateien
