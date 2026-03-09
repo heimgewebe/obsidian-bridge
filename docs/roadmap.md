@@ -1,6 +1,14 @@
 # Roadmap: Obsidian-Bridge & Automatische Canvas-Erzeugung
 
-*Dieses Dokument vereint alle Details, Architekturentscheidungen, Code-Blöcke und Rationale der Blaupausen [bridge-blaupause.md](./bridge-blaupause.md) und [canvas-blaupause.md](./canvas-blaupause.md). Es dient als detaillierte und abhakbare Umsetzungs-Roadmap. Ziel ist es, die Obsidian-Bridge so zu bauen, dass sie Heimgewebe-Artefakte deterministisch in einen explorativen Wissensraum (Markdown & Canvas) übersetzt. Bei detaillierten konzeptionellen Fragen ist weiterhin in den Original-Blaupausen nachzuschlagen.*
+*Dieses Dokument vereint alle Details, Architekturentscheidungen, Code-Blöcke und Rationale der Blaupausen. Ziel ist es, die Obsidian-Bridge so zu bauen, dass sie Heimgewebe-Artefakte deterministisch in einen explorativen Wissensraum (Markdown & Canvas) übersetzt.*
+
+*Dieses Dokument dient als umsetzungsorientierte Roadmap.*
+
+*Die konzeptionellen Referenzdokumente bleiben:*
+- *[docs/bridge-blaupause.md](./bridge-blaupause.md)*
+- *[docs/canvas-blaupause.md](./canvas-blaupause.md)*
+
+*Bei Architekturfragen oder konzeptionellen Zweifeln gelten die Blaupausen als primäre Referenz.*
 
 ---
 
@@ -105,7 +113,7 @@ Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.**
 
 ## 4. Graph-Layer & Relationsextraktion
 
-Der Graph-Layer ist die zentrale Wahrheitsschicht für alle Canvas: **Artefakte + Relationen** sind die Quelle, nicht Markdown.
+Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stellt keine neue systemische Wahrheitsschicht neben Heimgewebe dar, sondern dient ausschließlich der deterministischen Ableitung von Canvas-Strukturen. **Artefakte + Relationen** sind die Quelle, nicht Markdown.
 
 - [ ] **Relationen extrahieren:**
   - Quellen: chronik-Events, policy.decision, decision.preimage, knowledge.observatory, contradiction.report, uncertainty.report.
