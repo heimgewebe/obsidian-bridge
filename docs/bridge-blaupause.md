@@ -3,7 +3,7 @@
 ## 1. Ziel
 
 Die Obsidian-Bridge stellt eine epistemische Oberfläche für Heimgewebe-Artefakte bereit.
-Sie übersetzt Artefakte aus dem System in strukturierte Markdown-Notizen und Canvas-Modelle, die im Obsidian-Vault exploriert werden können.
+Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-Notizen und generiert daraus automatisch Canvas-Modelle zur visuellen Exploration des Artefakt-Graphen.
 Die Bridge erzeugt keine Wahrheitsschicht, sondern einen explorativen Wissensraum.
 
 **Datenfluss:**
@@ -76,7 +76,7 @@ chronik/
   events/
     YEAR/
       MONTH/
-        event-*.md
+        event--<date>--<id>.md
   timelines/
     weekly.md
     monthly.md
@@ -201,6 +201,27 @@ views/
 
 ---
 
+## meta/
+
+Dieser Ordner enthält Metadaten der Obsidian-Bridge selbst (z. B. Synchronisationsstatus oder Export-Manifeste).
+Er gehört nicht zum epistemischen Wissensraum, sondern zur technischen Infrastruktur der Bridge.
+
+```text
+meta/
+  sync/
+  manifests/
+  exports/
+  diagnostics/
+```
+
+**Inhalt:**
+* Synchronisationsstatus
+* Export-Manifeste
+* Diagnosedaten
+* technische Bridge-Metadaten
+
+---
+
 ## 12. canvases/
 
 Mehrdimensionale Wissensmodelle.
@@ -278,9 +299,9 @@ Canvas-Knoten verlinken direkt auf Artefaktseiten.
 
 **Beispiel:**
 ```text
-node → [[chronik/events/2026/03/event-xyz]]
-node → [[decisions/policy/decision-42]]
-node → [[observatorium/insights/insight-abc]]
+node → [[chronik/events/2026/03/event--2026-03-08--evt-123]]
+node → [[decisions/policy/decision--2026-03-08--dec-12]]
+node → [[observatorium/insights/insight--2026-03-08--ins-44]]
 ```
 
 Dadurch entsteht ein mehrdimensionaler Wissensgraph.
@@ -301,7 +322,7 @@ Obsidian-Bridge erzeugt Markdown-Notizen aus Heimgewebe-Artefakten.
 * Entscheidungen
 * Wissensartefakte
 
-Canvas wird nicht automatisch generiert, sondern dient der manuellen Exploration.
+Canvas-Modelle werden automatisch generiert, um eine visuelle Exploration zu ermöglichen.
 
 ---
 
@@ -322,6 +343,7 @@ Canvas wird nicht automatisch generiert, sondern dient der manuellen Exploration
 Jede generierte Notiz enthält Metadaten.
 
 ```yaml
+---
 artifact_type: event
 artifact_id: evt-123
 source_repo: chronik
@@ -329,6 +351,7 @@ generated_by: obsidian-bridge
 generated_at: TIMESTAMP
 origin_path: SOURCE_PATH
 confidence: medium
+---
 ```
 
 ---
