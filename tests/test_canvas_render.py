@@ -35,6 +35,7 @@ class TestCanvasRender(unittest.TestCase):
         with open(self.layout_file.name, 'w') as f:
             json.dump(layout_data, f)
 
+        self.temp_dir = tempfile.TemporaryDirectory()
         with open(self.spec_file.name, 'w') as f:
             yaml.dump(spec_data, f)
 
@@ -42,11 +43,12 @@ class TestCanvasRender(unittest.TestCase):
         os.unlink(self.graph_file.name)
         os.unlink(self.layout_file.name)
         os.unlink(self.spec_file.name)
+        self.temp_dir.cleanup()
 
     def test_render_canvas_output(self):
-        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name)
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
 
-        output_path = "vault-gewebe/obsidian-bridge/canvases/test.canvas"
+        output_path = os.path.join(self.temp_dir.name, "canvases/test.canvas")
         self.assertTrue(os.path.exists(output_path))
 
         with open(output_path, 'r') as f:

@@ -3,7 +3,7 @@ import os
 from typing import Dict, Any, List
 import datetime
 
-def build_graph() -> Dict[str, Any]:
+def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/graph.v1.json") -> Dict[str, Any]:
     """
     Builds the canonical graph layer from Heimewebe artifacts.
     This acts as the deterministic base for Canvas generation.
@@ -36,9 +36,9 @@ def build_graph() -> Dict[str, Any]:
     })
 
     # Output to canonical graph artifact path
-    output_dir = "vault-gewebe/obsidian-bridge/meta/graph"
-    os.makedirs(output_dir, exist_ok=True)
-    output_file = os.path.join(output_dir, "graph.v1.json")
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
 
     with open(output_file, 'w') as f:
         json.dump(graph, f, indent=2)

@@ -3,7 +3,7 @@ import os
 import yaml
 from typing import Dict, Any
 
-def render_canvas(spec_path: str, graph_path: str, layout_path: str) -> None:
+def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root: str = "vault-gewebe/obsidian-bridge") -> None:
     """
     Generates a deterministic .canvas file from a YAML declarative spec.
     Validates against size limits (Guards against graph-spaghetti).
@@ -39,6 +39,9 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str) -> None:
     node_id_map = {}
 
     for i, node in enumerate(graph.get("nodes", [])):
+        if valid_types and node.get("kind") not in valid_types:
+            continue
+
         if added_nodes >= max_nodes:
             break
 
@@ -90,7 +93,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str) -> None:
 
     # Write output
     output_file = spec.get("output", f"canvases/{spec.get('id', 'default')}.canvas")
-    output_path = os.path.join("vault-gewebe/obsidian-bridge", output_file)
+    output_path = os.path.join(output_root, output_file)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     with open(output_path, 'w') as f:

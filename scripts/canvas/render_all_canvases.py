@@ -1,6 +1,6 @@
 import os
 import glob
-from render_canvas import render_canvas
+from scripts.canvas.render_canvas import render_canvas
 
 def render_all_canvases(specs_dir: str, graph_path: str, layout_path: str) -> None:
     """

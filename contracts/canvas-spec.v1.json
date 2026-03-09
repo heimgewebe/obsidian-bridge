@@ -12,7 +12,8 @@
           "type": "array",
           "items": { "type": "string" }
         }
-      }
+      },
+      "required": ["artifact_types"]
     },
     "layout": { "type": "string" },
     "filters": {
@@ -28,5 +29,5 @@
     },
     "output": { "type": "string" }
   },
-  "required": ["id", "type", "layout", "output"]
+  "required": ["id", "type", "layout", "source", "output"]
 }
