@@ -1,0 +1,16 @@
+id: observatorium-insights
+type: observatorium
+source:
+  artifact_types:
+    - insight
+    - contradiction
+    - uncertainty
+layout: cluster
+filters:
+  max_nodes: 80
+  date_window_days: 90
+relations:
+  - references
+  - contradicts
+  - clusters_with
+output: canvases/observatorium/insight-network.canvas

@@ -1,0 +1,7 @@
+id: system-architecture
+type: system
+source:
+  artifact_types:
+    - system_component
+layout: organsystem
+output: canvases/system/system-architecture.canvas

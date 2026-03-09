@@ -1,0 +1,27 @@
+{
+  "nodes": [
+    {
+      "id": "event:evt-123",
+      "kind": "event",
+      "title": "Event 2026-03-08",
+      "file_path": "chronik/events/2026/03/event--2026-03-08--evt-123.md",
+      "source_repo": "chronik",
+      "timestamp": "2026-03-08T12:00:00Z",
+      "tags": [
+        "chronik",
+        "event"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:event:evt-123->decision:dec-12",
+      "from": "event:evt-123",
+      "to": "decision:dec-12",
+      "relation": "informed",
+      "weight": 0.8
+    }
+  ],
+  "clusters": [],
+  "topics": []
+}

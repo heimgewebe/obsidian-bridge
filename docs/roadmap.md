@@ -49,36 +49,36 @@ Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-No
 Alle Inhalte liegen unter: `vault-gewebe/obsidian-bridge/`.
 Erstelle die Verzeichnisstruktur mit folgenden Zielen und Eigenschaften:
 
-- [ ] **`index/`** (Einstiegspunkt)
+- [x] **`index/`** (Einstiegspunkt)
   - `start.md`, `navigation.md`, `latest.md`
   - *Funktion:* Übersicht aktueller Artefakte, Navigation, Einstieg.
-- [ ] **`chronik/`** (Zeitliche Systemgeschichte)
+- [x] **`chronik/`** (Zeitliche Systemgeschichte)
   - `events/YEAR/MONTH/event--<date>--<id>.md`, `timelines/weekly.md`, `timelines/monthly.md`, `rollups/system-history.md`
   - *Funktion:* Rekonstruktion, Historie, Muster.
-- [ ] **`observatorium/`** (Analytische Ebene)
+- [x] **`observatorium/`** (Analytische Ebene)
   - `insights/`, `contradictions/`, `uncertainty/`, `daily/`
   - *Funktion:* Erkenntnisse, Widerspruchsberichte, Unsicherheitsanalysen, tägliche Beobachtungen.
-- [ ] **`decisions/`** (Entscheidungsarchiv)
+- [x] **`decisions/`** (Entscheidungsarchiv)
   - `policy/`, `preimages/`, `outcomes/`
   - *Funktion:* Entscheidungsrekonstruktion, Alternativenanalyse, Folgenbeobachtung.
-- [ ] **`knowledge/`** (Stabile Wissensstruktur)
+- [x] **`knowledge/`** (Stabile Wissensstruktur)
   - `entities/`, `concepts/`, `relations/`, `snapshots/`
   - *Funktion:* Langfristige Wissensobjekte, semantische Systembeschreibung, strukturelle Zusammenhänge.
-- [ ] **`agents/`** (Agentische Aktivitäten)
+- [x] **`agents/`** (Agentische Aktivitäten)
   - `runs/`, `prompts/`, `reviews/`
   - *Funktion:* Transparenz automatisierter Prozesse, Nachvollziehbarkeit von Agententscheidungen.
-- [ ] **`scratch/`** (Freier Denkraum)
+- [x] **`scratch/`** (Freier Denkraum)
   - `hypotheses/`, `analyses/`, `maps/`
   - *Funktion:* manuell, experimentell, nicht automatisch synchronisiert.
-- [ ] **`views/`** (Kuratiertes Lesen)
+- [x] **`views/`** (Kuratiertes Lesen)
   - `dashboards/`, `clusters/`, `narratives/`
   - *Funktion:* thematische Perspektiven, Synthese-Seiten, langfristige Interpretationen.
-- [ ] **`canvases/`** (Mehrdimensionale Wissensmodelle - *Dateiformat: *.canvas*)
+- [x] **`canvases/`** (Mehrdimensionale Wissensmodelle - *Dateiformat: *.canvas*)
   - `system/`, `chronik/`, `observatorium/`, `decisions/`, `knowledge/`, `investigations/`, `index/`
   - *Funktion:* Automatisch erzeugte grafische Wissensmodelle.
-- [ ] **`meta/`** (Infrastruktur der Bridge, nicht epistemisch)
+- [x] **`meta/`** (Infrastruktur der Bridge, nicht epistemisch)
   - `graph/` (kanonische Zwischenartefakte für Graph/Layout), `sync/` (Synchronisationsstatus), `manifests/` (Export-Manifeste), `exports/`, `diagnostics/` (Diagnosedaten).
-- [ ] **Erweiterbarkeit ermöglichen:** Neue Ebenen (z.B. `observatorium/models/`, `knowledge/ontologies/`, `canvases/strategy/`) müssen integrierbar bleiben, die Struktur bleibt stabil.
+- [x] **Erweiterbarkeit ermöglichen:** Neue Ebenen (z.B. `observatorium/models/`, `knowledge/ontologies/`, `canvases/strategy/`) müssen integrierbar bleiben, die Struktur bleibt stabil.
 
 ---
 
@@ -227,22 +227,22 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
 
 ## 8. Verzeichnis-Erweiterungen (Verträge, Skripte, Tests)
 
-- [ ] **Neue Contracts erstellen:**
+- [x] **Neue Contracts erstellen:**
   - `contracts/graph.v1.json`
   - `contracts/canvas-spec.v1.json`
   - `contracts/layout.v1.json`
-- [ ] **Neue Python Skripte schreiben:**
+- [x] **Neue Python Skripte schreiben:**
   - `scripts/graph/build_graph.py`
   - `scripts/graph/extract_relations.py`
   - `scripts/graph/stabilize_layout.py`
   - `scripts/canvas/render_canvas.py`
   - `scripts/canvas/render_all_canvases.py`
-- [ ] **Spezifikationen (YAML) anlegen:**
+- [x] **Spezifikationen (YAML) anlegen:**
   - `config/canvas-specs/system.yaml`
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [ ] **Tests implementieren:**
+- [x] **Tests implementieren:**
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`

@@ -1,0 +1,16 @@
+id: chronik-latest
+type: chronik
+source:
+  artifact_types:
+    - event
+    - insight
+    - decision
+layout: timeline
+filters:
+  max_nodes: 100
+  date_window_days: 30
+relations:
+  - causes
+  - precedes
+  - informed
+output: canvases/chronik/events-latest.canvas
