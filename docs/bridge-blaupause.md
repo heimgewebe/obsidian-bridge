@@ -265,7 +265,7 @@ Canvas ergänzt dies durch graphische Wissensräume.
 * Systemstruktur
 
 ### Entscheidungs-Maps
-`canvases/decisions/decision--2026-03-08--dec-42.canvas`
+`canvases/decisions/decision--2026-03-08--dec-12.canvas`
 
 **Visualisiert:**
 * Kontext
@@ -310,9 +310,9 @@ Dadurch entsteht ein mehrdimensionaler Wissensgraph.
 
 ## 17. Artefakt-Rendering
 
-Obsidian-Bridge erzeugt Markdown-Notizen aus Heimgewebe-Artefakten.
+Markdown-Notizen und Canvas-Modelle werden aus denselben Heimgewebe-Artefakten erzeugt; die Canvas-Generierung basiert dabei auf dem zugrunde liegenden Artefakt-Graphen.
 
-**Pipeline:**
+**Pipeline (Markdown):**
 `artifact → renderer → markdown note`
 
 **Exportierte Artefakte:**
