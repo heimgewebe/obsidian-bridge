@@ -48,6 +48,10 @@ So kannst du später heimgeist/leitstand sauber anbinden.
 User-Timer sind sauberer als Cron im Desktop-Kontext.
 
 ### 5) Tests als Guardrail
+Zur Nutzung der Generierungs-Skripte wird Python 3 und das Paket `PyYAML` benötigt.
+Eine Installation der Abhängigkeiten erfolgt per `make install-deps` oder automatisch via `make install`.
+Die Python-Skripte sollten idealerweise als Modul aus dem Repo-Root aufgerufen werden (z.B. `python3 -m scripts.canvas.render_all_canvases`).
+
 Derzeit implementiert:
 - Smoke: Basic CLI Executability (headless-safe)
 - JSON guard: noisy output → extrahiertes JSON parsebar (sowohl Array als auch Object)
@@ -65,3 +69,4 @@ Geplant:
 - Doku über Struktur/Operation
 - Schemas/Contracts
 - generierte Beispiele unter docs/examples/ (synthetisch)
+- Platzhalter oder Scaffold-Artefakte für den Entwicklungszyklus (wie `graph.v1.json` oder erste `.canvas` Dateien), sofern sie klar als Bootstrap-Schicht markiert sind und nicht als finale, dynamische Wahrheitsträger dienen.

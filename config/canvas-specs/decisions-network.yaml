@@ -1,0 +1,14 @@
+id: decisions-network
+type: decisions
+source:
+  artifact_types:
+    - decision
+    - event
+    - insight
+layout: radial
+filters:
+  max_nodes: 50
+relations:
+  - derives_from
+  - informed
+output: canvases/decisions/decision-network.canvas

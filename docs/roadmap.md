@@ -49,36 +49,36 @@ Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-No
 Alle Inhalte liegen unter: `vault-gewebe/obsidian-bridge/`.
 Erstelle die Verzeichnisstruktur mit folgenden Zielen und Eigenschaften:
 
-- [ ] **`index/`** (Einstiegspunkt)
+- [x] **`index/`** (Einstiegspunkt)
   - `start.md`, `navigation.md`, `latest.md`
   - *Funktion:* Übersicht aktueller Artefakte, Navigation, Einstieg.
-- [ ] **`chronik/`** (Zeitliche Systemgeschichte)
+- [x] **`chronik/`** (Zeitliche Systemgeschichte)
   - `events/YEAR/MONTH/event--<date>--<id>.md`, `timelines/weekly.md`, `timelines/monthly.md`, `rollups/system-history.md`
   - *Funktion:* Rekonstruktion, Historie, Muster.
-- [ ] **`observatorium/`** (Analytische Ebene)
+- [x] **`observatorium/`** (Analytische Ebene)
   - `insights/`, `contradictions/`, `uncertainty/`, `daily/`
   - *Funktion:* Erkenntnisse, Widerspruchsberichte, Unsicherheitsanalysen, tägliche Beobachtungen.
-- [ ] **`decisions/`** (Entscheidungsarchiv)
+- [x] **`decisions/`** (Entscheidungsarchiv)
   - `policy/`, `preimages/`, `outcomes/`
   - *Funktion:* Entscheidungsrekonstruktion, Alternativenanalyse, Folgenbeobachtung.
-- [ ] **`knowledge/`** (Stabile Wissensstruktur)
+- [x] **`knowledge/`** (Stabile Wissensstruktur)
   - `entities/`, `concepts/`, `relations/`, `snapshots/`
   - *Funktion:* Langfristige Wissensobjekte, semantische Systembeschreibung, strukturelle Zusammenhänge.
-- [ ] **`agents/`** (Agentische Aktivitäten)
+- [x] **`agents/`** (Agentische Aktivitäten)
   - `runs/`, `prompts/`, `reviews/`
   - *Funktion:* Transparenz automatisierter Prozesse, Nachvollziehbarkeit von Agententscheidungen.
-- [ ] **`scratch/`** (Freier Denkraum)
+- [x] **`scratch/`** (Freier Denkraum)
   - `hypotheses/`, `analyses/`, `maps/`
   - *Funktion:* manuell, experimentell, nicht automatisch synchronisiert.
-- [ ] **`views/`** (Kuratiertes Lesen)
+- [x] **`views/`** (Kuratiertes Lesen)
   - `dashboards/`, `clusters/`, `narratives/`
   - *Funktion:* thematische Perspektiven, Synthese-Seiten, langfristige Interpretationen.
-- [ ] **`canvases/`** (Mehrdimensionale Wissensmodelle - *Dateiformat: *.canvas*)
+- [x] **`canvases/`** (Mehrdimensionale Wissensmodelle - *Dateiformat: *.canvas*)
   - `system/`, `chronik/`, `observatorium/`, `decisions/`, `knowledge/`, `investigations/`, `index/`
   - *Funktion:* Automatisch erzeugte grafische Wissensmodelle.
-- [ ] **`meta/`** (Infrastruktur der Bridge, nicht epistemisch)
+- [x] **`meta/`** (Infrastruktur der Bridge, nicht epistemisch)
   - `graph/` (kanonische Zwischenartefakte für Graph/Layout), `sync/` (Synchronisationsstatus), `manifests/` (Export-Manifeste), `exports/`, `diagnostics/` (Diagnosedaten).
-- [ ] **Erweiterbarkeit ermöglichen:** Neue Ebenen (z.B. `observatorium/models/`, `knowledge/ontologies/`, `canvases/strategy/`) müssen integrierbar bleiben, die Struktur bleibt stabil.
+- [x] **Erweiterbarkeit ermöglichen:** Neue Ebenen (z.B. `observatorium/models/`, `knowledge/ontologies/`, `canvases/strategy/`) müssen integrierbar bleiben, die Struktur bleibt stabil.
 
 ---
 
@@ -115,10 +115,10 @@ Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.**
 
 Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stellt keine neue systemische Wahrheitsschicht neben Heimgewebe dar, sondern dient ausschließlich der deterministischen Ableitung von Canvas-Strukturen. **Artefakte + Relationen** sind die Quelle, nicht Markdown.
 
-- [ ] **Relationen extrahieren:**
+- [ ] **Relationen extrahieren:** (Scaffold angelegt)
   - Quellen: chronik-Events, policy.decision, decision.preimage, knowledge.observatory, contradiction.report, uncertainty.report.
   - *Relationstypen:* references, causes, informed, contradicts, derives_from, clusters_with, precedes, belongs_to_topic.
-- [ ] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):**
+- [ ] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):** (Scaffold angelegt)
   - Soll `nodes`, `edges`, optional `clusters`, optional `topics` enthalten.
 - [ ] **Knotenmodell definieren (Artefakt/Konzept):**
   ```json
@@ -149,7 +149,7 @@ Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stel
 
 Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verteilte Logik, CI-prüfbar).
 
-- [ ] **Spec-Format implementieren:**
+- [x] **Spec-Format implementieren:** (Scaffold angelegt)
   ```yaml
   id: observatorium-insight-network
   type: observatorium
@@ -168,7 +168,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - clusters_with
   output: canvases/observatorium/insight-network.canvas
   ```
-- [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:**
+- [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `max_depth`, `max_clusters`
   - Fokusregeln: stärkste Kanten, jüngste Artefakte, priorisierte Relationstypen rendern.
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas.
@@ -180,16 +180,16 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [ ] **Layout-Typen pro Canvas-Klasse implementieren:**
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (Scaffold angelegt)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
   - `knowledge/*` (Hierarchie-/Graph-Layout): Konzepte oben, Entitäten mittig, konkrete Artefakte unten
   - `system/*` (Organsystem-Layout): Feste Positionen für: chronik, semantAH, hausKI, heimlern, heimgeist, leitstand, wgx, metarepo
-- [ ] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):**
+- [ ] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):** (Scaffold angelegt)
   - Enthält pro Knoten: `x`, `y`, `width`, `height`.
   - *Regel:* Bestehende Knoten behalten Position, neue werden deterministisch ergänzt, gelöschte verschwinden kontrolliert.
-- [ ] **Interne Canvas-Repräsentation erzeugen:**
+- [ ] **Interne Canvas-Repräsentation erzeugen:** (Scaffold angelegt)
   ```json
   {
     "nodes": [...],
@@ -227,22 +227,22 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
 
 ## 8. Verzeichnis-Erweiterungen (Verträge, Skripte, Tests)
 
-- [ ] **Neue Contracts erstellen:**
+- [x] **Neue Contracts erstellen:**
   - `contracts/graph.v1.json`
   - `contracts/canvas-spec.v1.json`
   - `contracts/layout.v1.json`
-- [ ] **Neue Python Skripte schreiben:**
+- [ ] **Neue Python Skripte schreiben:** (Scaffold angelegt)
   - `scripts/graph/build_graph.py`
   - `scripts/graph/extract_relations.py`
   - `scripts/graph/stabilize_layout.py`
   - `scripts/canvas/render_canvas.py`
   - `scripts/canvas/render_all_canvases.py`
-- [ ] **Spezifikationen (YAML) anlegen:**
+- [x] **Spezifikationen (YAML) anlegen:**
   - `config/canvas-specs/system.yaml`
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [ ] **Tests implementieren:**
+- [ ] **Tests implementieren:** (Scaffold angelegt)
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`
