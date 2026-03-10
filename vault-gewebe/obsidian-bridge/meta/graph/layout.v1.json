@@ -1,0 +1,28 @@
+{
+  "nodes": {
+    "event:evt-123": {
+      "x": 0,
+      "y": 0,
+      "width": 250,
+      "height": 150
+    },
+    "decision:dec-12": {
+      "x": 100,
+      "y": 0,
+      "width": 250,
+      "height": 150
+    },
+    "insight:ins-44": {
+      "x": 200,
+      "y": 0,
+      "width": 250,
+      "height": 150
+    },
+    "system:wgx-1": {
+      "x": 300,
+      "y": 0,
+      "width": 250,
+      "height": 150
+    }
+  }
+}

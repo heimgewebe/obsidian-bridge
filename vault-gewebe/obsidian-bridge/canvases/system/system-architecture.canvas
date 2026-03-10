@@ -1,4 +1,14 @@
 {
-  "nodes": [],
+  "nodes": [
+    {
+      "id": "canvas_node_3",
+      "x": 300,
+      "y": 0,
+      "width": 250,
+      "height": 150,
+      "type": "file",
+      "file": "index/navigation.md"
+    }
+  ],
   "edges": []
 }
