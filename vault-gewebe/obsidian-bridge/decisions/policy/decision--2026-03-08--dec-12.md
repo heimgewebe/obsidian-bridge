@@ -16,5 +16,5 @@ confidence: medium
 
 ## Eingehende Relationen
 
+- <- **derives_from** [[observatorium/insights/insight--2026-03-08--ins-44]]
 - <- **informed** [[chronik/events/2026/03/event--2026-03-08--evt-123]]
-- <- **derives_from** [[observatorium/insights/insight--2026-03-09--ins-44]]

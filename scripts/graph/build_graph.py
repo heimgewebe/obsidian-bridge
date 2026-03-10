@@ -42,7 +42,7 @@ def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/grap
         "title": "Systemic Contradiction Detected",
         "file_path": "observatorium/insights/insight--2026-03-08--ins-44.md",
         "source_repo": "observatorium",
-        "timestamp": "2026-03-09T09:15:00Z",
+        "timestamp": "2026-03-08T09:15:00Z",
         "tags": ["observatorium", "insight"]
     })
 

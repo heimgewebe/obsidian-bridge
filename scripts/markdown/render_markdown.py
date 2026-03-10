@@ -4,8 +4,6 @@ import yaml
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-import sys
-
 def calculate_deterministic_path(node: Dict[str, Any]) -> str:
     """Calculates the file path deterministically based on the roadmap schema."""
     kind = node.get("kind", "unknown")
@@ -13,6 +11,9 @@ def calculate_deterministic_path(node: Dict[str, Any]) -> str:
     artifact_id = node_id.split(":")[-1] if ":" in node_id else node_id
 
     timestamp = node.get("timestamp", "")
+    if not timestamp and not node.get("file_path"):
+        raise ValueError(f"Missing both timestamp and file_path for node: {node_id}")
+
     date_str = timestamp.split("T")[0] if timestamp else "unknown-date"
 
     # E.g. event--2026-03-08--evt-123.md
@@ -44,10 +45,9 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
     Generates Markdown links between nodes based on graph edges.
     """
     if not os.path.exists(graph_path):
-        print(f"Graph file not found: {graph_path}")
-        return
+        raise FileNotFoundError(f"Graph file not found: {graph_path}")
 
-    with open(graph_path, 'r') as f:
+    with open(graph_path, 'r', encoding="utf-8") as f:
         graph = json.load(f)
 
     nodes = graph.get("nodes", [])
@@ -59,11 +59,19 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         node_id = node.get("id")
         if not node_id:
             continue
-        file_path = calculate_deterministic_path(node)
+
+        canonical_path = node.get("file_path")
+        calculated_path = calculate_deterministic_path(node)
+
+        if canonical_path:
+            # We skip the warning if the calculated path is identical or if it's the generic fallback (which just returns the source repo prefix)
+            if canonical_path != calculated_path and not calculated_path.startswith(node.get("source_repo", "unknown") + "/"):
+                print(f"Warning: Node {node_id} has canonical path '{canonical_path}' which differs from calculated deterministic path '{calculated_path}'. Using canonical.")
+            file_path = canonical_path
+        else:
+            file_path = calculated_path
+
         node_paths[node_id] = file_path
-        # Update the node's file path so canvas renderers that depend on graph.v1.json
-        # could also be updated if we wanted to rewrite the graph, but for now we just
-        # use it to render the markdown.
 
     # Group edges by node
     # outgoing edges
@@ -130,7 +138,7 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         out_edges = outgoing_edges.get(node_id, [])
         if out_edges:
             relations_text.append("## Ausgehende Relationen\n")
-            for relation, to_id in out_edges:
+            for relation, to_id in sorted(out_edges, key=lambda x: (x[0], x[1])):
                 to_path = node_paths.get(to_id)
                 if to_path:
                     # Obsidian link without the .md extension usually, but we can also use file path
@@ -143,7 +151,7 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         in_edges = incoming_edges.get(node_id, [])
         if in_edges:
             relations_text.append("## Eingehende Relationen\n")
-            for relation, from_id in in_edges:
+            for relation, from_id in sorted(in_edges, key=lambda x: (x[0], x[1])):
                 from_path = node_paths.get(from_id)
                 if from_path:
                     link_target = from_path.replace(".md", "")
@@ -154,7 +162,7 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         if has_relations:
             content_lines.extend(relations_text)
 
-        with open(full_path, "w") as f_out:
+        with open(full_path, "w", encoding="utf-8", newline="\n") as f_out:
             f_out.write("\n".join(content_lines))
 
 if __name__ == "__main__":
