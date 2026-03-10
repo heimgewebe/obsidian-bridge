@@ -16,8 +16,11 @@ jobs:
       - name: Setup shell environment
         run: sudo apt-get update && sudo apt-get install -y shellcheck bats jq
 
+      - name: Setup python environment
+        run: make install-deps
+
       - name: Lint shell scripts
         run: make lint
 
-      - name: Run bats tests
+      - name: Run tests (bats and python)
         run: make test

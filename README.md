@@ -69,3 +69,4 @@ Geplant:
 - Doku über Struktur/Operation
 - Schemas/Contracts
 - generierte Beispiele unter docs/examples/ (synthetisch)
+- Platzhalter oder Scaffold-Artefakte für den Entwicklungszyklus (wie `graph.v1.json` oder erste `.canvas` Dateien), sofern sie klar als Bootstrap-Schicht markiert sind und nicht als finale, dynamische Wahrheitsträger dienen.
