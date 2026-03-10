@@ -86,10 +86,10 @@ Erstelle die Verzeichnisstruktur mit folgenden Zielen und Eigenschaften:
 
 Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.** Vault-Aktualisierungen dürfen bestehende Inhalte nicht inkonsistent verändern.
 
-- [ ] **Dateinamen-Schema implementieren:**
+- [x] **Dateinamen-Schema implementieren:**
   - *Regel:* `<artifact-type>--<date>--<id>.md`
   - *Beispiele:* `event--2026-03-08--evt-123.md`, `insight--2026-03-08--ins-44.md`, `decision--2026-03-08--dec-12.md`
-- [ ] **Frontmatter-Generierung integrieren:**
+- [x] **Frontmatter-Generierung integrieren:**
   ```yaml
   ---
   artifact_type: event
@@ -101,7 +101,7 @@ Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.**
   confidence: medium
   ---
   ```
-- [ ] **Canvas-Strukturprinzip (Knotenverlinkung):** Canvas-Knoten müssen direkt auf Artefaktseiten verlinken.
+- [x] **Canvas-Strukturprinzip (Knotenverlinkung):** Canvas-Knoten müssen direkt auf Artefaktseiten verlinken.
   - *Beispiel:*
     ```text
     node → [[chronik/events/2026/03/event--2026-03-08--evt-123]]
