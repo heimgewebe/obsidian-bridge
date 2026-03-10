@@ -1,4 +1,3 @@
-import json
 from typing import List, Dict, Any
 
 def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:

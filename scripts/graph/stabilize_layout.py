@@ -10,7 +10,7 @@ def stabilize_layout(graph_path: str, layout_cache_path: str) -> Dict[str, Any]:
     Rules:
     - Existing nodes keep position
     - New nodes placed deterministically
-    - Deleted nodes disappear controlled
+    - Deleted nodes are currently NOT actively cleaned up (WIP)
     """
     layout: Dict[str, Any] = {"nodes": {}}
 
@@ -18,6 +18,7 @@ def stabilize_layout(graph_path: str, layout_cache_path: str) -> Dict[str, Any]:
     if os.path.exists(layout_cache_path):
         with open(layout_cache_path, 'r') as f:
             layout = json.load(f)
+            layout.setdefault("nodes", {})
 
     # Load the graph
     graph: Dict[str, Any] = {"nodes": [], "edges": []}
@@ -38,7 +39,10 @@ def stabilize_layout(graph_path: str, layout_cache_path: str) -> Dict[str, Any]:
             }
 
     # Save the stabilized layout back to cache
-    os.makedirs(os.path.dirname(layout_cache_path), exist_ok=True)
+    output_dir = os.path.dirname(layout_cache_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+
     with open(layout_cache_path, 'w') as f:
         json.dump(layout, f, indent=2)
 

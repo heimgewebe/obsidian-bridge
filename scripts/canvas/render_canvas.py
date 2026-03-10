@@ -39,13 +39,16 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     node_id_map = {}
 
     for i, node in enumerate(graph.get("nodes", [])):
+        node_id = node.get("id")
+        if not node_id:
+            # Skip nodes without a valid ID to avoid None mapping collisions
+            continue
+
         if valid_types and node.get("kind") not in valid_types:
             continue
 
         if added_nodes >= max_nodes:
             break
-
-        node_id = node.get("id")
 
         # Simple text representation of node type for canvas internal ID
         canvas_node_id = f"canvas_node_{i}"

@@ -1,7 +1,8 @@
-.PHONY: test lint clean install
+.PHONY: test lint clean install install-deps
 
 test:
 	bats tests/*.bats
+	python3 -m unittest discover -s tests -p 'test_*.py'
 
 lint:
 	bash -c 'find bin scripts -type f -print0 | while IFS= read -r -d "" f; do if file --brief --mime-type -- "$$f" | grep -q "text/x-shellscript"; then shellcheck -- "$$f"; fi; done'
@@ -12,7 +13,10 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 
-install:
+install-deps:
+	pip install -r requirements.txt
+
+install: install-deps
 	@echo "Symlinking tools to ~/.local/bin..."
 	mkdir -p ~/.local/bin
 	ln -sf $$(pwd)/bin/obsidian-clean ~/.local/bin/obsidian-clean

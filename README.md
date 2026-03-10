@@ -48,6 +48,9 @@ So kannst du später heimgeist/leitstand sauber anbinden.
 User-Timer sind sauberer als Cron im Desktop-Kontext.
 
 ### 5) Tests als Guardrail
+Zur Nutzung der Generierungs-Skripte wird Python 3 und das Paket `PyYAML` benötigt.
+Eine Installation der Abhängigkeiten erfolgt per `make install-deps` oder automatisch via `make install`.
+
 Derzeit implementiert:
 - Smoke: Basic CLI Executability (headless-safe)
 - JSON guard: noisy output → extrahiertes JSON parsebar (sowohl Array als auch Object)

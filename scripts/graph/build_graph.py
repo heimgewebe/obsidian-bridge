@@ -1,7 +1,6 @@
 import json
 import os
 from typing import Dict, Any, List
-import datetime
 
 def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/graph.v1.json") -> Dict[str, Any]:
     """
