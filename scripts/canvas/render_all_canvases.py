@@ -1,5 +1,10 @@
 import os
 import glob
+import sys
+
+# Ensure the scripts package can be found if executed directly
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from scripts.canvas.render_canvas import render_canvas
 
 def render_all_canvases(specs_dir: str, graph_path: str, layout_path: str) -> None:

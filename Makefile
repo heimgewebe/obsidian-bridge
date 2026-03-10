@@ -1,6 +1,6 @@
 .PHONY: test lint clean install install-deps
 
-test: install-deps
+test:
 	bats tests/*.bats
 	python3 -m unittest discover -s tests -p 'test_*.py'
 

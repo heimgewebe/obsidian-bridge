@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "canvas_node_0",
+      "x": 0,
+      "y": 0,
+      "width": 250,
+      "height": 150,
+      "type": "file",
+      "file": "chronik/events/2026/03/event--2026-03-08--evt-123.md"
+    }
+  ],
+  "edges": []
+}
