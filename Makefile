@@ -1,6 +1,6 @@
 .PHONY: test lint clean install install-deps
 
-test:
+test: install-deps
 	bats tests/*.bats
 	python3 -m unittest discover -s tests -p 'test_*.py'
 
@@ -14,7 +14,7 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 install-deps:
-	pip install -r requirements.txt
+	python3 -m pip install -r requirements.txt
 
 install: install-deps
 	@echo "Symlinking tools to ~/.local/bin..."
