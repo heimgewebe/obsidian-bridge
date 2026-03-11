@@ -115,7 +115,7 @@ Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.**
 
 Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stellt keine neue systemische Wahrheitsschicht neben Heimgewebe dar, sondern dient ausschließlich der deterministischen Ableitung von Canvas-Strukturen. **Artefakte + Relationen** sind die Quelle, nicht Markdown.
 
-- [x] **Relationen extrahieren:** (Scaffold angelegt)
+- [ ] **Relationen extrahieren:** (teilweise / Scaffold angelegt - Basisfunktion da, keine vollständige Taxonomie-Abdeckung)
   - Quellen: chronik-Events, policy.decision, decision.preimage, knowledge.observatory, contradiction.report, uncertainty.report.
   - *Relationstypen:* references, causes, informed, contradicts, derives_from, clusters_with, precedes, belongs_to_topic.
 - [x] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):** (Scaffold angelegt)
@@ -259,7 +259,7 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [x] **Phase 2 – Deterministische Canvas-Renderer**
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Layout-Klassen fehlen noch)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.

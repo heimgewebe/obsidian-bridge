@@ -6,7 +6,6 @@ from scripts.graph.build_graph import build_graph
 import tempfile
 
 from unittest.mock import patch, mock_open
-from scripts.graph.extract_relations import _parse_frontmatter
 
 class TestGraphBuild(unittest.TestCase):
     def setUp(self):
@@ -30,6 +29,7 @@ generated_at: 2026-03-08T12:00:00Z
 This is a test node with an explicit relation.
 - **causes** -> [[target.md]]
 - <- **informed** [[target2.md]]
+- **references** -> [[target.md]]
 #hashtag_one #hashtag_two
 """,
             "vault-gewebe/obsidian-bridge/folder/target.md": """---
@@ -76,8 +76,21 @@ This node informs the test node.
 
         # Test explicit relations extraction
         edges = graph["edges"]
-        self.assertTrue(any(e["from"] == "test:t-1" and e["to"] == "target:tg-1" and e["relation"] == "causes" for e in edges))
-        self.assertTrue(any(e["from"] == "target:tg-2" and e["to"] == "test:t-1" and e["relation"] == "informed" for e in edges))
+
+        # Ensure 'causes' edge is extracted correctly
+        causes_edges = [e for e in edges if e["from"] == "test:t-1" and e["to"] == "target:tg-1" and e["relation"] == "causes"]
+        self.assertEqual(len(causes_edges), 1)
+        self.assertEqual(causes_edges[0]["id"], "edge:test:t-1->target:tg-1:causes")
+
+        # Ensure 'informed' incoming edge is extracted correctly and direction reversed correctly
+        informed_edges = [e for e in edges if e["from"] == "target:tg-2" and e["to"] == "test:t-1" and e["relation"] == "informed"]
+        self.assertEqual(len(informed_edges), 1)
+        self.assertEqual(informed_edges[0]["id"], "edge:target:tg-2->test:t-1:informed")
+
+        # Ensure distinct edges between same nodes have distinct IDs
+        ref_edges = [e for e in edges if e["from"] == "test:t-1" and e["to"] == "target:tg-1" and e["relation"] == "references"]
+        self.assertEqual(len(ref_edges), 1)
+        self.assertEqual(ref_edges[0]["id"], "edge:test:t-1->target:tg-1:references")
 
     @patch('scripts.graph.build_graph.os.walk')
     def test_graph_artifact_creation(self, mock_walk):

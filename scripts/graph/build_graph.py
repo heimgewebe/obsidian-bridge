@@ -1,7 +1,6 @@
 import json
 import os
 import sys
-import yaml
 from typing import Dict, Any
 
 # Ensure we can import from scripts

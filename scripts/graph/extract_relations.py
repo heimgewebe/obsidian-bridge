@@ -57,7 +57,7 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
             if edge_key not in edge_set:
                 edge_set.add(edge_key)
                 relations.append({
-                    "id": f"edge:{frm}->{to}",
+                    "id": f"edge:{edge_key}",
                     "from": frm,
                     "to": to,
                     "relation": rel,
