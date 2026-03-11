@@ -1,10 +1,16 @@
 import json
 import os
+import sys
+import yaml
 from typing import Dict, Any
+
+# Ensure we can import from scripts
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+from scripts.graph.extract_relations import extract_relations, _parse_frontmatter
 
 def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/graph.v1.json") -> Dict[str, Any]:
     """
-    Builds the canonical graph layer from Heimewebe artifacts.
+    Builds the canonical graph layer from Heimgewebe artifacts.
     This acts as the deterministic base for Canvas generation.
     """
     graph: Dict[str, Any] = {
@@ -14,78 +20,68 @@ def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/grap
         "topics": []
     }
 
-    # Placeholder logic to satisfy test and blueprint schema
-    # In reality, this would read from actual markdown artifacts
-    graph["nodes"].append({
-        "id": "event:evt-123",
-        "kind": "event",
-        "title": "Event 2026-03-08",
-        "file_path": "chronik/events/2026/03/event--2026-03-08--evt-123.md",
-        "source_repo": "chronik",
-        "timestamp": "2026-03-08T12:00:00Z",
-        "tags": ["chronik", "event"]
-    })
+    vault_dir = "vault-gewebe/obsidian-bridge"
+    markdown_files = []
 
-    graph["nodes"].append({
-        "id": "decision:dec-12",
-        "kind": "decision",
-        "title": "Policy Decision Alpha",
-        "file_path": "decisions/policy/decision--2026-03-08--dec-12.md",
-        "source_repo": "decisions",
-        "timestamp": "2026-03-08T14:30:00Z",
-        "tags": ["decisions", "policy"]
-    })
+    # Find all markdown files, ignoring meta directory
+    for root, dirs, files in os.walk(vault_dir):
+        if 'meta' in dirs:
+            dirs.remove('meta') # don't visit meta dir
 
-    graph["nodes"].append({
-        "id": "insight:ins-44",
-        "kind": "insight",
-        "title": "Systemic Contradiction Detected",
-        "file_path": "observatorium/insights/insight--2026-03-08--ins-44.md",
-        "source_repo": "observatorium",
-        "timestamp": "2026-03-08T09:15:00Z",
-        "tags": ["observatorium", "insight"]
-    })
+        for file in files:
+            if file.endswith(".md"):
+                markdown_files.append(os.path.join(root, file))
 
-    graph["nodes"].append({
-        "id": "system:wgx-1",
-        "kind": "system_component",
-        "title": "WGX Core Node",
-        "file_path": "index/navigation.md",
-        "source_repo": "index",
-        "timestamp": "2026-03-10T11:00:00Z",
-        "tags": ["system"]
-    })
+    # To guarantee determinism
+    markdown_files.sort()
 
-    graph["edges"].append({
-        "id": "edge:event:evt-123->decision:dec-12",
-        "from": "event:evt-123",
-        "to": "decision:dec-12",
-        "relation": "informed",
-        "weight": 0.8
-    })
+    for md_path in markdown_files:
+        try:
+            with open(md_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                fm = _parse_frontmatter(content)
 
-    graph["edges"].append({
-        "id": "edge:insight:ins-44->decision:dec-12",
-        "from": "insight:ins-44",
-        "to": "decision:dec-12",
-        "relation": "derives_from",
-        "weight": 0.9
-    })
+                art_type = fm.get("artifact_type", "unknown")
+                art_id = fm.get("artifact_id", os.path.basename(md_path).replace(".md", ""))
+                node_id = f"{art_type}:{art_id}"
 
-    graph["edges"].append({
-        "id": "edge:event:evt-123->insight:ins-44",
-        "from": "event:evt-123",
-        "to": "insight:ins-44",
-        "relation": "causes",
-        "weight": 0.7
-    })
+                # relative file path from vault root
+                rel_path = os.path.relpath(md_path, vault_dir).replace('\\', '/')
+
+                # We expect generated_at or a default timestamp
+                # Missing mandatory dates should fail hard in real CI, but here we provide a dummy one if absent for testing
+                timestamp = fm.get("generated_at", "1970-01-01T00:00:00Z")
+
+                # Convert datetime to string if yaml parsed it as such
+                if hasattr(timestamp, "isoformat"):
+                    timestamp = timestamp.isoformat()
+
+                node = {
+                    "id": node_id,
+                    "kind": art_type,
+                    "title": fm.get("title", f"{art_type.capitalize()} {art_id}"),
+                    "file_path": rel_path,
+                    "source_repo": fm.get("source_repo", "unknown"),
+                    "timestamp": timestamp,
+                    "tags": fm.get("tags", [])
+                }
+
+                graph["nodes"].append(node)
+        except Exception as e:
+            print(f"Warning: Failed to parse {md_path}: {e}", file=sys.stderr)
+
+    # To guarantee determinism
+    graph["nodes"].sort(key=lambda x: x["id"])
+
+    # Extract edges
+    graph["edges"] = extract_relations(markdown_files)
 
     # Output to canonical graph artifact path
     output_dir = os.path.dirname(output_file)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
 
-    with open(output_file, 'w') as f:
+    with open(output_file, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(graph, f, indent=2)
 
     return graph

@@ -23,6 +23,42 @@
       "y": 0,
       "width": 250,
       "height": 150
+    },
+    "system_component:wgx-1": {
+      "x": 1200,
+      "y": 0,
+      "width": 250,
+      "height": 150
+    },
+    "unknown:latest": {
+      "x": 0,
+      "y": 200,
+      "width": 250,
+      "height": 150
+    },
+    "unknown:monthly": {
+      "x": 300,
+      "y": 200,
+      "width": 250,
+      "height": 150
+    },
+    "unknown:start": {
+      "x": 600,
+      "y": 200,
+      "width": 250,
+      "height": 150
+    },
+    "unknown:system-history": {
+      "x": 900,
+      "y": 200,
+      "width": 250,
+      "height": 150
+    },
+    "unknown:weekly": {
+      "x": 1200,
+      "y": 200,
+      "width": 250,
+      "height": 150
     }
   }
 }

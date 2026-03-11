@@ -32,10 +32,16 @@ class TestLayoutStability(unittest.TestCase):
         self.assertIn("node-2", layout["nodes"])
 
         node1 = layout["nodes"]["node-1"]
-        self.assertIn("x", node1)
-        self.assertIn("y", node1)
-        self.assertIn("width", node1)
-        self.assertIn("height", node1)
+        self.assertEqual(node1["x"], 0)
+        self.assertEqual(node1["y"], 0)
+        self.assertEqual(node1["width"], 250)
+        self.assertEqual(node1["height"], 150)
+
+        node2 = layout["nodes"]["node-2"]
+        self.assertEqual(node2["x"], 300)
+        self.assertEqual(node2["y"], 0)
+        self.assertEqual(node2["width"], 250)
+        self.assertEqual(node2["height"], 150)
 
     def test_stabilize_layout_keeps_existing(self):
         # Pre-populate layout file with existing node position

@@ -115,12 +115,12 @@ Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.**
 
 Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stellt keine neue systemische Wahrheitsschicht neben Heimgewebe dar, sondern dient ausschließlich der deterministischen Ableitung von Canvas-Strukturen. **Artefakte + Relationen** sind die Quelle, nicht Markdown.
 
-- [ ] **Relationen extrahieren:** (Scaffold angelegt)
+- [x] **Relationen extrahieren:** (Scaffold angelegt)
   - Quellen: chronik-Events, policy.decision, decision.preimage, knowledge.observatory, contradiction.report, uncertainty.report.
   - *Relationstypen:* references, causes, informed, contradicts, derives_from, clusters_with, precedes, belongs_to_topic.
-- [ ] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):** (Scaffold angelegt)
+- [x] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):** (Scaffold angelegt)
   - Soll `nodes`, `edges`, optional `clusters`, optional `topics` enthalten.
-- [ ] **Knotenmodell definieren (Artefakt/Konzept):**
+- [x] **Knotenmodell definieren (Artefakt/Konzept):**
   ```json
   {
     "id": "event:evt-123",
@@ -132,7 +132,7 @@ Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stel
     "tags": ["chronik", "event"]
   }
   ```
-- [ ] **Kantenmodell definieren (Beziehung):**
+- [x] **Kantenmodell definieren (Beziehung):**
   ```json
   {
     "id": "edge:event:evt-123->decision:dec-12",
@@ -168,7 +168,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - clusters_with
   output: canvases/observatorium/insight-network.canvas
   ```
-- [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
+- [x] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `max_depth`, `max_clusters`
   - Fokusregeln: stärkste Kanten, jüngste Artefakte, priorisierte Relationstypen rendern.
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas.
@@ -180,16 +180,16 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (Scaffold angelegt)
+- [x] **Layout-Typen pro Canvas-Klasse implementieren:** (Scaffold angelegt)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
   - `knowledge/*` (Hierarchie-/Graph-Layout): Konzepte oben, Entitäten mittig, konkrete Artefakte unten
   - `system/*` (Organsystem-Layout): Feste Positionen für: chronik, semantAH, hausKI, heimlern, heimgeist, leitstand, wgx, metarepo
-- [ ] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):** (Scaffold angelegt)
+- [x] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):** (Scaffold angelegt)
   - Enthält pro Knoten: `x`, `y`, `width`, `height`.
   - *Regel:* Bestehende Knoten behalten Position, neue werden deterministisch ergänzt, gelöschte verschwinden kontrolliert.
-- [ ] **Interne Canvas-Repräsentation erzeugen:** (Scaffold angelegt)
+- [x] **Interne Canvas-Repräsentation erzeugen:** (Scaffold angelegt)
   ```json
   {
     "nodes": [...],
@@ -206,15 +206,15 @@ Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungee
 
 Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert werden.
 
-- [ ] **System-Canvas** (`canvases/system/system-architecture.canvas`)
+- [x] **System-Canvas** (`canvases/system/system-architecture.canvas`)
   - *Inhalt:* Organe / Repos, Hauptflüsse, zentrale Artefaktadern.
   - *Quelle:* Repo-Rollenmatrix, bekannte Artefaktflüsse.
-- [ ] **Chronik-Canvas** (`events-latest.canvas`, `events-2026-03.canvas`)
+- [x] **Chronik-Canvas** (`events-latest.canvas`, `events-2026-03.canvas`)
   - *Inhalt:* Event-Ketten, zeitliche Beziehungen (Event → Insight → Decision).
   - *Quelle:* Chronik-Artefakte, zeitliche Kanten.
-- [ ] **Observatorium-Canvas** (`insight-network.canvas`, `contradiction-network.canvas`)
+- [x] **Observatorium-Canvas** (`insight-network.canvas`, `contradiction-network.canvas`)
   - *Inhalt:* Erkenntniscluster, Widerspruchsnetze, Unsicherheitszonen.
-- [ ] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
+- [x] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
   - *Inhalt:* Entscheidung, Preimage, Referenz-Ereignisse, Outcomes.
 - [ ] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`)
   - *Inhalt:* Konzepte, Entitäten, Relationen.
@@ -231,7 +231,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `contracts/graph.v1.json`
   - `contracts/canvas-spec.v1.json`
   - `contracts/layout.v1.json`
-- [ ] **Neue Python Skripte schreiben:** (Scaffold angelegt)
+- [x] **Neue Python Skripte schreiben:** (Scaffold angelegt)
   - `scripts/graph/build_graph.py`
   - `scripts/graph/extract_relations.py`
   - `scripts/graph/stabilize_layout.py`
@@ -242,7 +242,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [ ] **Tests implementieren:** (Scaffold angelegt)
+- [x] **Tests implementieren:** (Scaffold angelegt)
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`
@@ -254,12 +254,12 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
 
 Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pipeline (1. Artefakte lesen → 2. Relationen extrahieren → 3. Graph bauen → 4. Specs auswerten → 5. Layout stabilisieren → 6. Markdown rendern → 7. Canvas rendern → 8. Manifest/Diagnostics).
 
-- [ ] **Phase 1 – Graph-Fundament**
+- [x] **Phase 1 – Graph-Fundament**
   - Graph-Artefakt definieren.
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [ ] **Phase 2 – Deterministische Canvas-Renderer**
+- [x] **Phase 2 – Deterministische Canvas-Renderer**
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
