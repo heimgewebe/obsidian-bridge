@@ -64,8 +64,7 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         calculated_path = calculate_deterministic_path(node)
 
         if canonical_path:
-            # We skip the warning if the calculated path is identical or if it's the generic fallback (which just returns the source repo prefix)
-            if canonical_path != calculated_path and not calculated_path.startswith(node.get("source_repo", "unknown") + "/"):
+            if canonical_path != calculated_path:
                 print(f"Warning: Node {node_id} has canonical path '{canonical_path}' which differs from calculated deterministic path '{calculated_path}'. Using canonical.")
             file_path = canonical_path
         else:
@@ -99,10 +98,11 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
 
         artifact_id = node_id.split(":")[-1] if ":" in node_id else node_id
 
-        # Use the timestamp from the node for generated_at to be idempotent, fallback to current time
+        # Use the timestamp from the node for generated_at to be idempotent
+        # If timestamp is missing, raise an error to enforce strict determinism
         generated_at = node.get("timestamp")
         if not generated_at:
-            generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            raise ValueError(f"Missing timestamp for node {node_id}, cannot deterministically generate 'generated_at'.")
 
         frontmatter = {
             "artifact_type": node.get("kind", "unknown"),
