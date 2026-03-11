@@ -94,7 +94,9 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                 # Try to resolve target_path against path_to_id
                 target_id = None
 
-                # Simple heuristic: look for a path in path_to_id that ends with the target_path
+                # Simple bootstrap heuristic: suffix-based link resolution
+                # Note: This is an initial heuristic to resolve targets.
+                # Ambiguities (e.g. same filename in different dirs) are not explicitly handled yet.
                 target_path_norm = target_path if target_path.endswith(".md") else f"{target_path}.md"
 
                 for p, n_id in path_to_id.items():
