@@ -64,7 +64,10 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
 
         if canonical_path:
             if canonical_path != calculated_path:
-                print(f"Warning: Node {node_id} has canonical path '{canonical_path}' which differs from calculated deterministic path '{calculated_path}'. Using canonical.")
+                # canonical_path from the graph is the absolute source of truth.
+                # calculated_path is only used to detect architectural drift.
+                import sys
+                print(f"Warning: Node {node_id} has canonical path '{canonical_path}' which differs from calculated deterministic path '{calculated_path}'. Using canonical.", file=sys.stderr)
             file_path = canonical_path
         else:
             file_path = calculated_path

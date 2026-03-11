@@ -161,12 +161,12 @@ class TestMarkdownRender(unittest.TestCase):
         import sys
 
         captured_output = io.StringIO()
-        original_stdout = sys.stdout
+        original_stderr = sys.stderr
         try:
-            sys.stdout = captured_output
+            sys.stderr = captured_output
             render_markdown(divergent_graph_file, self.output_dir)
         finally:
-            sys.stdout = original_stdout
+            sys.stderr = original_stderr
 
         self.assertIn("Warning: Node event:evt-divergent has canonical path", captured_output.getvalue())
 
