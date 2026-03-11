@@ -3,126 +3,71 @@
     {
       "id": "decision:dec-12",
       "kind": "decision",
-      "title": "Decision dec-12",
+      "title": "Policy Decision Alpha",
       "file_path": "decisions/policy/decision--2026-03-08--dec-12.md",
       "source_repo": "decisions",
       "timestamp": "2026-03-08T14:30:00Z",
-      "tags": []
+      "tags": [
+        "decisions",
+        "policy"
+      ]
     },
     {
       "id": "event:evt-123",
       "kind": "event",
-      "title": "Event evt-123",
+      "title": "Event 2026-03-08",
       "file_path": "chronik/events/2026/03/event--2026-03-08--evt-123.md",
       "source_repo": "chronik",
       "timestamp": "2026-03-08T12:00:00Z",
-      "tags": []
+      "tags": [
+        "chronik",
+        "event"
+      ]
     },
     {
       "id": "insight:ins-44",
       "kind": "insight",
-      "title": "Insight ins-44",
+      "title": "Systemic Contradiction Detected",
       "file_path": "observatorium/insights/insight--2026-03-08--ins-44.md",
       "source_repo": "observatorium",
       "timestamp": "2026-03-08T09:15:00Z",
-      "tags": []
+      "tags": [
+        "insight",
+        "observatorium"
+      ]
     },
     {
       "id": "system_component:wgx-1",
       "kind": "system_component",
-      "title": "System_component wgx-1",
+      "title": "WGX Core Node",
       "file_path": "index/navigation.md",
       "source_repo": "index",
       "timestamp": "2026-03-10T11:00:00Z",
-      "tags": []
-    },
-    {
-      "id": "unknown:latest",
-      "kind": "unknown",
-      "title": "Unknown latest",
-      "file_path": "index/latest.md",
-      "source_repo": "unknown",
-      "timestamp": "1970-01-01T00:00:00Z",
-      "tags": []
-    },
-    {
-      "id": "unknown:monthly",
-      "kind": "unknown",
-      "title": "Unknown monthly",
-      "file_path": "chronik/timelines/monthly.md",
-      "source_repo": "unknown",
-      "timestamp": "1970-01-01T00:00:00Z",
-      "tags": []
-    },
-    {
-      "id": "unknown:start",
-      "kind": "unknown",
-      "title": "Unknown start",
-      "file_path": "index/start.md",
-      "source_repo": "unknown",
-      "timestamp": "1970-01-01T00:00:00Z",
-      "tags": []
-    },
-    {
-      "id": "unknown:system-history",
-      "kind": "unknown",
-      "title": "Unknown system-history",
-      "file_path": "chronik/rollups/system-history.md",
-      "source_repo": "unknown",
-      "timestamp": "1970-01-01T00:00:00Z",
-      "tags": []
-    },
-    {
-      "id": "unknown:weekly",
-      "kind": "unknown",
-      "title": "Unknown weekly",
-      "file_path": "chronik/timelines/weekly.md",
-      "source_repo": "unknown",
-      "timestamp": "1970-01-01T00:00:00Z",
-      "tags": []
+      "tags": [
+        "system"
+      ]
     }
   ],
   "edges": [
     {
-      "id": "edge:decision:dec-12->event:evt-123",
-      "from": "decision:dec-12",
-      "to": "event:evt-123",
-      "relation": "references",
-      "weight": 1.0
-    },
-    {
-      "id": "edge:decision:dec-12->insight:ins-44",
-      "from": "decision:dec-12",
-      "to": "insight:ins-44",
-      "relation": "references",
-      "weight": 1.0
-    },
-    {
       "id": "edge:event:evt-123->decision:dec-12",
       "from": "event:evt-123",
       "to": "decision:dec-12",
-      "relation": "references",
+      "relation": "informed",
       "weight": 1.0
     },
     {
       "id": "edge:event:evt-123->insight:ins-44",
       "from": "event:evt-123",
       "to": "insight:ins-44",
-      "relation": "references",
+      "relation": "causes",
       "weight": 1.0
     },
     {
       "id": "edge:insight:ins-44->decision:dec-12",
       "from": "insight:ins-44",
       "to": "decision:dec-12",
-      "relation": "references",
-      "weight": 1.0
-    },
-    {
-      "id": "edge:insight:ins-44->event:evt-123",
-      "from": "insight:ins-44",
-      "to": "event:evt-123",
-      "relation": "references",
+      "relation": "derives_from",
       "weight": 1.0
     }
   ],

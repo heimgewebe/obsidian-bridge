@@ -42,40 +42,71 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
         except Exception:
             pass
 
+    # Regexes for explicit relations
+    # Form 1: - **relation_type** -> [[target]]
+    rel_out_regex = re.compile(r"-\s*\*\*(.*?)\*\*\s*->\s*\[\[(.*?)\]\]")
+    # Form 2: - <- **relation_type** [[target]]
+    rel_in_regex = re.compile(r"-\s*<-\s*\*\*(.*?)\*\*\s*\[\[(.*?)\]\]")
+
     # Second pass: extract links and build edges
     edge_set = set()
+
+    def add_edge(frm: str, to: str, rel: str):
+        if frm != to:
+            edge_key = f"{frm}->{to}:{rel}"
+            if edge_key not in edge_set:
+                edge_set.add(edge_key)
+                relations.append({
+                    "id": f"edge:{frm}->{to}",
+                    "from": frm,
+                    "to": to,
+                    "relation": rel,
+                    "weight": 1.0
+                })
+
     for md_path, content in contents.items():
         source_id = path_to_id.get(md_path)
         if not source_id:
             continue
 
-        links = wikilink_regex.findall(content)
-        for link in links:
-            # Clean link (remove aliases if present e.g. [[path|alias]])
-            target_path = link.split("|")[0]
-            # Try to resolve target_path against path_to_id
-            target_id = None
+        lines = content.splitlines()
+        for line in lines:
+            # Check explicit outgoing
+            out_match = rel_out_regex.search(line)
+            in_match = rel_in_regex.search(line)
 
-            # Simple heuristic: look for a path in path_to_id that ends with the target_path
-            target_path_norm = target_path if target_path.endswith(".md") else f"{target_path}.md"
+            if out_match:
+                rel = out_match.group(1).strip()
+                target_raw = out_match.group(2)
+                links_to_process = [(target_raw, rel, "out")]
+            elif in_match:
+                rel = in_match.group(1).strip()
+                target_raw = in_match.group(2)
+                links_to_process = [(target_raw, rel, "in")]
+            else:
+                # Fallback to generic wikilinks
+                links = wikilink_regex.findall(line)
+                links_to_process = [(l, "references", "out") for l in links]
 
-            for p, n_id in path_to_id.items():
-                if p.endswith(target_path_norm):
-                    target_id = n_id
-                    break
+            for target_raw, rel, direction in links_to_process:
+                # Clean link (remove aliases if present e.g. [[path|alias]])
+                target_path = target_raw.split("|")[0]
+                # Try to resolve target_path against path_to_id
+                target_id = None
 
-            if target_id and source_id != target_id:
-                # Deduplicate edges
-                edge_key = f"{source_id}->{target_id}"
-                if edge_key not in edge_set:
-                    edge_set.add(edge_key)
-                    relations.append({
-                        "id": f"edge:{edge_key}",
-                        "from": source_id,
-                        "to": target_id,
-                        "relation": "references",
-                        "weight": 1.0
-                    })
+                # Simple heuristic: look for a path in path_to_id that ends with the target_path
+                target_path_norm = target_path if target_path.endswith(".md") else f"{target_path}.md"
+
+                for p, n_id in path_to_id.items():
+                    if p.endswith(target_path_norm):
+                        target_id = n_id
+                        break
+
+                if target_id:
+                    if direction == "out":
+                        add_edge(source_id, target_id, rel)
+                    else:
+                        add_edge(target_id, source_id, rel)
 
     # To guarantee determinism
     relations.sort(key=lambda x: x["id"])

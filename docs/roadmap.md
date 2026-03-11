@@ -168,7 +168,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - clusters_with
   output: canvases/observatorium/insight-network.canvas
   ```
-- [x] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
+- [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `max_depth`, `max_clusters`
   - Fokusregeln: stärkste Kanten, jüngste Artefakte, priorisierte Relationstypen rendern.
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas.
@@ -180,7 +180,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [x] **Layout-Typen pro Canvas-Klasse implementieren:** (Scaffold angelegt)
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (teilweise / scaffold angelegt - aktuell Grid-Layout)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
@@ -242,7 +242,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [x] **Tests implementieren:** (Scaffold angelegt)
+- [ ] **Tests implementieren:** (teilweise / scaffold angelegt)
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`

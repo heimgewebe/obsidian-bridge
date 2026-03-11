@@ -35,6 +35,8 @@ def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/grap
     # To guarantee determinism
     markdown_files.sort()
 
+    import re
+
     for md_path in markdown_files:
         try:
             with open(md_path, 'r', encoding='utf-8') as f:
@@ -48,22 +50,44 @@ def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/grap
                 # relative file path from vault root
                 rel_path = os.path.relpath(md_path, vault_dir).replace('\\', '/')
 
-                # We expect generated_at or a default timestamp
-                # Missing mandatory dates should fail hard in real CI, but here we provide a dummy one if absent for testing
-                timestamp = fm.get("generated_at", "1970-01-01T00:00:00Z")
+                # Timestamp handling
+                timestamp = fm.get("generated_at")
+                if not timestamp:
+                    # Skip files without usable date (e.g. index placeholders) to keep graph clean
+                    print(f"Warning: Skipping {md_path} due to missing generated_at", file=sys.stderr)
+                    continue
 
                 # Convert datetime to string if yaml parsed it as such
                 if hasattr(timestamp, "isoformat"):
                     timestamp = timestamp.isoformat()
 
+                # Extract title
+                title = fm.get("title")
+                if not title:
+                    h1_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
+                    title = h1_match.group(1).strip() if h1_match else f"{art_type.capitalize()} {art_id}"
+
+                # Extract tags
+                tags = fm.get("tags")
+                if tags is None:
+                    # Find body tags (exclude those in frontmatter block usually by looking for lines with `#tag`)
+                    # Using a simple lookbehind to avoid # markdown headings
+                    tags_matches = re.findall(r"(?<!^)#([a-zA-Z0-9_\-]+)", content, re.MULTILINE)
+                    # Also collect tags at the beginning of the line, as long as it isn't an H1 (e.g., #tag)
+                    # Exclude matching `# ` (which is a heading)
+                    tags_matches_start = re.findall(r"^#([a-zA-Z0-9_\-]+)", content, re.MULTILINE)
+                    tags = list(set(tags_matches + tags_matches_start))
+                elif not isinstance(tags, list):
+                    tags = []
+
                 node = {
                     "id": node_id,
                     "kind": art_type,
-                    "title": fm.get("title", f"{art_type.capitalize()} {art_id}"),
+                    "title": title,
                     "file_path": rel_path,
                     "source_repo": fm.get("source_repo", "unknown"),
                     "timestamp": timestamp,
-                    "tags": fm.get("tags", [])
+                    "tags": sorted(tags)
                 }
 
                 graph["nodes"].append(node)

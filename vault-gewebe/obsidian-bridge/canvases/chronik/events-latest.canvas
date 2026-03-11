@@ -28,5 +28,22 @@
       "file": "observatorium/insights/insight--2026-03-08--ins-44.md"
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "id": "canvas_edge_0",
+      "fromNode": "canvas_node_1",
+      "fromSide": "right",
+      "toNode": "canvas_node_0",
+      "toSide": "left",
+      "label": "informed"
+    },
+    {
+      "id": "canvas_edge_1",
+      "fromNode": "canvas_node_1",
+      "fromSide": "right",
+      "toNode": "canvas_node_2",
+      "toSide": "left",
+      "label": "causes"
+    }
+  ]
 }

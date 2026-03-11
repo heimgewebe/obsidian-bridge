@@ -10,7 +10,7 @@ def stabilize_layout(graph_path: str, layout_cache_path: str) -> Dict[str, Any]:
     Rules:
     - Existing nodes keep position
     - New nodes placed deterministically
-    - Deleted nodes are currently NOT actively cleaned up (WIP)
+    - Deleted nodes are actively cleaned up to prevent layout drift
     """
     layout: Dict[str, Any] = {"nodes": {}}
 
@@ -29,6 +29,12 @@ def stabilize_layout(graph_path: str, layout_cache_path: str) -> Dict[str, Any]:
     # Apply stable positioning (grid layout)
     # Sort nodes by ID to ensure determinism across runs
     nodes = sorted(graph.get("nodes", []), key=lambda x: x.get("id", ""))
+
+    # Prune stale nodes from layout cache to prevent layout drift
+    current_node_ids = {n.get("id") for n in nodes if n.get("id")}
+    stale_node_ids = [nid for nid in layout["nodes"].keys() if nid not in current_node_ids]
+    for nid in stale_node_ids:
+        del layout["nodes"][nid]
 
     # We use a grid to assign new positions. We need to find the next available spot.
     # For simplicity of the grid, let's keep track of an index for new nodes.
