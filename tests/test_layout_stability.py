@@ -9,6 +9,13 @@ class TestLayoutStability(unittest.TestCase):
         self.graph_file = tempfile.NamedTemporaryFile(delete=False, suffix='.json')
         self.layout_file = tempfile.NamedTemporaryFile(delete=False, suffix='.json')
 
+        # We must provide some kind information since the new stabilize_layout filters by artifact types
+        # if there are valid_types. However, for a generic default spec we don't need kind.
+        # But we also need to mock a specs_dir so it finds a dummy spec or we just let it use the fallback default spec.
+        # The fallback default spec in stabilize_layout is:
+        # [{"id": "default", "layout": "grid"}]
+        self.specs_dir = tempfile.TemporaryDirectory()
+
         graph_data = {
             "nodes": [{"id": "node-1"}, {"id": "node-2"}]
         }
@@ -17,27 +24,31 @@ class TestLayoutStability(unittest.TestCase):
             json.dump(graph_data, f)
 
     def tearDown(self):
+        self.specs_dir.cleanup()
         os.unlink(self.graph_file.name)
         os.unlink(self.layout_file.name)
 
     def test_stabilize_layout_new_nodes(self):
         # Empty layout file initially
         with open(self.layout_file.name, 'w') as f:
-            json.dump({"nodes": {}}, f)
+            json.dump({"canvases": {"default": {"nodes": {}}}}, f)
 
-        layout = stabilize_layout(self.graph_file.name, self.layout_file.name)
+        layout = stabilize_layout(self.graph_file.name, self.layout_file.name, specs_dir=self.specs_dir.name)
 
-        self.assertIn("nodes", layout)
-        self.assertIn("node-1", layout["nodes"])
-        self.assertIn("node-2", layout["nodes"])
+        self.assertIn("canvases", layout)
+        default_layout = layout["canvases"]["default"]
 
-        node1 = layout["nodes"]["node-1"]
+        self.assertIn("nodes", default_layout)
+        self.assertIn("node-1", default_layout["nodes"])
+        self.assertIn("node-2", default_layout["nodes"])
+
+        node1 = default_layout["nodes"]["node-1"]
         self.assertEqual(node1["x"], 0)
         self.assertEqual(node1["y"], 0)
         self.assertEqual(node1["width"], 250)
         self.assertEqual(node1["height"], 150)
 
-        node2 = layout["nodes"]["node-2"]
+        node2 = default_layout["nodes"]["node-2"]
         self.assertEqual(node2["x"], 300)
         self.assertEqual(node2["y"], 0)
         self.assertEqual(node2["width"], 250)
@@ -46,46 +57,56 @@ class TestLayoutStability(unittest.TestCase):
     def test_stabilize_layout_keeps_existing(self):
         # Pre-populate layout file with existing node position
         existing_layout = {
-            "nodes": {
-                "node-1": {"x": 500, "y": 600, "width": 100, "height": 100}
+            "canvases": {
+                "default": {
+                    "nodes": {
+                        "node-1": {"x": 500, "y": 600, "width": 100, "height": 100}
+                    }
+                }
             }
         }
 
         with open(self.layout_file.name, 'w') as f:
             json.dump(existing_layout, f)
 
-        layout = stabilize_layout(self.graph_file.name, self.layout_file.name)
+        layout = stabilize_layout(self.graph_file.name, self.layout_file.name, specs_dir=self.specs_dir.name)
+        default_layout = layout["canvases"]["default"]
 
         # Verify node-1 kept its position
-        self.assertEqual(layout["nodes"]["node-1"]["x"], 500)
-        self.assertEqual(layout["nodes"]["node-1"]["y"], 600)
+        self.assertEqual(default_layout["nodes"]["node-1"]["x"], 500)
+        self.assertEqual(default_layout["nodes"]["node-1"]["y"], 600)
 
         # Verify node-2 was added deterministically
-        self.assertIn("node-2", layout["nodes"])
+        self.assertIn("node-2", default_layout["nodes"])
 
     def test_stabilize_layout_removes_stale(self):
         # Pre-populate layout file with existing and stale node positions
         existing_layout = {
-            "nodes": {
-                "node-1": {"x": 500, "y": 600, "width": 100, "height": 100},
-                "stale-node": {"x": 800, "y": 900, "width": 100, "height": 100}
+            "canvases": {
+                "default": {
+                    "nodes": {
+                        "node-1": {"x": 500, "y": 600, "width": 100, "height": 100},
+                        "stale-node": {"x": 800, "y": 900, "width": 100, "height": 100}
+                    }
+                }
             }
         }
 
         with open(self.layout_file.name, 'w') as f:
             json.dump(existing_layout, f)
 
-        layout = stabilize_layout(self.graph_file.name, self.layout_file.name)
+        layout = stabilize_layout(self.graph_file.name, self.layout_file.name, specs_dir=self.specs_dir.name)
+        default_layout = layout["canvases"]["default"]
 
         # Verify stale node is removed to prevent layout drift
-        self.assertNotIn("stale-node", layout["nodes"])
-        self.assertIn("node-1", layout["nodes"])
+        self.assertNotIn("stale-node", default_layout["nodes"])
+        self.assertIn("node-1", default_layout["nodes"])
 
         # Verify node-2 doesn't "march away" due to stale node index counting
         # new_node_index should be 1, since "stale-node" is deleted before node-2 is placed.
         # grid_cols = 5, cell_width = 300, cell_height = 200
         # => x = 1 * 300 = 300, y = 0
-        node2 = layout["nodes"]["node-2"]
+        node2 = default_layout["nodes"]["node-2"]
         self.assertEqual(node2["x"], 300)
         self.assertEqual(node2["y"], 0)
 

@@ -18,10 +18,14 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         with open(graph_path, 'r') as f:
             graph = json.load(f)
 
-    layout = {"nodes": {}}
+    full_layout = {"canvases": {}}
     if os.path.exists(layout_path):
         with open(layout_path, 'r') as f:
-            layout = json.load(f)
+            full_layout = json.load(f)
+
+    # Extract the layout for the specific canvas ID, fallback to 'default' or empty
+    canvas_id = spec.get("id", "default")
+    layout = full_layout.get("canvases", {}).get(canvas_id, {"nodes": {}})
 
     # Construct neutral internal canvas representation
     canvas_model = {
