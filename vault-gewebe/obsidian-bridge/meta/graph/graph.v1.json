@@ -1,18 +1,6 @@
 {
   "nodes": [
     {
-      "id": "event:evt-123",
-      "kind": "event",
-      "title": "Event 2026-03-08",
-      "file_path": "chronik/events/2026/03/event--2026-03-08--evt-123.md",
-      "source_repo": "chronik",
-      "timestamp": "2026-03-08T12:00:00Z",
-      "tags": [
-        "chronik",
-        "event"
-      ]
-    },
-    {
       "id": "decision:dec-12",
       "kind": "decision",
       "title": "Policy Decision Alpha",
@@ -25,6 +13,18 @@
       ]
     },
     {
+      "id": "event:evt-123",
+      "kind": "event",
+      "title": "Event 2026-03-08",
+      "file_path": "chronik/events/2026/03/event--2026-03-08--evt-123.md",
+      "source_repo": "chronik",
+      "timestamp": "2026-03-08T12:00:00Z",
+      "tags": [
+        "chronik",
+        "event"
+      ]
+    },
+    {
       "id": "insight:ins-44",
       "kind": "insight",
       "title": "Systemic Contradiction Detected",
@@ -32,12 +32,12 @@
       "source_repo": "observatorium",
       "timestamp": "2026-03-08T09:15:00Z",
       "tags": [
-        "observatorium",
-        "insight"
+        "insight",
+        "observatorium"
       ]
     },
     {
-      "id": "system:wgx-1",
+      "id": "system_component:wgx-1",
       "kind": "system_component",
       "title": "WGX Core Node",
       "file_path": "index/navigation.md",
@@ -54,21 +54,21 @@
       "from": "event:evt-123",
       "to": "decision:dec-12",
       "relation": "informed",
-      "weight": 0.8
-    },
-    {
-      "id": "edge:insight:ins-44->decision:dec-12",
-      "from": "insight:ins-44",
-      "to": "decision:dec-12",
-      "relation": "derives_from",
-      "weight": 0.9
+      "weight": 1.0
     },
     {
       "id": "edge:event:evt-123->insight:ins-44",
       "from": "event:evt-123",
       "to": "insight:ins-44",
       "relation": "causes",
-      "weight": 0.7
+      "weight": 1.0
+    },
+    {
+      "id": "edge:insight:ins-44->decision:dec-12",
+      "from": "insight:ins-44",
+      "to": "decision:dec-12",
+      "relation": "derives_from",
+      "weight": 1.0
     }
   ],
   "clusters": [],

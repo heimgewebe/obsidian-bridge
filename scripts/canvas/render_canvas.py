@@ -99,7 +99,8 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     output_path = os.path.join(output_root, output_file)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    with open(output_path, 'w') as f:
+    # Use encoding='utf-8' and newline='\n' to ensure deterministic file output on all platforms
+    with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(canvas_model, f, indent=2)
 
 if __name__ == '__main__':

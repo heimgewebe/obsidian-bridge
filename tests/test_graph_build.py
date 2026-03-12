@@ -5,6 +5,8 @@ from scripts.graph.build_graph import build_graph
 
 import tempfile
 
+from unittest.mock import patch, mock_open
+
 class TestGraphBuild(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -13,20 +15,86 @@ class TestGraphBuild(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def test_build_graph_structure(self):
-        graph = build_graph(self.output_file)
+    def test_build_graph_structure_and_relations(self):
+        # We need a robust mock side_effect to return different contents for two files
+        # so we can test relations properly without reading the real file system.
+        file_contents = {
+            "vault-gewebe/obsidian-bridge/folder/test.md": """---
+artifact_type: test
+artifact_id: t-1
+generated_at: 2026-03-08T12:00:00Z
+---
+# Real Extracted Title
+
+This is a test node with an explicit relation.
+- **causes** -> [[target.md]]
+- <- **informed** [[target2.md]]
+- **references** -> [[target.md]]
+#hashtag_one #hashtag_two
+""",
+            "vault-gewebe/obsidian-bridge/folder/target.md": """---
+artifact_type: target
+artifact_id: tg-1
+generated_at: 2026-03-08T13:00:00Z
+---
+# Target Node
+This node receives the cause.
+""",
+            "vault-gewebe/obsidian-bridge/folder/target2.md": """---
+artifact_type: target
+artifact_id: tg-2
+generated_at: 2026-03-08T14:00:00Z
+---
+# Target Node 2
+This node informs the test node.
+"""
+        }
+
+        def mock_open_side_effect(path, *args, **kwargs):
+            return mock_open(read_data=file_contents.get(path, ""))()
+
+        with patch('os.walk') as mock_walk, \
+             patch('builtins.open', side_effect=mock_open_side_effect), \
+             patch('scripts.graph.build_graph.os.path.relpath', side_effect=lambda path, start: path.replace("vault-gewebe/obsidian-bridge/", "")):
+
+            mock_walk.return_value = [
+                ("vault-gewebe/obsidian-bridge/folder", [], ["test.md", "target.md", "target2.md"])
+            ]
+
+            graph = build_graph(self.output_file)
+
         self.assertIn("nodes", graph)
         self.assertIn("edges", graph)
-        self.assertIsInstance(graph["nodes"], list)
-        self.assertIsInstance(graph["edges"], list)
 
-        # Test basic schema fields from the blueprint
-        node = graph["nodes"][0]
-        self.assertIn("id", node)
-        self.assertIn("kind", node)
-        self.assertIn("file_path", node)
+        self.assertEqual(len(graph["nodes"]), 3)
 
-    def test_graph_artifact_creation(self):
+        # Test title and tag parsing from body
+        test_node = next(n for n in graph["nodes"] if n["id"] == "test:t-1")
+        self.assertEqual(test_node["title"], "Real Extracted Title")
+        self.assertIn("hashtag_one", test_node["tags"])
+        self.assertIn("hashtag_two", test_node["tags"])
+
+        # Test explicit relations extraction
+        edges = graph["edges"]
+
+        # Ensure 'causes' edge is extracted correctly
+        causes_edges = [e for e in edges if e["from"] == "test:t-1" and e["to"] == "target:tg-1" and e["relation"] == "causes"]
+        self.assertEqual(len(causes_edges), 1)
+        self.assertEqual(causes_edges[0]["id"], "edge:test:t-1->target:tg-1:causes")
+
+        # Ensure 'informed' incoming edge is extracted correctly and direction reversed correctly
+        informed_edges = [e for e in edges if e["from"] == "target:tg-2" and e["to"] == "test:t-1" and e["relation"] == "informed"]
+        self.assertEqual(len(informed_edges), 1)
+        self.assertEqual(informed_edges[0]["id"], "edge:target:tg-2->test:t-1:informed")
+
+        # Ensure distinct edges between same nodes have distinct IDs
+        ref_edges = [e for e in edges if e["from"] == "test:t-1" and e["to"] == "target:tg-1" and e["relation"] == "references"]
+        self.assertEqual(len(ref_edges), 1)
+        self.assertEqual(ref_edges[0]["id"], "edge:test:t-1->target:tg-1:references")
+
+    @patch('scripts.graph.build_graph.os.walk')
+    def test_graph_artifact_creation(self, mock_walk):
+        mock_walk.return_value = [] # Empty directory simulation
         build_graph(self.output_file)
         self.assertTrue(os.path.exists(self.output_file))
 

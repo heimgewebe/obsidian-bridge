@@ -18,8 +18,8 @@
       "width": 250,
       "height": 150
     },
-    "system:wgx-1": {
-      "x": 300,
+    "system_component:wgx-1": {
+      "x": 1200,
       "y": 0,
       "width": 250,
       "height": 150

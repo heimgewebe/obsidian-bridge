@@ -32,10 +32,16 @@ class TestLayoutStability(unittest.TestCase):
         self.assertIn("node-2", layout["nodes"])
 
         node1 = layout["nodes"]["node-1"]
-        self.assertIn("x", node1)
-        self.assertIn("y", node1)
-        self.assertIn("width", node1)
-        self.assertIn("height", node1)
+        self.assertEqual(node1["x"], 0)
+        self.assertEqual(node1["y"], 0)
+        self.assertEqual(node1["width"], 250)
+        self.assertEqual(node1["height"], 150)
+
+        node2 = layout["nodes"]["node-2"]
+        self.assertEqual(node2["x"], 300)
+        self.assertEqual(node2["y"], 0)
+        self.assertEqual(node2["width"], 250)
+        self.assertEqual(node2["height"], 150)
 
     def test_stabilize_layout_keeps_existing(self):
         # Pre-populate layout file with existing node position
@@ -56,6 +62,32 @@ class TestLayoutStability(unittest.TestCase):
 
         # Verify node-2 was added deterministically
         self.assertIn("node-2", layout["nodes"])
+
+    def test_stabilize_layout_removes_stale(self):
+        # Pre-populate layout file with existing and stale node positions
+        existing_layout = {
+            "nodes": {
+                "node-1": {"x": 500, "y": 600, "width": 100, "height": 100},
+                "stale-node": {"x": 800, "y": 900, "width": 100, "height": 100}
+            }
+        }
+
+        with open(self.layout_file.name, 'w') as f:
+            json.dump(existing_layout, f)
+
+        layout = stabilize_layout(self.graph_file.name, self.layout_file.name)
+
+        # Verify stale node is removed to prevent layout drift
+        self.assertNotIn("stale-node", layout["nodes"])
+        self.assertIn("node-1", layout["nodes"])
+
+        # Verify node-2 doesn't "march away" due to stale node index counting
+        # new_node_index should be 1, since "stale-node" is deleted before node-2 is placed.
+        # grid_cols = 5, cell_width = 300, cell_height = 200
+        # => x = 1 * 300 = 300, y = 0
+        node2 = layout["nodes"]["node-2"]
+        self.assertEqual(node2["x"], 300)
+        self.assertEqual(node2["y"], 0)
 
 if __name__ == '__main__':
     unittest.main()

@@ -14,6 +14,9 @@ def render_all_canvases(specs_dir: str, graph_path: str, layout_path: str) -> No
     """
     specs = glob.glob(os.path.join(specs_dir, '*.yaml'))
 
+    # Sort for determinism
+    specs.sort()
+
     for spec_path in specs:
         print(f"Rendering canvas from spec: {spec_path}")
         render_canvas(spec_path, graph_path, layout_path)
