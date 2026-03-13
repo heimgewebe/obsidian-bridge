@@ -3,6 +3,8 @@ import glob
 import sys
 
 # Ensure the scripts package can be found if executed directly
+# Note: temporary bootstrap import path hack; replace with proper package/module execution later
+# Preferred execution: python3 -m scripts.canvas.render_all_canvases
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from scripts.canvas.render_canvas import render_canvas
