@@ -131,5 +131,11 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(len(canvas["nodes"]), 3)
         self.assertEqual(len(canvas["edges"]), 2)
 
+        # Ensure all rendered edges only connect to nodes that exist in the canvas
+        canvas_node_ids = {node["id"] for node in canvas["nodes"]}
+        for edge in canvas["edges"]:
+            self.assertIn(edge["fromNode"], canvas_node_ids)
+            self.assertIn(edge["toNode"], canvas_node_ids)
+
 if __name__ == '__main__':
     unittest.main()
