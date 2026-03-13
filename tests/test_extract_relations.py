@@ -12,7 +12,7 @@ artifact_type: test
 artifact_id: src
 ---
 - **causes** -> [[exact_target.md]]
-- **informed** -> [[vault-gewebe/obsidian-bridge/folder2/exact_target.md]]
+- **informed** -> [[folder2/exact_target.md]]
 - **references** -> [[ambiguous_target.md]]
 """,
             "vault-gewebe/obsidian-bridge/folder1/exact_target.md": """---
@@ -57,7 +57,7 @@ artifact_id: t-4
         # Resolution rules under test:
         # - Links that match multiple files by basename (e.g. [[exact_target.md]])
         #   are treated as ambiguous and do not produce an edge.
-        # - Links with an explicit folder-qualified path (e.g. [[vault-gewebe/obsidian-bridge/folder2/exact_target.md]])
+        # - Links with an explicit folder-qualified path (e.g. [[folder2/exact_target.md]])
         #   resolve uniquely even if the basename exists in multiple folders.
         # - Ambiguous links emit a warning and no relation edge is created.
 
@@ -74,7 +74,7 @@ artifact_id: t-4
 artifact_type: test
 artifact_id: src
 ---
-- **causes** -> [[vault-gewebe/obsidian-bridge/folder1/target.md]]
+- **causes** -> [[folder1/target.md]]
 """,
             "vault-gewebe/obsidian-bridge/folder1/target.md": """---
 artifact_type: test

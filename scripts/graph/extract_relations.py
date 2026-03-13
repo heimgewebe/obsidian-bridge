@@ -29,6 +29,9 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
 
     import sys
 
+    # Vault-relative paths are canonical.
+    vault_prefix = "vault-gewebe/obsidian-bridge/"
+
     for md_path in markdown_paths:
         try:
             with open(md_path, 'r', encoding='utf-8') as f:
@@ -43,6 +46,10 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
 
                 # Normalize to use forward slashes
                 norm_path = md_path.replace('\\', '/')
+                # Strip prefix to store vault-relative paths
+                if norm_path.startswith(vault_prefix):
+                    norm_path = norm_path[len(vault_prefix):]
+
                 path_to_id[norm_path] = node_id
 
                 # Also map basename for fallback resolution
@@ -78,6 +85,9 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
 
     for md_path, content in contents.items():
         norm_md_path = md_path.replace('\\', '/')
+        if norm_md_path.startswith(vault_prefix):
+            norm_md_path = norm_md_path[len(vault_prefix):]
+
         source_id = path_to_id.get(norm_md_path)
         if not source_id:
             continue
@@ -108,6 +118,8 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                 target_id = None
 
                 normalized_target_path = os.path.normpath(target_path).replace("\\", "/").lstrip("./")
+                if normalized_target_path.startswith(vault_prefix):
+                    normalized_target_path = normalized_target_path[len(vault_prefix):]
 
                 # 1. Exact path match
                 exact_match_candidates = [
