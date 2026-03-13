@@ -5,12 +5,19 @@ import glob
 import math
 from typing import Dict, Any, List
 
+import sys
+
 def _get_canvas_specs(specs_dir: str) -> List[Dict[str, Any]]:
     specs = []
     if os.path.exists(specs_dir):
         for spec_path in sorted(glob.glob(os.path.join(specs_dir, '*.yaml'))):
             with open(spec_path, 'r', encoding='utf-8') as f:
-                specs.append(yaml.safe_load(f))
+                spec = yaml.safe_load(f)
+                if isinstance(spec, dict):
+                    specs.append(spec)
+                else:
+                    if spec is not None:
+                        print(f"Warning: Skipping {spec_path} as it does not contain a valid YAML dictionary.", file=sys.stderr)
     return specs
 
 def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "config/canvas-specs") -> Dict[str, Any]:
@@ -62,6 +69,12 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
                 continue
             relevant_nodes.append(n)
 
+        # Spec-specific pruning: remove nodes that are no longer relevant to this canvas
+        relevant_node_ids = {n["id"] for n in relevant_nodes if n.get("id")}
+        irrelevant_node_ids = [nid for nid in canvas_layout["nodes"].keys() if nid not in relevant_node_ids]
+        for nid in irrelevant_node_ids:
+            del canvas_layout["nodes"][nid]
+
         # Add new nodes deterministically depending on layout_type
         # For simplicity, we implement a naive version of the requested layout types
 
@@ -72,10 +85,12 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
             # Sort by timestamp
             new_nodes.sort(key=lambda x: x.get("timestamp", ""))
 
-            # Group by kind
+            # Group by kind deterministically
             kind_offsets = {}
-            for kind in set(n.get("kind", "unknown") for n in relevant_nodes):
-                kind_offsets[kind] = len(kind_offsets) * 300
+            for n in relevant_nodes:
+                kind = n.get("kind", "unknown")
+                if kind not in kind_offsets:
+                    kind_offsets[kind] = len(kind_offsets) * 300
 
             x_offset = len(canvas_layout["nodes"]) * 350
             for n in new_nodes:

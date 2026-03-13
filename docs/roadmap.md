@@ -180,7 +180,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [x] **Layout-Typen pro Canvas-Klasse implementieren:** (teilweise / scaffold angelegt - aktuell Grid-Layout)
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (Grundformen / Scaffold angelegt - noch rudimentär)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
@@ -259,7 +259,7 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [x] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Layout-Klassen fehlen noch)
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.

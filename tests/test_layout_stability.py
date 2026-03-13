@@ -9,11 +9,11 @@ class TestLayoutStability(unittest.TestCase):
         self.graph_file = tempfile.NamedTemporaryFile(delete=False, suffix='.json')
         self.layout_file = tempfile.NamedTemporaryFile(delete=False, suffix='.json')
 
-        # We must provide some kind information since the new stabilize_layout filters by artifact types
-        # if there are valid_types. However, for a generic default spec we don't need kind.
-        # But we also need to mock a specs_dir so it finds a dummy spec or we just let it use the fallback default spec.
-        # The fallback default spec in stabilize_layout is:
+        # Wir stellen ein temporäres specs_dir bereit, erzeugen darin aber keine Specs.
+        # Deshalb greift in stabilize_layout der eingebaute Fallback-Spec:
         # [{"id": "default", "layout": "grid"}]
+        # Da dieser Fallback-Spec keine artifact_types-Filter definiert,
+        # ist im Testgraphen kein 'kind'-Attribut bei den Nodes zwingend nötig.
         self.specs_dir = tempfile.TemporaryDirectory()
 
         graph_data = {
@@ -109,6 +109,23 @@ class TestLayoutStability(unittest.TestCase):
         node2 = default_layout["nodes"]["node-2"]
         self.assertEqual(node2["x"], 300)
         self.assertEqual(node2["y"], 0)
+
+    def test_stabilize_layout_robustness_empty_spec(self):
+        """Test that empty or comment-only YAML spec files do not crash the layout generation."""
+        empty_spec_file = os.path.join(self.specs_dir.name, 'empty.yaml')
+        with open(empty_spec_file, 'w') as f:
+            f.write("# Just a comment\n")
+
+        with open(self.layout_file.name, 'w') as f:
+            json.dump({"canvases": {"default": {"nodes": {}}}}, f)
+
+        # Should not raise any exceptions despite the empty/comment-only YAML
+        layout = stabilize_layout(self.graph_file.name, self.layout_file.name, specs_dir=self.specs_dir.name)
+
+        self.assertIn("canvases", layout)
+        default_layout = layout["canvases"]["default"]
+        self.assertIn("nodes", default_layout)
+        self.assertIn("node-1", default_layout["nodes"])
 
 if __name__ == '__main__':
     unittest.main()
