@@ -5,6 +5,7 @@ from typing import Dict, Any
 
 # Ensure we can import from scripts
 # Note: temporary bootstrap import path hack; replace with proper package/module execution later
+# Preferred execution: python3 -m scripts.graph.build_graph
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 from scripts.graph.extract_relations import extract_relations, _parse_frontmatter
 

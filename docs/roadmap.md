@@ -118,6 +118,7 @@ Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stel
 - [ ] **Relationen extrahieren:** (teilweise / Scaffold angelegt - Basisfunktion da, keine vollständige Taxonomie-Abdeckung)
   - Quellen: chronik-Events, policy.decision, decision.preimage, knowledge.observatory, contradiction.report, uncertainty.report.
   - *Relationstypen:* references, causes, informed, contradicts, derives_from, clusters_with, precedes, belongs_to_topic.
+  - *Auflösung:* Deterministische Link-Auflösung mit Priorität (exakter Pfad > basename). Mehrdeutigkeiten erzeugen Warnungen statt stiller Fehler.
 - [x] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):** (Scaffold angelegt)
   - Soll `nodes`, `edges`, optional `clusters`, optional `topics` enthalten.
 - [x] **Knotenmodell definieren (Artefakt/Konzept):**

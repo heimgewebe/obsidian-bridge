@@ -24,7 +24,13 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
     # Map normalized file paths to artifact_id to create edges properly
     # First pass: map paths to IDs
     path_to_id = {}
+    basename_to_paths = {}
     contents = {}
+
+    import sys
+
+    # Vault-relative paths are canonical.
+    vault_prefix = "vault-gewebe/obsidian-bridge/"
 
     for md_path in markdown_paths:
         try:
@@ -38,7 +44,20 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                 art_id = fm.get("artifact_id", os.path.basename(md_path).replace(".md", ""))
                 node_id = f"{art_type}:{art_id}"
 
-                path_to_id[md_path] = node_id
+                # Normalize to use forward slashes
+                norm_path = md_path.replace('\\', '/')
+                # Strip prefix to store vault-relative paths
+                if norm_path.startswith(vault_prefix):
+                    norm_path = norm_path[len(vault_prefix):]
+
+                path_to_id[norm_path] = node_id
+
+                # Also map basename for fallback resolution
+                basename = os.path.basename(norm_path)
+                if basename not in basename_to_paths:
+                    basename_to_paths[basename] = []
+                basename_to_paths[basename].append(norm_path)
+
         except Exception:
             pass
 
@@ -65,7 +84,11 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                 })
 
     for md_path, content in contents.items():
-        source_id = path_to_id.get(md_path)
+        norm_md_path = md_path.replace('\\', '/')
+        if norm_md_path.startswith(vault_prefix):
+            norm_md_path = norm_md_path[len(vault_prefix):]
+
+        source_id = path_to_id.get(norm_md_path)
         if not source_id:
             continue
 
@@ -94,15 +117,46 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                 # Try to resolve target_path against path_to_id
                 target_id = None
 
-                # Simple bootstrap heuristic: suffix-based link resolution
-                # Note: This is an initial heuristic to resolve targets.
-                # Ambiguities (e.g. same filename in different dirs) are not explicitly handled yet.
-                target_path_norm = target_path if target_path.endswith(".md") else f"{target_path}.md"
+                normalized_target_path = os.path.normpath(target_path).replace("\\", "/").lstrip("./")
+                if normalized_target_path.startswith(vault_prefix):
+                    normalized_target_path = normalized_target_path[len(vault_prefix):]
 
-                for p, n_id in path_to_id.items():
-                    if p.endswith(target_path_norm):
-                        target_id = n_id
-                        break
+                # 1. Exact path match
+                exact_match_candidates = [
+                    p for p in path_to_id
+                    if p == normalized_target_path
+                ]
+
+                # 2. Exact path + .md match
+                target_path_md = normalized_target_path if normalized_target_path.endswith(".md") else f"{normalized_target_path}.md"
+                exact_md_match_candidates = [
+                    p for p in path_to_id
+                    if p == target_path_md
+                ]
+
+                # 3. Basename match
+                basename = os.path.basename(target_path_md)
+                basename_match_candidates = basename_to_paths.get(basename, [])
+
+                # Resolution logic:
+                if len(exact_match_candidates) == 1:
+                    target_id = path_to_id[exact_match_candidates[0]]
+                elif len(exact_match_candidates) > 1:
+                    candidates_str = ", ".join(exact_match_candidates)
+                    print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
+                    continue
+                elif len(exact_md_match_candidates) == 1:
+                    target_id = path_to_id[exact_md_match_candidates[0]]
+                elif len(exact_md_match_candidates) > 1:
+                    candidates_str = ", ".join(exact_md_match_candidates)
+                    print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
+                    continue
+                elif len(basename_match_candidates) == 1:
+                    target_id = path_to_id[basename_match_candidates[0]]
+                elif len(basename_match_candidates) > 1:
+                    candidates_str = ", ".join(basename_match_candidates)
+                    print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
+                    continue
 
                 if target_id:
                     if direction == "out":
