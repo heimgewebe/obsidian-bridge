@@ -2,8 +2,8 @@
   "nodes": [
     {
       "id": "canvas_node_3",
-      "x": 1200,
-      "y": 0,
+      "x": 0,
+      "y": 800,
       "width": 250,
       "height": 150,
       "type": "file",

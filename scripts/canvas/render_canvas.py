@@ -21,7 +21,15 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     layout = {"nodes": {}}
     if os.path.exists(layout_path):
         with open(layout_path, 'r') as f:
-            layout = json.load(f)
+            raw_layout = json.load(f)
+
+            if isinstance(raw_layout, dict) and "canvases" in raw_layout:
+                canvas_id = spec.get("id", "default")
+                layout = raw_layout.get("canvases", {}).get(canvas_id, {"nodes": {}})
+            elif isinstance(raw_layout, dict) and "nodes" in raw_layout:
+                layout = {"nodes": raw_layout["nodes"]}
+            else:
+                layout = {"nodes": {}}
 
     # Construct neutral internal canvas representation
     canvas_model = {
