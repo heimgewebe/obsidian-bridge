@@ -94,5 +94,42 @@ class TestCanvasRender(unittest.TestCase):
 
         self.assertEqual(len(canvas["nodes"]), 2)
 
+    def test_render_canvas_edge_limit(self):
+        # Create a graph with 3 nodes and 3 edges
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt1.md"},
+                {"id": "evt-2", "kind": "event", "file_path": "chronik/evt2.md"},
+                {"id": "evt-3", "kind": "event", "file_path": "chronik/evt3.md"}
+            ],
+            "edges": [
+                {"id": "edge-1", "from": "evt-1", "to": "evt-2", "relation": "references"},
+                {"id": "edge-2", "from": "evt-2", "to": "evt-3", "relation": "references"},
+                {"id": "edge-3", "from": "evt-3", "to": "evt-1", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Spec limits to 2 edges
+        spec_data = {
+            "id": "test-edge-limit",
+            "type": "chronik",
+            "output": "canvases/edge-limit.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"max_edges": 2}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/edge-limit.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 3)
+        self.assertEqual(len(canvas["edges"]), 2)
+
 if __name__ == '__main__':
     unittest.main()

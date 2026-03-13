@@ -8,5 +8,4 @@ source:
 layout: timeline
 filters:
   max_nodes: 40
-  date_window_days: 7
 output: canvases/index/latest.canvas
