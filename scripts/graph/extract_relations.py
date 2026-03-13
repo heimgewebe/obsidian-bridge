@@ -103,16 +103,24 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
 
             for target_raw, rel, direction in links_to_process:
                 # Clean link (remove aliases if present e.g. [[path|alias]])
-                target_path = target_raw.split("|")[0].replace('\\', '/')
+                target_path = target_raw.split("|")[0]
                 # Try to resolve target_path against path_to_id
                 target_id = None
 
+                normalized_target_path = os.path.normpath(target_path).replace("\\", "/").lstrip("./")
+
                 # 1. Exact path match
-                exact_match_candidates = [p for p in path_to_id if p.endswith("/" + target_path) or p == target_path]
+                exact_match_candidates = [
+                    p for p in path_to_id
+                    if p == normalized_target_path
+                ]
 
                 # 2. Exact path + .md match
-                target_path_md = target_path if target_path.endswith(".md") else f"{target_path}.md"
-                exact_md_match_candidates = [p for p in path_to_id if p.endswith("/" + target_path_md) or p == target_path_md]
+                target_path_md = normalized_target_path if normalized_target_path.endswith(".md") else f"{normalized_target_path}.md"
+                exact_md_match_candidates = [
+                    p for p in path_to_id
+                    if p == target_path_md
+                ]
 
                 # 3. Basename match
                 basename = os.path.basename(target_path_md)
