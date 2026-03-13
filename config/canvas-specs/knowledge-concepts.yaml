@@ -1,0 +1,14 @@
+id: knowledge-concept-network
+type: knowledge
+source:
+  artifact_types:
+    - concept
+layout: cluster
+filters:
+  max_nodes: 80
+  max_edges: 150
+relations:
+  - references
+  - clusters_with
+  - derives_from
+output: canvases/knowledge/concept-network.canvas

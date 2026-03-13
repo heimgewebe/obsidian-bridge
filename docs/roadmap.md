@@ -169,7 +169,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - clusters_with
   output: canvases/observatorium/insight-network.canvas
   ```
-- [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
+- [x] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `max_depth`, `max_clusters`
   - Fokusregeln: stärkste Kanten, jüngste Artefakte, priorisierte Relationstypen rendern.
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas.
@@ -217,9 +217,9 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - *Inhalt:* Erkenntniscluster, Widerspruchsnetze, Unsicherheitszonen.
 - [x] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
   - *Inhalt:* Entscheidung, Preimage, Referenz-Ereignisse, Outcomes.
-- [ ] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`)
+- [x] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`)
   - *Inhalt:* Konzepte, Entitäten, Relationen.
-- [ ] **Index- und Hub-Canvas**
+- [x] **Index- und Hub-Canvas**
   - **Root-Canvas** (`canvases/index/root.canvas`): Knoten für System, Chronik, Observatorium, Decisions, Knowledge, Latest. Dient als Start-Mindmap.
   - **Topic-Hubs** (`topic--chronik.canvas`, `topic--observatorium.canvas`): Thematische Navigation, Einstieg in Untergraphen.
   - **Latest-Canvas** (`canvases/index/latest.canvas`).
