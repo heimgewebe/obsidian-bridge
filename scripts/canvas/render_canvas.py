@@ -4,7 +4,7 @@ import yaml
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
 
-def _parse_timestamp_utc(ts_str: str) -> Optional[datetime]:
+def _parse_timestamp_utc(ts_str: Optional[str]) -> Optional[datetime]:
     if not ts_str:
         return None
     try:

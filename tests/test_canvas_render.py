@@ -169,8 +169,8 @@ class TestCanvasRender(unittest.TestCase):
         with open(output_path, 'r') as f:
             canvas = json.load(f)
 
-        # Should only include mid and new, but since mid is 2026-03-01, it is within 10 days of 2026-03-08. Wait, 08 - 10 = -2 days... actually Feb 26.
-        # So mid is included, new is included. old (Feb 01) is excluded.
+        # The cutoff date is 2026-03-08 minus 10 days (2026-02-26).
+        # Therefore, 'mid' (2026-03-01) and 'new' (2026-03-08) are included, while 'old' (2026-02-01) is excluded.
         self.assertEqual(len(canvas["nodes"]), 2)
         node_files = [n["file"] for n in canvas["nodes"]]
         self.assertIn("chronik/mid.md", node_files)
