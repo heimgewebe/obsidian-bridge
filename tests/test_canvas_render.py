@@ -274,6 +274,81 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a non-negative integer", str(context.exception))
 
+    def test_render_canvas_max_depth(self):
+        graph_data = {
+            "nodes": [
+                {"id": "root", "kind": "concept", "file_path": "root.md"},
+                {"id": "child1", "kind": "concept", "file_path": "child1.md"},
+                {"id": "child2", "kind": "concept", "file_path": "child2.md"},
+                {"id": "grandchild", "kind": "concept", "file_path": "grandchild.md"}
+            ],
+            "edges": [
+                {"id": "e1", "from": "root", "to": "child1", "relation": "references"},
+                {"id": "e2", "from": "root", "to": "child2", "relation": "references"},
+                {"id": "e3", "from": "child1", "to": "grandchild", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-depth",
+            "type": "knowledge",
+            "output": "canvases/depth.canvas",
+            "source": {"artifact_types": ["concept"]},
+            "relations": ["references"],
+            "filters": {"max_depth": 1}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/depth.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 3)
+        node_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("root.md", node_files)
+        self.assertIn("child1.md", node_files)
+        self.assertIn("child2.md", node_files)
+        self.assertNotIn("grandchild.md", node_files)
+
+    def test_render_canvas_max_clusters(self):
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "concept", "file_path": "n1.md", "tags": ["clusterA"]},
+                {"id": "n2", "kind": "concept", "file_path": "n2.md", "tags": ["clusterA"]},
+                {"id": "n3", "kind": "concept", "file_path": "n3.md", "tags": ["clusterB"]},
+                {"id": "n4", "kind": "concept", "file_path": "n4.md", "tags": ["clusterC"]}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-clusters",
+            "type": "knowledge",
+            "output": "canvases/clusters.canvas",
+            "source": {"artifact_types": ["concept"]},
+            "filters": {"max_clusters": 2}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/clusters.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        # clusterA has 2 nodes, clusterB and clusterC have 1 node.
+        # Since ties are broken arbitrarily (alphabetical here due to dict sorting in python),
+        # clusterA and clusterB should be selected, or clusterA and clusterC.
+        # Either way, exactly 3 nodes should be rendered.
+        self.assertEqual(len(canvas["nodes"]), 3)
 
 if __name__ == '__main__':
     unittest.main()

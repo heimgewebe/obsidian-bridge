@@ -144,6 +144,45 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
                 }
                 tag_offsets[primary_tag]["y"] += 200
 
+        elif layout_type == "hierarchy":
+            # Konzepte oben, Entitäten mittig, konkrete Artefakte unten
+            # Group by kind deterministically
+            hierarchy_levels = {
+                "concept": 0,
+                "entity": 400,
+            }
+            # Any other kind goes to bottom (800+)
+
+            x_offsets = {
+                "concept": 0,
+                "entity": 0,
+                "other": 0
+            }
+
+            for n in new_nodes:
+                nid = n["id"]
+                kind = n.get("kind", "unknown")
+
+                if kind == "concept":
+                    y = hierarchy_levels["concept"]
+                    x = x_offsets["concept"]
+                    x_offsets["concept"] += 350
+                elif kind == "entity":
+                    y = hierarchy_levels["entity"]
+                    x = x_offsets["entity"]
+                    x_offsets["entity"] += 350
+                else:
+                    y = 800
+                    x = x_offsets["other"]
+                    x_offsets["other"] += 350
+
+                canvas_layout["nodes"][nid] = {
+                    "x": x,
+                    "y": y,
+                    "width": 250,
+                    "height": 150
+                }
+
         elif layout_type == "organsystem":
             # Feste Positionen für: chronik, semantAH, hausKI, heimlern, heimgeist, leitstand, wgx, metarepo
             fixed_positions = {
