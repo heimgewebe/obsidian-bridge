@@ -39,6 +39,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
     # Apply filters (Guards)
     max_nodes = spec.get("filters", {}).get("max_nodes", 100)
+    max_edges = spec.get("filters", {}).get("max_edges", 200)
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
 
@@ -84,10 +85,14 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         added_nodes += 1
 
     # Process edges
+    added_edges = 0
     for i, edge in enumerate(graph.get("edges", [])):
         from_id = edge.get("from")
         to_id = edge.get("to")
         relation = edge.get("relation")
+
+        if added_edges >= max_edges:
+            break
 
         if valid_relations and relation not in valid_relations:
             continue
@@ -101,6 +106,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
                 "toSide": "left",
                 "label": relation
             })
+            added_edges += 1
 
     # Write output
     output_file = spec.get("output", f"canvases/{spec.get('id', 'default')}.canvas")

@@ -1,0 +1,12 @@
+id: index-root
+type: index
+source:
+  artifact_types:
+    - system_component
+    - topic
+    - rollups
+layout: cluster
+filters:
+  max_nodes: 50
+  max_edges: 100
+output: canvases/index/root.canvas

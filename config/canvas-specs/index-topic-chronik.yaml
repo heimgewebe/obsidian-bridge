@@ -1,0 +1,14 @@
+id: index-topic-chronik
+type: index
+source:
+  artifact_types:
+    - event
+    - timeline
+    - rollups
+layout: timeline
+filters:
+  max_nodes: 100
+relations:
+  - precedes
+  - references
+output: canvases/index/topic--chronik.canvas

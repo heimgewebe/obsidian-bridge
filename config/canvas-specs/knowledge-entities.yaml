@@ -1,0 +1,13 @@
+id: knowledge-entity-network
+type: knowledge
+source:
+  artifact_types:
+    - entity
+layout: cluster
+filters:
+  max_nodes: 80
+  max_edges: 150
+relations:
+  - references
+  - belongs_to_topic
+output: canvases/knowledge/entity-network.canvas

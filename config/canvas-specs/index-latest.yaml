@@ -1,0 +1,11 @@
+id: index-latest
+type: index
+source:
+  artifact_types:
+    - event
+    - insight
+    - decision
+layout: timeline
+filters:
+  max_nodes: 40
+output: canvases/index/latest.canvas
