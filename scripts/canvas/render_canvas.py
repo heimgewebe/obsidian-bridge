@@ -40,8 +40,33 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     # Apply filters (Guards)
     max_nodes = spec.get("filters", {}).get("max_nodes", 100)
     max_edges = spec.get("filters", {}).get("max_edges", 200)
+    date_window_days = spec.get("filters", {}).get("date_window_days")
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
+
+    from datetime import datetime, timezone, timedelta
+
+    cutoff_date = None
+    if date_window_days is not None:
+        # We need a reference date. To be deterministic, we should perhaps use the max date in the graph.
+        # However, a common approach is current time.
+        # But wait, the system memory says:
+        # "Markdown file generation must be idempotent to prevent Git churn; dynamic fields like `generated_at` should use the canonical graph node's timestamp rather than the current system time."
+        # If we use the system time for date_window_days, the canvas will change every day!
+        # Let's find the maximum timestamp in the graph's relevant nodes to be our "now",
+        # or just use the current time but be aware of churn. Let's use max timestamp in graph.
+        max_ts = None
+        for n in graph.get("nodes", []):
+            ts_str = n.get("timestamp")
+            if ts_str:
+                try:
+                    ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                    if max_ts is None or ts > max_ts:
+                        max_ts = ts
+                except ValueError:
+                    pass
+        if max_ts:
+            cutoff_date = max_ts - timedelta(days=date_window_days)
 
     # Process nodes up to max_nodes
     added_nodes = 0
@@ -55,6 +80,19 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
         if valid_types and node.get("kind") not in valid_types:
             continue
+
+        if cutoff_date is not None:
+            ts_str = node.get("timestamp")
+            if ts_str:
+                try:
+                    node_ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                    if node_ts < cutoff_date:
+                        continue
+                except ValueError:
+                    continue
+            else:
+                # If no timestamp and we have a window, skip
+                continue
 
         if added_nodes >= max_nodes:
             break
