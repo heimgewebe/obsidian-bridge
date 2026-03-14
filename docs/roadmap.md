@@ -16,16 +16,16 @@
 
 Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-Notizen und generiert automatisch Canvas-Modelle zur visuellen Exploration des zugrunde liegenden Artefakt-Graphen.
 
-- [x] **Rollen im System trennen:**
+- [ ] **Rollen im System trennen:**
   - **Heimgewebe:** Artefakte erzeugen.
   - **Leitstand:** Systemzustand darstellen (operativ).
   - **Obsidian-Bridge:** Artefakte in Wissensraum überführen.
   - **Obsidian:** Semantische Exploration (epistemisch).
   - *Rationale:* Die Bridge erzeugt keine Wahrheitsschicht, sondern einen explorativen Wissensraum. Leitstand = operativ, Obsidian = epistemisch.
-- [x] **Datenfluss & Rückkopplung sicherstellen:**
+- [ ] **Datenfluss & Rückkopplung sicherstellen:**
   - Datenfluss: `Heimgewebe → obsidian-bridge → Obsidian Vault`
   - Keine automatische Rückkopplung: `Obsidian Vault ↛ Heimgewebe`
-- [x] **Render-Ausgaben aus kanonischem Graph-Modell erzeugen:**
+- [ ] **Render-Ausgaben aus kanonischem Graph-Modell erzeugen:**
   - Markdown-Notizen (lineare Wissensrepräsentation)
   - `.canvas`-Dateien (graphische Wissensräume / multidimensionale Mindmaps, visuelle Argumentationsketten, explorative Strukturmodelle, semantische Netzwerke)
   - *Pipeline:*
@@ -40,7 +40,7 @@ Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-No
        ↙         ↘
     Markdown     Canvas
     ```
-- [x] **Canvas-Leitannahme durchsetzen:** Canvas wird als Build-Artefakt behandelt (reproduzierbar, überschreibbar, diffbar, nicht manuell als Wahrheit gepflegt). Canvas ist Renderer, nicht Denkraum.
+- [ ] **Canvas-Leitannahme durchsetzen:** Canvas wird als Build-Artefakt behandelt (reproduzierbar, überschreibbar, diffbar, nicht manuell als Wahrheit gepflegt). Canvas ist Renderer, nicht Denkraum.
 
 ---
 
@@ -181,7 +181,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [x] **Layout-Typen pro Canvas-Klasse implementieren:**
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (Grundformen / Scaffold angelegt - noch rudimentär)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
@@ -217,9 +217,9 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - *Inhalt:* Erkenntniscluster, Widerspruchsnetze, Unsicherheitszonen.
 - [x] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
   - *Inhalt:* Entscheidung, Preimage, Referenz-Ereignisse, Outcomes.
-- [x] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`)
+- [ ] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Scaffold angelegt, Generierung aktiv)
   - *Inhalt:* Konzepte, Entitäten, Relationen.
-- [x] **Index- und Hub-Canvas**
+- [ ] **Index- und Hub-Canvas** (Scaffold angelegt, Generierung aktiv)
   - **Root-Canvas** (`canvases/index/root.canvas`): Knoten für System, Chronik, Observatorium, Decisions, Knowledge, Latest. Dient als Start-Mindmap.
   - **Topic-Hubs** (`topic--chronik.canvas`, `topic--observatorium.canvas`): Thematische Navigation, Einstieg in Untergraphen.
   - **Latest-Canvas** (`canvases/index/latest.canvas`).
@@ -268,7 +268,7 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
   - CI-Validierung.
-- [ ] **Phase 4 – Vollständige Abdeckung** (teilweise - Skripte generieren alle, aber Tests/Rollups fehlen tlw.)
+- [ ] **Phase 4 – Vollständige Abdeckung**
   - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas, Monats-/Rollup-Canvas).
 
 ---
