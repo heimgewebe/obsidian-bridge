@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": "canvas_node_0",
+      "x": 0,
+      "y": 0,
+      "width": 250,
+      "height": 150,
+      "type": "file",
+      "file": "decisions/policy/decision--2026-03-08--dec-12.md"
+    },
+    {
+      "id": "canvas_node_1",
+      "x": 100,
+      "y": 0,
+      "width": 250,
+      "height": 150,
+      "type": "file",
+      "file": "chronik/events/2026/03/event--2026-03-08--evt-123.md"
+    },
+    {
+      "id": "canvas_node_2",
+      "x": 200,
+      "y": 0,
+      "width": 250,
+      "height": 150,
+      "type": "file",
+      "file": "observatorium/insights/insight--2026-03-08--ins-44.md"
+    }
+  ],
+  "edges": [
+    {
+      "id": "canvas_edge_0",
+      "fromNode": "canvas_node_1",
+      "fromSide": "right",
+      "toNode": "canvas_node_0",
+      "toSide": "left",
+      "label": "informed"
+    },
+    {
+      "id": "canvas_edge_1",
+      "fromNode": "canvas_node_1",
+      "fromSide": "right",
+      "toNode": "canvas_node_2",
+      "toSide": "left",
+      "label": "causes"
+    },
+    {
+      "id": "canvas_edge_2",
+      "fromNode": "canvas_node_2",
+      "fromSide": "right",
+      "toNode": "canvas_node_0",
+      "toSide": "left",
+      "label": "derives_from"
+    }
+  ]
+}
