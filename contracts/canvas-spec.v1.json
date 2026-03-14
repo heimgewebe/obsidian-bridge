@@ -21,7 +21,7 @@
       "properties": {
         "max_nodes": { "type": "integer" },
         "max_edges": { "type": "integer", "minimum": 0 },
-        "date_window_days": { "type": "integer" }
+        "date_window_days": { "type": "integer", "minimum": 0 }
       }
     },
     "relations": {
