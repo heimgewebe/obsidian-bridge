@@ -234,5 +234,46 @@ class TestCanvasRender(unittest.TestCase):
 
         self.assertIn("no valid timestamps were found", str(context.exception))
 
+    def test_render_canvas_invalid_date_window_raises(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/1.md", "timestamp": "2026-03-08T12:00:00Z"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Test negative value
+        spec_data_negative = {
+            "id": "test-negative",
+            "type": "chronik",
+            "output": "canvases/negative.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"date_window_days": -5}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_negative, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a non-negative integer", str(context.exception))
+
+        # Test non-integer value
+        spec_data_string = {
+            "id": "test-string",
+            "type": "chronik",
+            "output": "canvases/string.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"date_window_days": "foo"}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_string, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a non-negative integer", str(context.exception))
+
+
 if __name__ == '__main__':
     unittest.main()
