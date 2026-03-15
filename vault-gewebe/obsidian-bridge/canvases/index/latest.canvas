@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": "canvas_node_0",
-      "x": 0,
+      "x": 700,
       "y": 0,
       "width": 250,
       "height": 150,
@@ -11,8 +11,8 @@
     },
     {
       "id": "canvas_node_1",
-      "x": 100,
-      "y": 0,
+      "x": 350,
+      "y": 300,
       "width": 250,
       "height": 150,
       "type": "file",
@@ -20,8 +20,8 @@
     },
     {
       "id": "canvas_node_2",
-      "x": 200,
-      "y": 0,
+      "x": 0,
+      "y": 600,
       "width": 250,
       "height": 150,
       "type": "file",
@@ -30,7 +30,7 @@
   ],
   "edges": [
     {
-      "id": "edge_event_evt-123_decision_dec-_1aa5efc5",
+      "id": "edge_event_evt-123_decision_dec-_f3b5b473",
       "fromNode": "canvas_node_1",
       "fromSide": "right",
       "toNode": "canvas_node_0",
@@ -38,7 +38,7 @@
       "label": "informed"
     },
     {
-      "id": "edge_event_evt-123_insight_ins-4_e5b798d6",
+      "id": "edge_event_evt-123_insight_ins-4_6652b10d",
       "fromNode": "canvas_node_1",
       "fromSide": "right",
       "toNode": "canvas_node_2",
@@ -46,7 +46,7 @@
       "label": "causes"
     },
     {
-      "id": "edge_insight_ins-44_decision_dec_5229a1e6",
+      "id": "edge_insight_ins-44_decision_dec_c8f8cb62",
       "fromNode": "canvas_node_2",
       "fromSide": "right",
       "toNode": "canvas_node_0",

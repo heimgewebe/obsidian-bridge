@@ -1,8 +1,15 @@
-.PHONY: test lint clean install install-deps
+.PHONY: test build lint clean install install-deps
 
 test:
 	bats tests/*.bats
 	python3 -m unittest discover -s tests -p 'test_*.py'
+
+build:
+	python3 -m scripts.graph.build_graph
+	python3 -m scripts.graph.extract_relations
+	python3 -m scripts.graph.stabilize_layout
+	python3 -m scripts.canvas.render_all_canvases
+	python3 -m scripts.markdown.render_markdown
 
 lint:
 	bash -c 'find bin scripts -type f -print0 | while IFS= read -r -d "" f; do if file --brief --mime-type -- "$$f" | grep -q "text/x-shellscript"; then shellcheck -- "$$f"; fi; done'
