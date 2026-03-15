@@ -171,7 +171,10 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
   ```
 - [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `date_window_days`, `max_depth`, `max_clusters` als Basis-Guards implementiert.
-  - Fokusregeln: stärkste Kanten, jüngste Artefakte, priorisierte Relationstypen rendern (Priorisierung beim Filtern der Kanten implementiert).
+  - Fokusregeln:
+    - priorisierte Relationstypen beim Kanten-Filtering implementiert.
+    - stärkste Kanten: ausstehend.
+    - jüngste Artefakte als eigene Fokusheuristik: ausstehend.
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas (ausstehend).
 
 ---

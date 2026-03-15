@@ -408,5 +408,108 @@ class TestCanvasRender(unittest.TestCase):
         self.assertIn("n3.md", node_files)
         self.assertNotIn("n4.md", node_files)
 
+    def test_render_canvas_prioritized_relations(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt1.md"},
+                {"id": "evt-2", "kind": "event", "file_path": "chronik/evt2.md"},
+                {"id": "evt-3", "kind": "event", "file_path": "chronik/evt3.md"}
+            ],
+            "edges": [
+                # Notice we define edges out of priority order to verify deterministic sorting
+                {"id": "edge-z-unimportant", "from": "evt-3", "to": "evt-1", "relation": "references"},
+                {"id": "edge-a-causes", "from": "evt-1", "to": "evt-2", "relation": "causes"},
+                {"id": "edge-b-informed", "from": "evt-2", "to": "evt-3", "relation": "informed"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Spec limits to 2 edges, prioritizes 'informed' then 'causes'
+        spec_data = {
+            "id": "test-priority",
+            "type": "chronik",
+            "output": "canvases/priority.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {
+                "max_edges": 2,
+                "prioritized_relations": ["informed", "causes"]
+            }
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/priority.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["edges"]), 2)
+        rendered_relations = [edge["label"] for edge in canvas["edges"]]
+
+        # We expect 'informed' and 'causes' to be rendered, while 'references' gets truncated out
+        self.assertIn("informed", rendered_relations)
+        self.assertIn("causes", rendered_relations)
+        self.assertNotIn("references", rendered_relations)
+
+    def test_render_canvas_fallback_edge_id(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt1.md"},
+                {"id": "evt-2", "kind": "event", "file_path": "chronik/evt2.md"}
+            ],
+            "edges": [
+                {"from": "evt-1", "to": "evt-2", "relation": "references"} # No explicit ID
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-fallback",
+            "type": "chronik",
+            "output": "canvases/fallback.canvas",
+            "source": {"artifact_types": ["event"]}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/fallback.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["edges"]), 1)
+        # Expected fallback is "{from}__{relation}__{to}" safely formatted with fingerprint
+        edge_id = canvas["edges"][0]["id"]
+        self.assertTrue(edge_id.startswith("evt-1__references__evt-2_"))
+        self.assertNotIn(":", edge_id)
+
+    def test_render_canvas_invalid_prioritized_relations_raises(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/1.md"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-invalid-priority",
+            "type": "chronik",
+            "output": "canvases/invalid-priority.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"prioritized_relations": "not-a-list"}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a list of strings", str(context.exception))
+
 if __name__ == '__main__':
     unittest.main()

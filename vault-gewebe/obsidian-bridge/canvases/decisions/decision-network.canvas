@@ -30,7 +30,7 @@
   ],
   "edges": [
     {
-      "id": "canvas_edge_0",
+      "id": "edge_event_evt-123_decision_dec-_1aa5efc5",
       "fromNode": "canvas_node_1",
       "fromSide": "right",
       "toNode": "canvas_node_0",
@@ -38,7 +38,7 @@
       "label": "informed"
     },
     {
-      "id": "canvas_edge_2",
+      "id": "edge_insight_ins-44_decision_dec_5229a1e6",
       "fromNode": "canvas_node_2",
       "fromSide": "right",
       "toNode": "canvas_node_0",
