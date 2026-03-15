@@ -184,7 +184,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [x] **Layout-Typen pro Canvas-Klasse implementieren:** (Grundformen / Scaffold angelegt - rudimentär implementiert in stabilize_layout.py)
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (Grundformen / Scaffold angelegt - rudimentär implementiert in stabilize_layout.py)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
@@ -267,7 +267,7 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
-- [ ] **Phase 3 – Spec-System**
+- [ ] **Phase 3 – Spec-System** (Basisimplementierung vorhanden, CI/Build-Integration ausstehend)
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
   - CI-Validierung.
