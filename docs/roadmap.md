@@ -172,7 +172,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 - [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `date_window_days`, `max_depth`, `max_clusters` als Basis-Guards implementiert.
   - Fokusregeln:
-    - priorisierte Relationstypen beim Kanten-Filtering implementiert.
+    - priorisierte Relationstypen bei der deterministischen Kanten-Auswahl unter max_edges implementiert.
     - stärkste Kanten: ausstehend.
     - jüngste Artefakte als eigene Fokusheuristik: ausstehend.
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas (ausstehend).
@@ -220,9 +220,9 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - *Inhalt:* Erkenntniscluster, Widerspruchsnetze, Unsicherheitszonen.
 - [x] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
   - *Inhalt:* Entscheidung, Preimage, Referenz-Ereignisse, Outcomes.
-- [x] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Scaffold angelegt, Generierung aktiv)
+- [ ] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Basisimplementierung vorhanden, Generierung aktiv)
   - *Inhalt:* Konzepte, Entitäten, Relationen.
-- [x] **Index- und Hub-Canvas** (Scaffold angelegt, Generierung aktiv)
+- [ ] **Index- und Hub-Canvas** (Basisimplementierung vorhanden, Generierung aktiv)
   - **Root-Canvas** (`canvases/index/root.canvas`): Knoten für System, Chronik, Observatorium, Decisions, Knowledge, Latest. Dient als Start-Mindmap.
   - **Topic-Hubs** (`topic--chronik.canvas`, `topic--observatorium.canvas`): Thematische Navigation, Einstieg in Untergraphen.
   - **Latest-Canvas** (`canvases/index/latest.canvas`).
@@ -246,7 +246,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [ ] **Tests implementieren:** (teilweise / scaffold angelegt)
+- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden)
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`
@@ -263,11 +263,11 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [x] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
-- [x] **Phase 3 – Spec-System**
+- [ ] **Phase 3 – Spec-System**
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
   - CI-Validierung.
