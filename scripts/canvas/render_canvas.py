@@ -55,6 +55,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     max_depth_raw = spec.get("filters", {}).get("max_depth")
     max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
+    prioritized_relations = spec.get("filters", {}).get("prioritized_relations", [])
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
 
@@ -223,7 +224,20 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
     # Process edges
     added_edges = 0
-    for i, edge in enumerate(graph.get("edges", [])):
+
+    # Sort edges to prioritize 'prioritized_relations' if configured, then deterministically by ID
+    all_edges = graph.get("edges", [])
+    if prioritized_relations:
+        # Prioritize edges by relation index in prioritized_relations, fallback to infinity
+        all_edges = sorted(
+            all_edges,
+            key=lambda e: (
+                prioritized_relations.index(e.get("relation")) if e.get("relation") in prioritized_relations else float('inf'),
+                e.get("id", "")
+            )
+        )
+
+    for i, edge in enumerate(all_edges):
         from_id = edge.get("from")
         to_id = edge.get("to")
         relation = edge.get("relation")
@@ -235,8 +249,10 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             continue
 
         if from_id in node_id_map and to_id in node_id_map:
+            # We use the edge id directly or generate one if missing to guarantee stable deterministic rendering
+            canvas_edge_id = edge.get("id", f"canvas_edge_{i}").replace(":", "_").replace("->", "_")
             canvas_model["edges"].append({
-                "id": f"canvas_edge_{i}",
+                "id": canvas_edge_id,
                 "fromNode": node_id_map[from_id],
                 "fromSide": "right",
                 "toNode": node_id_map[to_id],

@@ -171,7 +171,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
   ```
 - [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `date_window_days`, `max_depth`, `max_clusters` als Basis-Guards implementiert.
-  - Fokusregeln: stärkste Kanten, jüngste Artefakte, priorisierte Relationstypen rendern (ausstehend).
+  - Fokusregeln: stärkste Kanten, jüngste Artefakte, priorisierte Relationstypen rendern (Priorisierung beim Filtern der Kanten implementiert).
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas (ausstehend).
 
 ---
@@ -181,7 +181,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (Grundformen / Scaffold angelegt - noch rudimentär)
+- [x] **Layout-Typen pro Canvas-Klasse implementieren:** (Grundformen / Scaffold angelegt - rudimentär implementiert in stabilize_layout.py)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
@@ -217,9 +217,9 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - *Inhalt:* Erkenntniscluster, Widerspruchsnetze, Unsicherheitszonen.
 - [x] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
   - *Inhalt:* Entscheidung, Preimage, Referenz-Ereignisse, Outcomes.
-- [ ] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Scaffold angelegt, Generierung aktiv)
+- [x] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Scaffold angelegt, Generierung aktiv)
   - *Inhalt:* Konzepte, Entitäten, Relationen.
-- [ ] **Index- und Hub-Canvas** (Scaffold angelegt, Generierung aktiv)
+- [x] **Index- und Hub-Canvas** (Scaffold angelegt, Generierung aktiv)
   - **Root-Canvas** (`canvases/index/root.canvas`): Knoten für System, Chronik, Observatorium, Decisions, Knowledge, Latest. Dient als Start-Mindmap.
   - **Topic-Hubs** (`topic--chronik.canvas`, `topic--observatorium.canvas`): Thematische Navigation, Einstieg in Untergraphen.
   - **Latest-Canvas** (`canvases/index/latest.canvas`).
@@ -260,11 +260,11 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
+- [x] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
-- [ ] **Phase 3 – Spec-System**
+- [x] **Phase 3 – Spec-System**
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
   - CI-Validierung.
