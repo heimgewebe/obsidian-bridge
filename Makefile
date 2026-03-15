@@ -6,7 +6,6 @@ test:
 
 build:
 	python3 -m scripts.graph.build_graph
-	python3 -m scripts.graph.extract_relations
 	python3 -m scripts.graph.stabilize_layout
 	python3 -m scripts.canvas.render_all_canvases
 	python3 -m scripts.markdown.render_markdown

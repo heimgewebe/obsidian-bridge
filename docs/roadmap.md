@@ -220,9 +220,9 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - *Inhalt:* Erkenntniscluster, Widerspruchsnetze, Unsicherheitszonen.
 - [x] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
   - *Inhalt:* Entscheidung, Preimage, Referenz-Ereignisse, Outcomes.
-- [x] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Basisimplementierung vorhanden, Generierung aktiv)
+- [ ] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Basisimplementierung vorhanden, Generierung aktiv)
   - *Inhalt:* Konzepte, Entitäten, Relationen.
-- [x] **Index- und Hub-Canvas** (Basisimplementierung vorhanden, Generierung aktiv)
+- [ ] **Index- und Hub-Canvas** (Basisimplementierung vorhanden, Generierung aktiv)
   - **Root-Canvas** (`canvases/index/root.canvas`): Knoten für System, Chronik, Observatorium, Decisions, Knowledge, Latest. Dient als Start-Mindmap.
   - **Topic-Hubs** (`topic--chronik.canvas`, `topic--observatorium.canvas`): Thematische Navigation, Einstieg in Untergraphen.
   - **Latest-Canvas** (`canvases/index/latest.canvas`).
@@ -263,15 +263,15 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [x] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
-- [x] **Phase 3 – Spec-System** (Basisimplementierung vorhanden, CI/Build-Integration ausstehend)
+- [ ] **Phase 3 – Spec-System** (Basisimplementierung vorhanden, CI/Build-Integration ausstehend)
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
   - CI-Validierung.
-- [x] **Phase 4 – Vollständige Abdeckung**
+- [ ] **Phase 4 – Vollständige Abdeckung**
   - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas, Monats-/Rollup-Canvas).
 
 ---
