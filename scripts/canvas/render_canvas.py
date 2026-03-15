@@ -52,11 +52,29 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     # Apply filters (Guards)
     max_nodes = spec.get("filters", {}).get("max_nodes", 100)
     max_edges = spec.get("filters", {}).get("max_edges", 200)
-    max_depth = spec.get("filters", {}).get("max_depth")
-    max_clusters = spec.get("filters", {}).get("max_clusters")
+    max_depth_raw = spec.get("filters", {}).get("max_depth")
+    max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
+
+    max_depth = None
+    if max_depth_raw is not None:
+        try:
+            max_depth = int(max_depth_raw)
+            if max_depth < 0:
+                raise ValueError()
+        except ValueError:
+            raise ValueError(f"Invalid max_depth: {max_depth_raw}. Must be a non-negative integer.")
+
+    max_clusters = None
+    if max_clusters_raw is not None:
+        try:
+            max_clusters = int(max_clusters_raw)
+            if max_clusters < 1:
+                raise ValueError()
+        except ValueError:
+            raise ValueError(f"Invalid max_clusters: {max_clusters_raw}. Must be an integer >= 1.")
 
     cutoff_date = None
     if date_window_days_raw is not None:

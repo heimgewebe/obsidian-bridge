@@ -274,6 +274,56 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a non-negative integer", str(context.exception))
 
+    def test_render_canvas_invalid_max_depth_raises(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/1.md"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Test negative value
+        spec_data_negative = {
+            "id": "test-depth-negative",
+            "type": "chronik",
+            "output": "canvases/depth-negative.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"max_depth": -1}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_negative, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a non-negative integer", str(context.exception))
+
+    def test_render_canvas_invalid_max_clusters_raises(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/1.md"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Test negative value
+        spec_data_negative = {
+            "id": "test-clusters-negative",
+            "type": "chronik",
+            "output": "canvases/clusters-negative.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"max_clusters": 0}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_negative, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be an integer >= 1", str(context.exception))
+
     def test_render_canvas_max_depth(self):
         graph_data = {
             "nodes": [
