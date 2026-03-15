@@ -274,6 +274,139 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a non-negative integer", str(context.exception))
 
+    def test_render_canvas_invalid_max_depth_raises(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/1.md"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Test negative value
+        spec_data_negative = {
+            "id": "test-depth-negative",
+            "type": "chronik",
+            "output": "canvases/depth-negative.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"max_depth": -1}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_negative, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a non-negative integer", str(context.exception))
+
+    def test_render_canvas_invalid_max_clusters_raises(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/1.md"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Test negative value
+        spec_data_negative = {
+            "id": "test-clusters-negative",
+            "type": "chronik",
+            "output": "canvases/clusters-negative.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"max_clusters": 0}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_negative, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be an integer >= 1", str(context.exception))
+
+    def test_render_canvas_max_depth(self):
+        graph_data = {
+            "nodes": [
+                {"id": "root", "kind": "concept", "file_path": "root.md"},
+                {"id": "child1", "kind": "concept", "file_path": "child1.md"},
+                {"id": "child2", "kind": "concept", "file_path": "child2.md"},
+                {"id": "grandchild", "kind": "concept", "file_path": "grandchild.md"},
+                {"id": "event_cause", "kind": "event", "file_path": "event_cause.md"}
+            ],
+            "edges": [
+                {"id": "e1", "from": "root", "to": "child1", "relation": "references"},
+                {"id": "e2", "from": "root", "to": "child2", "relation": "references"},
+                {"id": "e3", "from": "child1", "to": "grandchild", "relation": "references"},
+                {"id": "e_event_cause", "from": "event_cause", "to": "root", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-depth",
+            "type": "knowledge",
+            "output": "canvases/depth.canvas",
+            "source": {"artifact_types": ["concept"]},
+            "relations": ["references"],
+            "filters": {"max_depth": 1}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/depth.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 3)
+        node_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("root.md", node_files)
+        self.assertIn("child1.md", node_files)
+        self.assertIn("child2.md", node_files)
+        self.assertNotIn("grandchild.md", node_files)
+
+    def test_render_canvas_max_clusters(self):
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "concept", "file_path": "n1.md", "tags": ["clusterA"]},
+                {"id": "n2", "kind": "concept", "file_path": "n2.md", "tags": ["clusterA"]},
+                {"id": "n3", "kind": "concept", "file_path": "n3.md", "tags": ["clusterB"]},
+                {"id": "n4", "kind": "concept", "file_path": "n4.md", "tags": ["clusterC"]},
+                {"id": "n_notag", "kind": "concept", "file_path": "notag.md", "tags": []}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-clusters",
+            "type": "knowledge",
+            "output": "canvases/clusters.canvas",
+            "source": {"artifact_types": ["concept"]},
+            "filters": {"max_clusters": 2}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/clusters.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        # clusterA has 2 nodes, clusterB and clusterC have 1 node.
+        # Ties are broken deterministically by alphabetical order of the tag name.
+        # Therefore, clusterA and clusterB are strictly selected.
+        # Exactly 3 nodes should be rendered.
+        self.assertEqual(len(canvas["nodes"]), 3)
+        node_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("n1.md", node_files)
+        self.assertIn("n2.md", node_files)
+        self.assertIn("n3.md", node_files)
+        self.assertNotIn("n4.md", node_files)
 
 if __name__ == '__main__':
     unittest.main()

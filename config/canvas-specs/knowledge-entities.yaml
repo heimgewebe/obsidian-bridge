@@ -3,7 +3,7 @@ type: knowledge
 source:
   artifact_types:
     - entity
-layout: cluster
+layout: hierarchy
 filters:
   max_nodes: 80
   max_edges: 150

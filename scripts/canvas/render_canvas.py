@@ -52,9 +52,29 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     # Apply filters (Guards)
     max_nodes = spec.get("filters", {}).get("max_nodes", 100)
     max_edges = spec.get("filters", {}).get("max_edges", 200)
+    max_depth_raw = spec.get("filters", {}).get("max_depth")
+    max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
+
+    max_depth = None
+    if max_depth_raw is not None:
+        try:
+            max_depth = int(max_depth_raw)
+            if max_depth < 0:
+                raise ValueError()
+        except ValueError:
+            raise ValueError(f"Invalid max_depth: {max_depth_raw}. Must be a non-negative integer.")
+
+    max_clusters = None
+    if max_clusters_raw is not None:
+        try:
+            max_clusters = int(max_clusters_raw)
+            if max_clusters < 1:
+                raise ValueError()
+        except ValueError:
+            raise ValueError(f"Invalid max_clusters: {max_clusters_raw}. Must be an integer >= 1.")
 
     cutoff_date = None
     if date_window_days_raw is not None:
@@ -81,6 +101,70 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
         cutoff_date = max_ts - timedelta(days=date_window_days)
 
+    import collections
+
+    # Determine allowed nodes based on depth
+    allowed_by_depth = set()
+    if max_depth is not None and isinstance(max_depth, int) and max_depth >= 0:
+        # We need a starting point for depth traversal relative to this canvas (filtered nodes/edges).
+        relevant_node_ids = {
+            n.get("id") for n in graph.get("nodes", [])
+            if n.get("id") and (not valid_types or n.get("kind") in valid_types)
+        }
+
+        incoming_counts = {}
+        adj = {}
+
+        for edge in graph.get("edges", []):
+            if valid_relations and edge.get("relation") not in valid_relations:
+                continue
+            u, v = edge.get("from"), edge.get("to")
+
+            # Edges are only relevant if both ends are in relevant_node_ids
+            if u in relevant_node_ids and v in relevant_node_ids:
+                incoming_counts[v] = incoming_counts.get(v, 0) + 1
+                if u not in adj: adj[u] = []
+                adj[u].append(v)
+
+        roots = sorted([nid for nid in relevant_node_ids if incoming_counts.get(nid, 0) == 0])
+
+        # If there are no nodes with 0 incoming edges (e.g., a cycle), deterministically
+        # pick the node with the lexicographically smallest ID as a fallback root.
+        if not roots and relevant_node_ids:
+            roots = [min(relevant_node_ids)]
+
+        # BFS using deque
+        queue = collections.deque([(root, 0) for root in roots])
+        visited = set()
+
+        while queue:
+            curr, depth = queue.popleft()
+            if curr in visited: continue
+            visited.add(curr)
+            if depth <= max_depth:
+                allowed_by_depth.add(curr)
+                # Sort neighbors to guarantee deterministic traversal order
+                for neighbor in sorted(adj.get(curr, [])):
+                    queue.append((neighbor, depth + 1))
+    else:
+        # If no depth limit, allow all nodes
+        allowed_by_depth = {n.get("id") for n in graph.get("nodes", []) if n.get("id")}
+
+    # Calculate clusters if max_clusters is set
+    allowed_tags = None
+    if max_clusters is not None and isinstance(max_clusters, int) and max_clusters > 0:
+        tag_counts = {}
+        for node in graph.get("nodes", []):
+            if valid_types and node.get("kind") not in valid_types:
+                continue
+            tags = node.get("tags") or []
+            for tag in tags:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+        # Sort tags by count descending, then alphabetically
+        sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
+        allowed_tags = {t[0] for t in sorted_tags[:max_clusters]}
+
     # Process nodes up to max_nodes
     added_nodes = 0
     node_id_map = {}
@@ -90,6 +174,16 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         if not node_id:
             # Skip nodes without a valid ID to avoid None mapping collisions
             continue
+
+        if node_id not in allowed_by_depth:
+            continue
+
+        if allowed_tags is not None:
+            node_tags = node.get("tags") or []
+            # If the node has no tags that are in the allowed top N clusters, skip it
+            # (Nodes without any tags are automatically skipped if max_clusters is set)
+            if not node_tags or not any(t in allowed_tags for t in node_tags):
+                continue
 
         if valid_types and node.get("kind") not in valid_types:
             continue

@@ -144,6 +144,61 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
                 }
                 tag_offsets[primary_tag]["y"] += 200
 
+        elif layout_type == "hierarchy":
+            # Konzepte oben, Entitäten mittig, konkrete Artefakte unten
+            # Group by kind deterministically
+            hierarchy_levels = {
+                "concept": 0,
+                "entity": 400,
+            }
+            # Any other kind goes to bottom (800+)
+
+            x_offsets = {
+                "concept": 0,
+                "entity": 0,
+                "other": 0
+            }
+
+            # Initialize offsets based on existing nodes in each lane
+            for existing_nid, existing_node in canvas_layout.get("nodes", {}).items():
+                # Find kind of existing node
+                existing_kind = "unknown"
+                for rn in relevant_nodes:
+                    if rn["id"] == existing_nid:
+                        existing_kind = rn.get("kind", "unknown")
+                        break
+
+                if existing_kind == "concept":
+                    x_offsets["concept"] = max(x_offsets["concept"], existing_node.get("x", 0) + 350)
+                elif existing_kind == "entity":
+                    x_offsets["entity"] = max(x_offsets["entity"], existing_node.get("x", 0) + 350)
+                else:
+                    x_offsets["other"] = max(x_offsets["other"], existing_node.get("x", 0) + 350)
+
+            for n in new_nodes:
+                nid = n["id"]
+                kind = n.get("kind", "unknown")
+
+                if kind == "concept":
+                    y = hierarchy_levels["concept"]
+                    x = x_offsets["concept"]
+                    x_offsets["concept"] += 350
+                elif kind == "entity":
+                    y = hierarchy_levels["entity"]
+                    x = x_offsets["entity"]
+                    x_offsets["entity"] += 350
+                else:
+                    y = 800
+                    x = x_offsets["other"]
+                    x_offsets["other"] += 350
+
+                canvas_layout["nodes"][nid] = {
+                    "x": x,
+                    "y": y,
+                    "width": 250,
+                    "height": 150
+                }
+
         elif layout_type == "organsystem":
             # Feste Positionen für: chronik, semantAH, hausKI, heimlern, heimgeist, leitstand, wgx, metarepo
             fixed_positions = {
