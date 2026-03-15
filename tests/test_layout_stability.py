@@ -164,5 +164,56 @@ class TestLayoutStability(unittest.TestCase):
         self.assertEqual(nodes["node-entity"]["y"], 400)
         self.assertEqual(nodes["node-other"]["y"], 800)
 
+    def test_stabilize_layout_hierarchy_incremental(self):
+        graph_data = {
+            "nodes": [
+                {"id": "node-concept-existing", "kind": "concept"},
+                {"id": "node-concept-new", "kind": "concept"},
+                {"id": "node-entity-existing", "kind": "entity"},
+                {"id": "node-entity-new", "kind": "entity"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        existing_layout = {
+            "canvases": {
+                "hierarchy": {
+                    "nodes": {
+                        "node-concept-existing": {"x": 500, "y": 0, "width": 250, "height": 150},
+                        "node-entity-existing": {"x": 800, "y": 400, "width": 250, "height": 150}
+                    }
+                }
+            }
+        }
+        with open(self.layout_file.name, 'w') as f:
+            json.dump(existing_layout, f)
+
+        # Create a spec for hierarchy layout
+        spec_data = {
+            "id": "hierarchy",
+            "layout": "hierarchy",
+            "source": {"artifact_types": ["concept", "entity"]}
+        }
+        spec_file = os.path.join(self.specs_dir.name, 'hierarchy.yaml')
+        with open(spec_file, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        layout = stabilize_layout(self.graph_file.name, self.layout_file.name, specs_dir=self.specs_dir.name)
+
+        nodes = layout["canvases"]["hierarchy"]["nodes"]
+
+        # Ensure existing nodes kept their positions
+        self.assertEqual(nodes["node-concept-existing"]["x"], 500)
+        self.assertEqual(nodes["node-concept-existing"]["y"], 0)
+        self.assertEqual(nodes["node-entity-existing"]["x"], 800)
+        self.assertEqual(nodes["node-entity-existing"]["y"], 400)
+
+        # Ensure new nodes are placed incrementally based on the max x of existing nodes in their lane
+        self.assertEqual(nodes["node-concept-new"]["x"], 500 + 350)
+        self.assertEqual(nodes["node-concept-new"]["y"], 0)
+        self.assertEqual(nodes["node-entity-new"]["x"], 800 + 350)
+        self.assertEqual(nodes["node-entity-new"]["y"], 400)
+
 if __name__ == '__main__':
     unittest.main()

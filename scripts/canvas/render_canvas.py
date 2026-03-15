@@ -83,45 +83,50 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
         cutoff_date = max_ts - timedelta(days=date_window_days)
 
+    import collections
+
     # Determine allowed nodes based on depth
     allowed_by_depth = set()
     if max_depth is not None and isinstance(max_depth, int) and max_depth >= 0:
-        # We need a starting point for depth traversal.
-        # Assuming roots are nodes with no incoming edges or explicitly defined
-        # A simple heuristic: all nodes that have no incoming edges in the valid relations
+        # We need a starting point for depth traversal relative to this canvas (filtered nodes/edges).
+        relevant_node_ids = {
+            n.get("id") for n in graph.get("nodes", [])
+            if n.get("id") and (not valid_types or n.get("kind") in valid_types)
+        }
+
         incoming_counts = {}
-        for edge in graph.get("edges", []):
-            if valid_relations and edge.get("relation") not in valid_relations:
-                continue
-            incoming_counts[edge.get("to")] = incoming_counts.get(edge.get("to"), 0) + 1
-
-        roots = [n.get("id") for n in graph.get("nodes", []) if incoming_counts.get(n.get("id"), 0) == 0]
-
-        # If there are no nodes with 0 incoming edges (e.g., a cycle), we just pick all nodes
-        # as a fallback to avoid an empty canvas. Or pick the first node.
-        if not roots and graph.get("nodes"):
-            roots = [graph["nodes"][0].get("id")]
-
-        # BFS
-        queue = [(root, 0) for root in roots if root]
-        visited = set()
-
-        # Adjacency list
         adj = {}
+
         for edge in graph.get("edges", []):
             if valid_relations and edge.get("relation") not in valid_relations:
                 continue
             u, v = edge.get("from"), edge.get("to")
-            if u not in adj: adj[u] = []
-            adj[u].append(v)
+
+            # Edges are only relevant if both ends are in relevant_node_ids
+            if u in relevant_node_ids and v in relevant_node_ids:
+                incoming_counts[v] = incoming_counts.get(v, 0) + 1
+                if u not in adj: adj[u] = []
+                adj[u].append(v)
+
+        roots = sorted([nid for nid in relevant_node_ids if incoming_counts.get(nid, 0) == 0])
+
+        # If there are no nodes with 0 incoming edges (e.g., a cycle), deterministically
+        # pick the node with the lexicographically smallest ID as a fallback root.
+        if not roots and relevant_node_ids:
+            roots = [min(relevant_node_ids)]
+
+        # BFS using deque
+        queue = collections.deque([(root, 0) for root in roots])
+        visited = set()
 
         while queue:
-            curr, depth = queue.pop(0)
+            curr, depth = queue.popleft()
             if curr in visited: continue
             visited.add(curr)
             if depth <= max_depth:
                 allowed_by_depth.add(curr)
-                for neighbor in adj.get(curr, []):
+                # Sort neighbors to guarantee deterministic traversal order
+                for neighbor in sorted(adj.get(curr, [])):
                     queue.append((neighbor, depth + 1))
     else:
         # If no depth limit, allow all nodes
@@ -134,10 +139,11 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         for node in graph.get("nodes", []):
             if valid_types and node.get("kind") not in valid_types:
                 continue
-            for tag in node.get("tags", ["untagged"]):
+            tags = node.get("tags") or []
+            for tag in tags:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
-        # Sort tags by count
+        # Sort tags by count descending, then alphabetically
         sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
         allowed_tags = {t[0] for t in sorted_tags[:max_clusters]}
 
@@ -155,9 +161,10 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             continue
 
         if allowed_tags is not None:
-            node_tags = node.get("tags", ["untagged"])
+            node_tags = node.get("tags") or []
             # If the node has no tags that are in the allowed top N clusters, skip it
-            if not any(t in allowed_tags for t in node_tags):
+            # (Nodes without any tags are automatically skipped if max_clusters is set)
+            if not node_tags or not any(t in allowed_tags for t in node_tags):
                 continue
 
         if valid_types and node.get("kind") not in valid_types:

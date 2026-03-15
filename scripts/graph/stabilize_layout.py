@@ -159,6 +159,22 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
                 "other": 0
             }
 
+            # Initialize offsets based on existing nodes in each lane
+            for existing_nid, existing_node in canvas_layout.get("nodes", {}).items():
+                # Find kind of existing node
+                existing_kind = "unknown"
+                for rn in relevant_nodes:
+                    if rn["id"] == existing_nid:
+                        existing_kind = rn.get("kind", "unknown")
+                        break
+
+                if existing_kind == "concept":
+                    x_offsets["concept"] = max(x_offsets["concept"], existing_node.get("x", 0) + 350)
+                elif existing_kind == "entity":
+                    x_offsets["entity"] = max(x_offsets["entity"], existing_node.get("x", 0) + 350)
+                else:
+                    x_offsets["other"] = max(x_offsets["other"], existing_node.get("x", 0) + 350)
+
             for n in new_nodes:
                 nid = n["id"]
                 kind = n.get("kind", "unknown")
