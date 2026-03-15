@@ -1,8 +1,19 @@
 import json
 import os
 import yaml
+import hashlib
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
+
+def _get_edge_id(edge: Dict[str, Any]) -> str:
+    edge_id = edge.get("id")
+    if edge_id:
+        return str(edge_id)
+
+    frm = str(edge.get("from", "unknown"))
+    rel = str(edge.get("relation", "unknown"))
+    to = str(edge.get("to", "unknown"))
+    return f"{frm}__{rel}__{to}"
 
 def _parse_timestamp_utc(ts_str: Optional[str]) -> Optional[datetime]:
     if not ts_str:
@@ -55,8 +66,20 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     max_depth_raw = spec.get("filters", {}).get("max_depth")
     max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
+    prioritized_relations_raw = spec.get("filters", {}).get("prioritized_relations", [])
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
+
+    prioritized_relations = []
+    if prioritized_relations_raw:
+        if not isinstance(prioritized_relations_raw, list) or not all(isinstance(x, str) for x in prioritized_relations_raw):
+            raise ValueError(f"Invalid prioritized_relations: {prioritized_relations_raw}. Must be a list of strings.")
+
+        # Restrict prioritized_relations to valid_relations if valid_relations is defined
+        if valid_relations:
+            prioritized_relations = [rel for rel in prioritized_relations_raw if rel in valid_relations]
+        else:
+            prioritized_relations = prioritized_relations_raw
 
     max_depth = None
     if max_depth_raw is not None:
@@ -223,7 +246,24 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
     # Process edges
     added_edges = 0
-    for i, edge in enumerate(graph.get("edges", [])):
+
+    relation_rank = {rel: idx for idx, rel in enumerate(prioritized_relations)}
+
+    all_edges = graph.get("edges", [])
+
+    # Sort edges deterministically
+    all_edges = sorted(
+        all_edges,
+        key=lambda e: (
+            relation_rank.get(e.get("relation"), float('inf')),
+            _get_edge_id(e),
+            e.get("from", ""),
+            e.get("to", ""),
+            e.get("relation", "")
+        )
+    )
+
+    for edge in all_edges:
         from_id = edge.get("from")
         to_id = edge.get("to")
         relation = edge.get("relation")
@@ -235,8 +275,16 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             continue
 
         if from_id in node_id_map and to_id in node_id_map:
+            base_edge_id = _get_edge_id(edge)
+
+            # Create a safe and collision-free ID for the canvas
+            # We use a hash of the stable base_edge_id to ensure there are no collisions from normalization
+            safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
+            fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
+            canvas_edge_id = f"{safe_prefix}_{fingerprint}"
+
             canvas_model["edges"].append({
-                "id": f"canvas_edge_{i}",
+                "id": canvas_edge_id,
                 "fromNode": node_id_map[from_id],
                 "fromSide": "right",
                 "toNode": node_id_map[to_id],
