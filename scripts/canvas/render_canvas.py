@@ -66,6 +66,8 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     max_depth_raw = spec.get("filters", {}).get("max_depth")
     max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
+    prioritize_recent = spec.get("filters", {}).get("prioritize_recent", False)
+    prioritize_strongest = spec.get("filters", {}).get("prioritize_strongest", False)
     prioritized_relations_raw = spec.get("filters", {}).get("prioritized_relations", [])
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
@@ -188,11 +190,23 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
         allowed_tags = {t[0] for t in sorted_tags[:max_clusters]}
 
+    # Sort nodes deterministically before processing limits
+    all_nodes = list(graph.get("nodes", []))
+    if prioritize_recent:
+        # Sort by timestamp descending (most recent first), then ID for determinism
+        all_nodes.sort(key=lambda x: (
+            (_parse_timestamp_utc(x.get("timestamp")) or datetime.min.replace(tzinfo=timezone.utc)).timestamp() * -1,
+            x.get("id", "")
+        ))
+    else:
+        # Default deterministic sort
+        all_nodes.sort(key=lambda x: x.get("id", ""))
+
     # Process nodes up to max_nodes
     added_nodes = 0
     node_id_map = {}
 
-    for i, node in enumerate(graph.get("nodes", [])):
+    for i, node in enumerate(all_nodes):
         node_id = node.get("id")
         if not node_id:
             # Skip nodes without a valid ID to avoid None mapping collisions
@@ -255,7 +269,10 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     all_edges = sorted(
         all_edges,
         key=lambda e: (
+            # Priority relation goes first
             relation_rank.get(e.get("relation"), float('inf')),
+            # If prioritize_strongest is set, rank by highest weight first
+            (float(e.get("weight", 0.0)) * -1) if prioritize_strongest else 0.0,
             _get_edge_id(e),
             e.get("from", ""),
             e.get("to", ""),

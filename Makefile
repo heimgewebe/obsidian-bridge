@@ -5,6 +5,7 @@ test:
 	python3 -m unittest discover -s tests -p 'test_*.py'
 
 build:
+	python3 scripts/util/validate_specs.py
 	python3 -m scripts.graph.build_graph
 	python3 -m scripts.graph.stabilize_layout
 	python3 -m scripts.canvas.render_all_canvases
