@@ -16,16 +16,16 @@
 
 Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-Notizen und generiert automatisch Canvas-Modelle zur visuellen Exploration des zugrunde liegenden Artefakt-Graphen.
 
-- [ ] **Rollen im System trennen:**
+- [x] **Rollen im System trennen:**
   - **Heimgewebe:** Artefakte erzeugen.
   - **Leitstand:** Systemzustand darstellen (operativ).
   - **Obsidian-Bridge:** Artefakte in Wissensraum überführen.
   - **Obsidian:** Semantische Exploration (epistemisch).
   - *Rationale:* Die Bridge erzeugt keine Wahrheitsschicht, sondern einen explorativen Wissensraum. Leitstand = operativ, Obsidian = epistemisch.
-- [ ] **Datenfluss & Rückkopplung sicherstellen:**
+- [x] **Datenfluss & Rückkopplung sicherstellen:**
   - Datenfluss: `Heimgewebe → obsidian-bridge → Obsidian Vault`
   - Keine automatische Rückkopplung: `Obsidian Vault ↛ Heimgewebe`
-- [ ] **Render-Ausgaben aus kanonischem Graph-Modell erzeugen:**
+- [x] **Render-Ausgaben aus kanonischem Graph-Modell erzeugen:**
   - Markdown-Notizen (lineare Wissensrepräsentation)
   - `.canvas`-Dateien (graphische Wissensräume / multidimensionale Mindmaps, visuelle Argumentationsketten, explorative Strukturmodelle, semantische Netzwerke)
   - *Pipeline:*
@@ -40,7 +40,7 @@ Die Obsidian-Bridge übersetzt Heimgewebe-Artefakte in strukturierte Markdown-No
        ↙         ↘
     Markdown     Canvas
     ```
-- [ ] **Canvas-Leitannahme durchsetzen:** Canvas wird als Build-Artefakt behandelt (reproduzierbar, überschreibbar, diffbar, nicht manuell als Wahrheit gepflegt). Canvas ist Renderer, nicht Denkraum.
+- [x] **Canvas-Leitannahme durchsetzen:** Canvas wird als Build-Artefakt behandelt (reproduzierbar, überschreibbar, diffbar, nicht manuell als Wahrheit gepflegt). Canvas ist Renderer, nicht Denkraum.
 
 ---
 
@@ -220,9 +220,9 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - *Inhalt:* Erkenntniscluster, Widerspruchsnetze, Unsicherheitszonen.
 - [x] **Decision-Canvas** (`decision-network.canvas`, `decision--2026-03-08--dec-12.canvas`)
   - *Inhalt:* Entscheidung, Preimage, Referenz-Ereignisse, Outcomes.
-- [ ] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Basisimplementierung vorhanden, Generierung aktiv)
+- [x] **Knowledge-Canvas** (`concept-network.canvas`, `entity-network.canvas`) (Basisimplementierung vorhanden, Generierung aktiv)
   - *Inhalt:* Konzepte, Entitäten, Relationen.
-- [ ] **Index- und Hub-Canvas** (Basisimplementierung vorhanden, Generierung aktiv)
+- [x] **Index- und Hub-Canvas** (Basisimplementierung vorhanden, Generierung aktiv)
   - **Root-Canvas** (`canvases/index/root.canvas`): Knoten für System, Chronik, Observatorium, Decisions, Knowledge, Latest. Dient als Start-Mindmap.
   - **Topic-Hubs** (`topic--chronik.canvas`, `topic--observatorium.canvas`): Thematische Navigation, Einstieg in Untergraphen.
   - **Latest-Canvas** (`canvases/index/latest.canvas`).
@@ -246,7 +246,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden)
+- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden, lückenhaft für Canvas-Klassen)
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`

@@ -75,6 +75,7 @@ artifact_type: test
 artifact_id: src
 ---
 - **causes** -> [[folder1/target.md]]
+- **references** -> [[folder2/target.md#heading123]]
 """,
             "vault-gewebe/obsidian-bridge/folder1/target.md": """---
 artifact_type: test
@@ -96,6 +97,7 @@ artifact_id: t-2
 
         edges = {(r["from"], r["to"], r["relation"]) for r in relations}
         self.assertIn(("test:src", "test:t-1", "causes"), edges)
+        self.assertIn(("test:src", "test:t-2", "references"), edges)
 
 if __name__ == '__main__':
     unittest.main()
