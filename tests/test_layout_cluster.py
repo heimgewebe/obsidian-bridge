@@ -62,8 +62,13 @@ class TestLayoutCluster(unittest.TestCase):
 
             # Nodes with same primary tag should share X-offset or be grouped deterministically
             self.assertEqual(nodes["ins:1"]["x"], nodes["ins:2"]["x"])
-            # ins:3 is gamma, so different X offset
+
+            # ins:3 is gamma, so different X offset from alpha
             self.assertNotEqual(nodes["ins:1"]["x"], pos3_x)
+
+            # ins:4 is untagged, so deterministically placed in its own cluster
+            self.assertNotEqual(nodes["ins:1"]["x"], pos4_x)
+            self.assertNotEqual(pos3_x, pos4_x)
 
             # 3. Second Run with new node
             graph_data["nodes"].append(

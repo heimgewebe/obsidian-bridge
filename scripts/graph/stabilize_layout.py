@@ -208,8 +208,9 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
             else:
                 next_cluster_x = 0
 
-            # Deterministic sorting of tags to guarantee stable assignment of new clusters
-            # Wait, no, we just assign x as we encounter them in new_nodes sorted by id
+            # Deterministically assign coordinates to new nodes:
+            # new_nodes is already sorted by ID. New primary tags receive their
+            # initial x_offset in the order they appear in this sorted list.
             for n in new_nodes:
                 nid = n["id"]
                 ptag = id_to_primary_tag.get(nid, "untagged")

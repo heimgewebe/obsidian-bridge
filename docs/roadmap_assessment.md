@@ -13,8 +13,8 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 
 ### 2. Teilweise umgesetzt (Teilweise)
 - **Relationen extrahieren:** Scaffold und Basisfunktion (`extract_relations.py`) sind implementiert und lesen aus Markdown-Wikilinks. Allerdings ist keine vollständige Taxonomie-Abdeckung nachgewiesen (z. B. komplexe Graph-Ableitungen über einfache Links hinaus fehlen).
-- **Phase 2 – Deterministische Canvas-Renderer:** Die Grundformen der Layout-Klassen sind implementiert. *Timeline* und *Radial* wirken robust und verwenden Sortierungen/Ringe deterministisch. *Cluster* und *System* sind aber noch zu einfach (reines Grid ohne tiefere semantische Gruppierung; "Grundform/Scaffold angelegt" trifft zu).
-- **Tests implementieren:** 8 Python-Tests (z.B. `test_layout_timeline.py`, `test_validate_specs.py`) und BATS-Tests laufen durch. Es fehlen jedoch dezidierte Testabdeckungen für komplexere Layout-Randfälle (wie z.B. exakte Koordinatenprüfung bei tiefen *Cluster*-Layouts).
+- **Phase 2 – Deterministische Canvas-Renderer:** Die Grundformen der Layout-Klassen sind implementiert. *Timeline* und *Radial* wirken robust und verwenden Sortierungen/Ringe deterministisch. Es gibt inzwischen eine dedizierte *Cluster*-Implementierung, die deterministisch und "incrementally stable" im Basissinn arbeitet (Knoten werden anhand primärer Tags gruppiert). Eine tiefere semantische Gruppierungslogik für komplexere Sub-Cluster-Szenarien fehlt jedoch noch. Auch *System* ist momentan noch eher elementar.
+- **Tests implementieren:** Eine wachsende Suite von Python-Tests (z.B. `test_layout_timeline.py`, `test_validate_specs.py`, `test_layout_cluster.py`) und BATS-Tests laufen durch. Es fehlen jedoch dezidierte Testabdeckungen für alle komplexeren Layout-Randfälle.
 
 ### 3. Offen
 - **Phase 4 – Vollständige Abdeckung (Monats-/Rollup-Canvas):** Es fehlen noch deklarative Spezifikationen für periodische Rollups. Die Roadmap fordert z.B. "Monats-Canvas". Ein solcher Spec-Vertrag existiert in `config/canvas-specs/` bisher nicht.
@@ -28,10 +28,10 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 Der nächste implizite Schritt gemäß Roadmap wäre vermutlich der restlose Ausbau von "Phase 4 - Vollständige Abdeckung", indem wir direkt hunderte Specs anlegen.
 
 **Optimiertes Vorgehen (Architekturwahrheit vor Aktionismus):**
-Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, öffnet eine neue Baustelle, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch rudimentär ist. Derzeit verarbeitet das *Cluster-Layout* in `stabilize_layout.py` neue Knoten nur extrem simpel via `grid_cols = 5` bzw. einem simplen linearen y-Offset pro Tag. Eine robuste Gruppierungslogik für Cluster fehlt.
+Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, öffnet eine neue Baustelle, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch rudimentär ist.
 
 Ein Vorpreschen in Phase 4 ohne stabiles *Cluster-Layout* führt zu "Graph Spaghetti", dem in der Blaupause explizit entgegengewirkt werden soll.
 
 **Ausgewählter nächster Schritt:**
-Wir implementieren die fehlende **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` robuster aus und ergänzen einen expliziten Unit-Test (`tests/test_layout_cluster.py`) als Beweis.
-Das stärkt die architektonische Basis (Souveränitätsrichtung), bleibt im Scope sauber (ein PR) und füllt exakt die Leerstelle "Cluster & System noch ausbaufähig" aus Phase 2. Danach sind Observatorium-Rollups (Phase 4) gefahrlos machbar.
+Wir haben die fehlende **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` robuster ausgebaut und einen expliziten Unit-Test (`tests/test_layout_cluster.py`) als Beweis ergänzt.
+Das stärkte die architektonische Basis (Souveränitätsrichtung), blieb im Scope sauber (ein PR) und füllte exakt die Leerstelle "Cluster & System noch ausbaufähig" aus Phase 2. Danach sind Observatorium-Rollups (Phase 4) gefahrlos machbar.
