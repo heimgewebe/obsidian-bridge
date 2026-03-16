@@ -114,6 +114,8 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
             for target_raw, rel, direction in links_to_process:
                 # Clean link (remove aliases if present e.g. [[path|alias]])
                 target_path = target_raw.split("|")[0]
+                # Clean link (remove anchor links if present e.g. [[path#heading]])
+                target_path = target_path.split("#")[0]
                 # Try to resolve target_path against path_to_id
                 target_id = None
 
