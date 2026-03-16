@@ -175,7 +175,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - priorisierte Relationstypen bei der deterministischen Kanten-Auswahl unter max_edges implementiert.
     - stärkste Kanten: Basisheuristiken implementiert (`prioritize_strongest`).
     - jüngste Artefakte als eigene Fokusheuristik: Basisheuristiken implementiert (`prioritize_recent`).
-  - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas.
+  - Rollup-Regeln (Statt eines Mega-Canvas): echte periodische Rollups ausstehend (z. B. echter Monats-Filter).
 
 ---
 

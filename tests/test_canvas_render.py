@@ -487,6 +487,75 @@ class TestCanvasRender(unittest.TestCase):
         self.assertTrue(edge_id.startswith("evt-1__references__evt-2_"))
         self.assertNotIn(":", edge_id)
 
+    def test_render_canvas_prioritize_recent(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-old", "kind": "event", "file_path": "old.md", "timestamp": "2020-01-01T12:00:00Z"},
+                {"id": "evt-new", "kind": "event", "file_path": "new.md", "timestamp": "2026-01-01T12:00:00Z"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-recent",
+            "type": "chronik",
+            "output": "canvases/recent.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {
+                "max_nodes": 1,
+                "prioritize_recent": True
+            }
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/recent.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 1)
+        self.assertEqual(canvas["nodes"][0]["file"], "new.md")
+
+    def test_render_canvas_prioritize_strongest(self):
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "event", "file_path": "n1.md"},
+                {"id": "n2", "kind": "event", "file_path": "n2.md"}
+            ],
+            "edges": [
+                {"id": "e-weak", "from": "n1", "to": "n2", "relation": "references", "weight": 0.1},
+                {"id": "e-strong", "from": "n1", "to": "n2", "relation": "references", "weight": 0.9}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-strongest",
+            "type": "chronik",
+            "output": "canvases/strongest.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {
+                "max_edges": 1,
+                "prioritize_strongest": True
+            }
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/strongest.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["edges"]), 1)
+        self.assertTrue("e-strong" in canvas["edges"][0]["id"])
+
     def test_render_canvas_invalid_prioritized_relations_raises(self):
         graph_data = {
             "nodes": [
