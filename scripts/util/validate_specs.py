@@ -5,19 +5,26 @@ import yaml
 try:
     import jsonschema
 except ImportError:
-    print("Warning: jsonschema not installed. Skipping spec validation.", file=sys.stderr)
-    sys.exit(0)
+    print("Error: jsonschema not installed. Required for spec validation in CI/Build.", file=sys.stderr)
+    sys.exit(1)
 
 def validate_specs(specs_dir: str, schema_path: str) -> int:
     if not os.path.exists(schema_path):
         print(f"Error: Schema not found at {schema_path}", file=sys.stderr)
         return 1
 
-    with open(schema_path, 'r', encoding='utf-8') as f:
-        schema = json.load(f)
+    try:
+        with open(schema_path, 'r', encoding='utf-8') as f:
+            schema = json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error: Schema at {schema_path} is invalid JSON: {e}", file=sys.stderr)
+        return 1
 
     errors = 0
-    for root, _, files in os.walk(specs_dir):
+    # Walk and sort for deterministic output
+    for root, dirs, files in os.walk(specs_dir):
+        dirs.sort()
+        files.sort()
         for file in files:
             if not file.endswith('.yaml'):
                 continue

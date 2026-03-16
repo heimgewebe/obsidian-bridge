@@ -26,6 +26,15 @@ def _parse_timestamp_utc(ts_str: Optional[str]) -> Optional[datetime]:
     except ValueError:
         return None
 
+def _parse_weight(edge: Dict[str, Any]) -> float:
+    weight = edge.get("weight")
+    if weight is None:
+        return 0.0
+    try:
+        return float(weight)
+    except (ValueError, TypeError):
+        return 0.0
+
 def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root: str = "vault-gewebe/obsidian-bridge") -> None:
     """
     Generates a deterministic .canvas file from a YAML declarative spec.
@@ -67,7 +76,11 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
     prioritize_recent = spec.get("filters", {}).get("prioritize_recent", False)
+    if not isinstance(prioritize_recent, bool):
+        raise ValueError(f"Invalid prioritize_recent: {prioritize_recent}. Must be a boolean.")
     prioritize_strongest = spec.get("filters", {}).get("prioritize_strongest", False)
+    if not isinstance(prioritize_strongest, bool):
+        raise ValueError(f"Invalid prioritize_strongest: {prioritize_strongest}. Must be a boolean.")
     prioritized_relations_raw = spec.get("filters", {}).get("prioritized_relations", [])
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
@@ -272,7 +285,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             # Priority relation goes first
             relation_rank.get(e.get("relation"), float('inf')),
             # If prioritize_strongest is set, rank by highest weight first
-            (float(e.get("weight", 0.0)) * -1) if prioritize_strongest else 0.0,
+            (_parse_weight(e) * -1) if prioritize_strongest else 0.0,
             _get_edge_id(e),
             e.get("from", ""),
             e.get("to", ""),

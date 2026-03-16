@@ -173,8 +173,8 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `date_window_days`, `max_depth`, `max_clusters` als Basis-Guards implementiert.
   - Fokusregeln:
     - priorisierte Relationstypen bei der deterministischen Kanten-Auswahl unter max_edges implementiert.
-    - stärkste Kanten: implementiert (`prioritize_strongest`).
-    - jüngste Artefakte als eigene Fokusheuristik: implementiert (`prioritize_recent`).
+    - stärkste Kanten: Basisheuristiken implementiert (`prioritize_strongest`).
+    - jüngste Artefakte als eigene Fokusheuristik: Basisheuristiken implementiert (`prioritize_recent`).
   - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas.
 
 ---
