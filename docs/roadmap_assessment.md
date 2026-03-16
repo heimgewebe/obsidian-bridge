@@ -28,10 +28,8 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 Der nächste implizite Schritt gemäß Roadmap wäre vermutlich der restlose Ausbau von "Phase 4 - Vollständige Abdeckung", indem wir direkt hunderte Specs anlegen.
 
 **Optimiertes Vorgehen (Architekturwahrheit vor Aktionismus):**
-Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, hätte eine neue Baustelle geöffnet, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch auf einem rudimentären Grid-Fallback basierte.
-
-Ein Vorpreschen in Phase 4 ohne stabiles *Cluster-Layout* führt unweigerlich zu "Graph Spaghetti", dem in der Blaupause explizit entgegengewirkt werden soll. Die Architektur erfordert deterministische und persistent verortbare Cluster-Bereiche, bevor komplexe Rollups visuell tragfähig werden.
+Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, hätte eine neue Baustelle geöffnet, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch auf einem rudimentären Grid-Fallback basierte. Ein solches Vorpreschen in Phase 4 ohne stabile Cluster-Darstellung hätte unweigerlich zu unlesbarem "Graph Spaghetti" geführt, dem in der Blaupause explizit entgegengewirkt werden soll.
 
 **Ausgewählter nächster Schritt:**
-Wir haben die fehlende **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` robuster ausgebaut und einen expliziten Unit-Test (`tests/test_layout_cluster.py`) als Beweis ergänzt.
-Das stärkte die architektonische Basis (Souveränitätsrichtung), blieb im Scope sauber (ein PR) und füllte exakt die Leerstelle "Cluster & System noch ausbaufähig" aus Phase 2. Danach sind Observatorium-Rollups (Phase 4) gefahrlos machbar.
+Um dieses strukturelle Risiko zu beheben, haben wir die **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` robuster ausgebaut und einen expliziten Unit-Test (`tests/test_layout_cluster.py`) als Beweis ergänzt.
+Das stärkte die architektonische Basis (Souveränitätsrichtung) und blieb im Scope sauber (ein PR). Inzwischen existiert somit eine dedizierte, deterministische und "incrementally stable" Basisimplementierung für Cluster. Für extrem komplexe semantische Rollup-Szenarien fehlt künftig zwar weiterhin eine tiefere Gruppierungslogik, aber die Leerstelle "Cluster-Grundform" aus Phase 2 ist verlässlich gefüllt. Danach sind die grundlegenden Observatorium-Rollups (Phase 4) gefahrlos machbar.
