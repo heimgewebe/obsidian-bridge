@@ -491,6 +491,7 @@ class TestCanvasRender(unittest.TestCase):
         graph_data = {
             "nodes": [
                 {"id": "evt-old", "kind": "event", "file_path": "old.md", "timestamp": "2020-01-01T12:00:00Z"},
+                {"id": "evt-missing", "kind": "event", "file_path": "missing.md"},
                 {"id": "evt-new", "kind": "event", "file_path": "new.md", "timestamp": "2026-01-01T12:00:00Z"}
             ],
             "edges": []
@@ -504,7 +505,7 @@ class TestCanvasRender(unittest.TestCase):
             "output": "canvases/recent.canvas",
             "source": {"artifact_types": ["event"]},
             "filters": {
-                "max_nodes": 1,
+                "max_nodes": 2,
                 "prioritize_recent": True
             }
         }
@@ -517,8 +518,12 @@ class TestCanvasRender(unittest.TestCase):
         with open(output_path, 'r') as f:
             canvas = json.load(f)
 
-        self.assertEqual(len(canvas["nodes"]), 1)
-        self.assertEqual(canvas["nodes"][0]["file"], "new.md")
+        self.assertEqual(len(canvas["nodes"]), 2)
+        # Should pick new.md first, then old.md, ignoring missing.md which drops to the bottom of the list
+        rendered_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("new.md", rendered_files)
+        self.assertIn("old.md", rendered_files)
+        self.assertNotIn("missing.md", rendered_files)
 
     def test_render_canvas_prioritize_strongest(self):
         graph_data = {

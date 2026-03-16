@@ -207,10 +207,16 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     all_nodes = list(graph.get("nodes", []))
     if prioritize_recent:
         # Sort by timestamp descending (most recent first), then ID for determinism
-        all_nodes.sort(key=lambda x: (
-            (_parse_timestamp_utc(x.get("timestamp")) or datetime.min.replace(tzinfo=timezone.utc)).timestamp() * -1,
-            x.get("id", "")
-        ))
+        def _recent_node_sort_key(node: Dict[str, Any]) -> tuple:
+            ts = _parse_timestamp_utc(node.get("timestamp"))
+            if ts is not None:
+                # Valid dates go first, sorted by highest timestamp (using negation)
+                return (0, -ts.timestamp(), node.get("id", ""))
+            else:
+                # Missing or invalid dates go last
+                return (1, 0, node.get("id", ""))
+
+        all_nodes.sort(key=_recent_node_sort_key)
     else:
         # Default deterministic sort
         all_nodes.sort(key=lambda x: x.get("id", ""))
