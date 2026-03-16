@@ -24,6 +24,8 @@
         "max_depth": { "type": "integer", "minimum": 0 },
         "max_clusters": { "type": "integer", "minimum": 1 },
         "date_window_days": { "type": "integer", "minimum": 0 },
+        "prioritize_recent": { "type": "boolean" },
+        "prioritize_strongest": { "type": "boolean" },
         "prioritized_relations": {
           "type": "array",
           "items": { "type": "string" }

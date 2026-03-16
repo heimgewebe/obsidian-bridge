@@ -169,13 +169,13 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - clusters_with
   output: canvases/observatorium/insight-network.canvas
   ```
-- [ ] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
+- [x] **Begrenzungsregeln (Guards) gegen Graph-Spaghetti:** (Teilweise in Render-Engine vorhanden)
   - Maximalgrößen pro Canvas: `max_nodes`, `max_edges`, `date_window_days`, `max_depth`, `max_clusters` als Basis-Guards implementiert.
   - Fokusregeln:
     - priorisierte Relationstypen bei der deterministischen Kanten-Auswahl unter max_edges implementiert.
-    - stärkste Kanten: ausstehend.
-    - jüngste Artefakte als eigene Fokusheuristik: ausstehend.
-  - Rollup-Regeln (Statt eines Mega-Canvas): Monats-Canvas, Themen-Canvas, Decision-Canvas, Insight-Canvas, Hub-Canvas (ausstehend).
+    - stärkste Kanten: Basisheuristiken implementiert (`prioritize_strongest`).
+    - jüngste Artefakte als eigene Fokusheuristik: Basisheuristiken implementiert (`prioritize_recent`).
+  - Rollup-Regeln (Statt eines Mega-Canvas): echte periodische Rollups ausstehend (z. B. echter Monats-Filter).
 
 ---
 
@@ -267,10 +267,10 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
-- [ ] **Phase 3 – Spec-System** (Basisimplementierung vorhanden, CI/Build-Integration ausstehend)
+- [x] **Phase 3 – Spec-System** (Basisimplementierung und CI/Build-Integration vorhanden)
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
-  - CI-Validierung.
+  - CI-Validierung (Schema-Validierung in build pipeline integriert).
 - [ ] **Phase 4 – Vollständige Abdeckung**
   - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas, Monats-/Rollup-Canvas).
 
