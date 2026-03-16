@@ -28,9 +28,9 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 Der nächste implizite Schritt gemäß Roadmap wäre vermutlich der restlose Ausbau von "Phase 4 - Vollständige Abdeckung", indem wir direkt hunderte Specs anlegen.
 
 **Optimiertes Vorgehen (Architekturwahrheit vor Aktionismus):**
-Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, öffnet eine neue Baustelle, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch rudimentär ist.
+Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, hätte eine neue Baustelle geöffnet, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch auf einem rudimentären Grid-Fallback basierte.
 
-Ein Vorpreschen in Phase 4 ohne stabiles *Cluster-Layout* führt zu "Graph Spaghetti", dem in der Blaupause explizit entgegengewirkt werden soll.
+Ein Vorpreschen in Phase 4 ohne stabiles *Cluster-Layout* führt unweigerlich zu "Graph Spaghetti", dem in der Blaupause explizit entgegengewirkt werden soll. Die Architektur erfordert deterministische und persistent verortbare Cluster-Bereiche, bevor komplexe Rollups visuell tragfähig werden.
 
 **Ausgewählter nächster Schritt:**
 Wir haben die fehlende **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` robuster ausgebaut und einen expliziten Unit-Test (`tests/test_layout_cluster.py`) als Beweis ergänzt.
