@@ -24,3 +24,6 @@ jobs:
 
       - name: Run tests (bats and python)
         run: make test
+
+      - name: Build and Validate Specs
+        run: make build

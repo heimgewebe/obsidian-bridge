@@ -91,6 +91,64 @@
           "height": 150
         }
       }
+    },
+    "index-latest": {
+      "nodes": {
+        "insight:ins-44": {
+          "x": 0,
+          "y": 600,
+          "width": 250,
+          "height": 150
+        },
+        "event:evt-123": {
+          "x": 350,
+          "y": 300,
+          "width": 250,
+          "height": 150
+        },
+        "decision:dec-12": {
+          "x": 700,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        }
+      }
+    },
+    "index-root": {
+      "nodes": {
+        "system_component:wgx-1": {
+          "x": 0,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        }
+      }
+    },
+    "index-topic-chronik": {
+      "nodes": {
+        "event:evt-123": {
+          "x": 0,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        }
+      }
+    },
+    "index-topic-observatorium": {
+      "nodes": {
+        "insight:ins-44": {
+          "x": 0,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        }
+      }
+    },
+    "knowledge-concept-network": {
+      "nodes": {}
+    },
+    "knowledge-entity-network": {
+      "nodes": {}
     }
   }
 }

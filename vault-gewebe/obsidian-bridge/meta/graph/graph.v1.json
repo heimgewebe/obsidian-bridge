@@ -50,21 +50,21 @@
   ],
   "edges": [
     {
-      "id": "edge:event:evt-123->decision:dec-12",
+      "id": "edge:event:evt-123->decision:dec-12:informed",
       "from": "event:evt-123",
       "to": "decision:dec-12",
       "relation": "informed",
       "weight": 1.0
     },
     {
-      "id": "edge:event:evt-123->insight:ins-44",
+      "id": "edge:event:evt-123->insight:ins-44:causes",
       "from": "event:evt-123",
       "to": "insight:ins-44",
       "relation": "causes",
       "weight": 1.0
     },
     {
-      "id": "edge:insight:ins-44->decision:dec-12",
+      "id": "edge:insight:ins-44->decision:dec-12:derives_from",
       "from": "insight:ins-44",
       "to": "decision:dec-12",
       "relation": "derives_from",
