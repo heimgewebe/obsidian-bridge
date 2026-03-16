@@ -184,12 +184,12 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (Grundformen / Scaffold angelegt - rudimentär implementiert in stabilize_layout.py)
-  - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen
-  - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen
-  - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe
-  - `knowledge/*` (Hierarchie-/Graph-Layout): Konzepte oben, Entitäten mittig, konkrete Artefakte unten
-  - `system/*` (Organsystem-Layout): Feste Positionen für: chronik, semantAH, hausKI, heimlern, heimgeist, leitstand, wgx, metarepo
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (teilweise implementiert)
+  - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen (deterministisch implementiert).
+  - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen (deterministisch implementiert mit Golden Angle).
+  - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe (Grundform/Scaffold angelegt).
+  - `knowledge/*` (Hierarchie-/Graph-Layout): Konzepte oben, Entitäten mittig, konkrete Artefakte unten (deterministisch implementiert).
+  - `system/*` (Organsystem-Layout): Feste Positionen für Organe (Grundform/Scaffold angelegt).
 - [x] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):** (Scaffold angelegt)
   - Enthält pro Knoten: `x`, `y`, `width`, `height`.
   - *Regel:* Bestehende Knoten behalten Position, neue werden deterministisch ergänzt, gelöschte verschwinden kontrolliert.
@@ -246,7 +246,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden, lückenhaft für Canvas-Klassen)
+- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden, lückenhaft für diverse Canvas-Klassen, Timeline/Layout-Stabilität getestet)
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`
@@ -263,7 +263,7 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen als Scaffold vorhanden)
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen implementiert, z.B. Timeline & Radial robuster; Cluster & System noch ausbaufähig)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
