@@ -82,41 +82,98 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
 
         if layout_type == "timeline":
             # links -> rechts = Zeit, oben / unten = Typgruppen
-            # Sort by timestamp
-            new_nodes.sort(key=lambda x: x.get("timestamp", ""))
+            # Sort by timestamp (fallback to id if timestamp is missing)
+            new_nodes.sort(key=lambda x: (x.get("timestamp", ""), x.get("id", "")))
 
-            # Group by kind deterministically
-            kind_offsets = {}
-            for n in relevant_nodes:
-                kind = n.get("kind", "unknown")
-                if kind not in kind_offsets:
-                    kind_offsets[kind] = len(kind_offsets) * 300
+            # Pre-compute id_to_kind for O(1) lookups
+            id_to_kind = {n.get("id", ""): n.get("kind", "unknown") for n in relevant_nodes if n.get("id")}
 
-            x_offset = len(canvas_layout["nodes"]) * 350
+            # Collect existing kinds and deterministically assign y-offsets
+            all_kinds = set(id_to_kind.values())
+            sorted_kinds = sorted(list(all_kinds))
+
+            kind_offsets = {kind: idx * 300 for idx, kind in enumerate(sorted_kinds)}
+
+            # Find the maximum x_offset for each kind among existing nodes in this canvas
+            existing_x_offsets = {kind: 0 for kind in sorted_kinds}
+            for existing_nid, existing_node in canvas_layout.get("nodes", {}).items():
+                existing_kind = id_to_kind.get(existing_nid, "unknown")
+                if existing_kind in existing_x_offsets:
+                    existing_x_offsets[existing_kind] = max(existing_x_offsets[existing_kind], existing_node.get("x", 0) + 350)
+
             for n in new_nodes:
                 nid = n["id"]
                 kind = n.get("kind", "unknown")
+
+                # Determine placement
+                y = kind_offsets[kind]
+                x = existing_x_offsets[kind]
+
+                # Update max x_offset for this kind
+                existing_x_offsets[kind] += 350
+
                 canvas_layout["nodes"][nid] = {
-                    "x": x_offset,
-                    "y": kind_offsets[kind],
+                    "x": x,
+                    "y": y,
                     "width": 250,
                     "height": 150
                 }
-                x_offset += 350
 
         elif layout_type == "radial":
-            # Zentrum = Entscheidung, innen = Inputs, außen = Outcomes
-            # simplistic: just place them in a circle around a center
-            center_x, center_y = 0, 0
-            radius = 400 + (len(canvas_layout["nodes"]) * 10)
+            # Zentrum = Entscheidung, innen = Inputs/Preimages, außen = Outcomes/Folgen
+            # Sort deterministically
+            new_nodes.sort(key=lambda x: x.get("id", ""))
 
-            angle_step = (2 * math.pi) / max(1, len(new_nodes))
-            for i, n in enumerate(new_nodes):
-                nid = n["id"]
-                angle = i * angle_step
+            # Simple heuristic: center has kind "decision", everything else is placed in rings
+            center_x, center_y = 0, 0
+            radius_inner = 500
+            radius_outer = 1000
+
+            # Find existing nodes to avoid shifting them
+            existing_count = len(canvas_layout["nodes"])
+
+            # Identify a decision node explicitly to place it at the center regardless of sort order
+            decision_nodes = [n for n in new_nodes if n.get("kind") == "decision"]
+            decision_node = decision_nodes[0] if decision_nodes else None
+
+            # Process decision node first if it exists and there are no existing nodes
+            if decision_node and existing_count == 0:
+                nid = decision_node["id"]
                 canvas_layout["nodes"][nid] = {
-                    "x": int(center_x + radius * math.cos(angle)),
-                    "y": int(center_y + radius * math.sin(angle)),
+                    "x": center_x,
+                    "y": center_y,
+                    "width": 250,
+                    "height": 150
+                }
+                existing_count += 1
+
+            for n in new_nodes:
+                if n["id"] in canvas_layout["nodes"]:
+                    continue
+
+                nid = n["id"]
+                kind = n.get("kind", "unknown")
+
+                # Place in concentric circles based on kind (preimages vs outcomes vs others)
+                # For a robust deterministic mapping without true graph traversal:
+                is_preimage = kind in ["insight", "event", "uncertainty"]
+                radius = radius_inner if is_preimage else radius_outer
+
+                # Distribute points deterministically based on their index
+                # Add existing count to index to continue the circle deterministically
+                idx = existing_count
+                # Pseudo-random but deterministic angle based on idx to prevent direct overlaps
+                # if the circle grows
+                angle = (idx * 137.5) * (math.pi / 180.0) # Golden angle
+
+                x = int(center_x + radius * math.cos(angle))
+                y = int(center_y + radius * math.sin(angle))
+
+                existing_count += 1
+
+                canvas_layout["nodes"][nid] = {
+                    "x": x,
+                    "y": y,
                     "width": 250,
                     "height": 150
                 }
