@@ -144,10 +144,12 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     if calendar_month_raw is not None:
         if not isinstance(calendar_month_raw, str):
             raise ValueError(f"Invalid calendar_month: {calendar_month_raw}. Must be a string.")
-        import re
-        if not re.match(r"^\d{4}-\d{2}$", calendar_month_raw):
-            raise ValueError(f"Invalid calendar_month format: {calendar_month_raw}. Must match YYYY-MM.")
-        calendar_month_target = calendar_month_raw
+        try:
+            # Parse to ensure it's a real month and not 2026-13, and strictly enforce format.
+            parsed_month = datetime.strptime(calendar_month_raw, "%Y-%m")
+            calendar_month_target = parsed_month.strftime("%Y-%m")
+        except ValueError:
+            raise ValueError(f"Invalid calendar_month: {calendar_month_raw}. Must be a valid month in YYYY-MM format.")
 
     import collections
 
@@ -263,7 +265,9 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             node_ts = _parse_timestamp_utc(node.get("timestamp"))
             if not node_ts:
                 continue
-            node_month_str = node_ts.strftime("%Y-%m")
+            # Ensure time is evaluated in UTC to prevent timezone boundary Schrödinger months
+            utc_ts = node_ts.astimezone(timezone.utc)
+            node_month_str = utc_ts.strftime("%Y-%m")
             if node_month_str != calendar_month_target:
                 continue
 

@@ -218,6 +218,86 @@ class TestCanvasRender(unittest.TestCase):
         self.assertNotIn("chronik/apr.md", node_files)
         self.assertNotIn("chronik/none.md", node_files)
 
+    def test_render_canvas_calendar_month_timezone_boundary(self):
+        graph_data = {
+            "nodes": [
+                # In UTC, 2026-03-31T23:00:00-02:00 corresponds to 2026-04-01T01:00:00Z.
+                # It should belong to April, not March.
+                {"id": "evt-bound1", "kind": "event", "file_path": "chronik/boundary.md", "timestamp": "2026-03-31T23:00:00-02:00"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Test if it's correctly skipped for March
+        spec_data = {
+            "id": "test-boundary",
+            "type": "chronik",
+            "output": "canvases/boundary.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"calendar_month": "2026-03"}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        with open(os.path.join(self.temp_dir.name, "canvases/boundary.canvas"), 'r') as f:
+            canvas = json.load(f)
+        self.assertEqual(len(canvas["nodes"]), 0)
+
+        # Test if it correctly shows up in April
+        spec_data["filters"]["calendar_month"] = "2026-04"
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        with open(os.path.join(self.temp_dir.name, "canvases/boundary.canvas"), 'r') as f:
+            canvas = json.load(f)
+        self.assertEqual(len(canvas["nodes"]), 1)
+
+    def test_render_canvas_invalid_calendar_month_raises(self):
+        graph_data = {"nodes": [{"id": "evt-1", "kind": "event", "file_path": "1.md"}], "edges": []}
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Test non-string
+        spec_data_type = {
+            "id": "test-type", "type": "chronik", "output": "canvases/type.canvas",
+            "source": {"artifact_types": ["event"]}, "filters": {"calendar_month": 202603}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_type, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a string", str(context.exception))
+
+        # Test out of bounds month
+        spec_data_bounds = {
+            "id": "test-bounds", "type": "chronik", "output": "canvases/bounds.canvas",
+            "source": {"artifact_types": ["event"]}, "filters": {"calendar_month": "2026-13"}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_bounds, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a valid month in YYYY-MM format", str(context.exception))
+
+        # Test wrong format
+        spec_data_format = {
+            "id": "test-format", "type": "chronik", "output": "canvases/format.canvas",
+            "source": {"artifact_types": ["event"]}, "filters": {"calendar_month": "2026/03"}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data_format, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+        self.assertIn("Must be a valid month in YYYY-MM format", str(context.exception))
+
+
     def test_render_canvas_mixed_timestamps(self):
         graph_data = {
             "nodes": [
