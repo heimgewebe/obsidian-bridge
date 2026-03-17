@@ -180,26 +180,55 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
 
         elif layout_type == "cluster":
             # Cluster je Thema
-            # Just grid them by tag/topic
-            tag_offsets = {}
+            # Deterministically sort nodes
+            new_nodes.sort(key=lambda x: x.get("id", ""))
 
-            x_offset = len(canvas_layout["nodes"]) * 350
+            # Identify existing tags and their max x and y offsets
+            id_to_primary_tag = {}
+            for rn in relevant_nodes:
+                tags = rn.get("tags", [])
+                primary_tag = tags[0] if tags else "untagged"
+                id_to_primary_tag[rn["id"]] = primary_tag
+
+            existing_tags_x = {}
+            existing_tags_y = {}
+
+            # Collect existing nodes info to maintain stable clusters
+            for existing_nid, existing_node in canvas_layout.get("nodes", {}).items():
+                ptag = id_to_primary_tag.get(existing_nid, "untagged")
+                if ptag not in existing_tags_x:
+                    existing_tags_x[ptag] = existing_node.get("x", 0)
+                    existing_tags_y[ptag] = existing_node.get("y", 0)
+                else:
+                    existing_tags_y[ptag] = max(existing_tags_y[ptag], existing_node.get("y", 0))
+
+            # Determine the next available x_offset for entirely new clusters
+            if existing_tags_x:
+                next_cluster_x = max(existing_tags_x.values()) + 400
+            else:
+                next_cluster_x = 0
+
+            # Deterministically assign coordinates to new nodes:
+            # new_nodes is already sorted by ID. New primary tags receive their
+            # initial x_offset in the order they appear in this sorted list.
             for n in new_nodes:
                 nid = n["id"]
-                tags = n.get("tags", ["untagged"])
-                primary_tag = tags[0] if tags else "untagged"
+                ptag = id_to_primary_tag.get(nid, "untagged")
 
-                if primary_tag not in tag_offsets:
-                    tag_offsets[primary_tag] = {"x": x_offset, "y": 0}
-                    x_offset += 400
+                if ptag not in existing_tags_x:
+                    existing_tags_x[ptag] = next_cluster_x
+                    existing_tags_y[ptag] = -200 # will be 0 when we add 200 below
+                    next_cluster_x += 400
+
+                # Increase y offset for this cluster
+                existing_tags_y[ptag] += 200
 
                 canvas_layout["nodes"][nid] = {
-                    "x": tag_offsets[primary_tag]["x"],
-                    "y": tag_offsets[primary_tag]["y"],
+                    "x": existing_tags_x[ptag],
+                    "y": existing_tags_y[ptag],
                     "width": 250,
                     "height": 150
                 }
-                tag_offsets[primary_tag]["y"] += 200
 
         elif layout_type == "hierarchy":
             # Konzepte oben, Entitäten mittig, konkrete Artefakte unten
