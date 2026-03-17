@@ -10,27 +10,26 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 - **Graph-Layer:** `build_graph.py` erzeugt `meta/graph/graph.v1.json` deterministisch aus Markdown-Artefakten (Idempotenz ist implementiert).
 - **Canvas-Specs als Build-Input:** Ein ausgebautes YAML-Spec-System (`contracts/canvas-spec.v1.json`) samt CI-Integration und Pipeline-Integration (`make build` -> `validate_specs.py`) ist vorhanden und läuft stabil.
 - **Interne Canvas-Repräsentation & Layout Cache:** `stabilize_layout.py` nutzt den Layout-Cache (`layout.v1.json`) deterministisch; Positionsverschiebungen werden vermieden.
+- **Layout-Grundtypen:** Timeline, Radial, Cluster, Hierarchy und System sind implementiert und stabilisiert.
 
 ### 2. Teilweise umgesetzt (Teilweise)
-- **Relationen extrahieren:** Scaffold und Basisfunktion (`extract_relations.py`) sind implementiert und lesen aus Markdown-Wikilinks. Allerdings ist keine vollständige Taxonomie-Abdeckung nachgewiesen (z. B. komplexe Graph-Ableitungen über einfache Links hinaus fehlen).
-- **Phase 2 – Deterministische Canvas-Renderer:** Die Grundformen der Layout-Klassen sind implementiert. *Timeline* und *Radial* wirken robust und verwenden Sortierungen/Ringe deterministisch. Es gibt inzwischen eine dedizierte *Cluster*-Implementierung, die deterministisch und "incrementally stable" im Basissinn arbeitet (Knoten werden anhand primärer Tags gruppiert). Eine tiefere semantische Gruppierungslogik für komplexere Sub-Cluster-Szenarien fehlt jedoch noch. Auch *System* ist momentan noch eher elementar.
-- **Tests implementieren:** Eine wachsende Suite von Python-Tests (z.B. `test_layout_timeline.py`, `test_validate_specs.py`, `test_layout_cluster.py`) und BATS-Tests laufen durch. Es fehlen jedoch dezidierte Testabdeckungen für alle komplexeren Layout-Randfälle.
+- **Relationen extrahieren:** Scaffold und Basisfunktion (`extract_relations.py`) sind implementiert und lesen aus Markdown-Wikilinks. Komplexe semantische Ableitungen und vollständige Taxonomie-Abdeckung fehlen noch.
+- **Phase 2 – Deterministische Canvas-Renderer:** Die Grundformen der Layout-Klassen sind implementiert und robuster geworden. Insbesondere das *Cluster*-Layout arbeitet deterministisch auf Basis von Tags. Tiefere semantische Gruppierungslogik fehlt jedoch.
+- **Tests implementieren:** Eine Suite von Python-Tests (Smoke, Rendering, Layout-Stabilität) und BATS-Tests läuft. Es fehlen dezidierte Abdeckungen für komplexe Layout-Randfälle.
+- **Phase 4 – Vollständige Abdeckung:** Topic-Hubs und Index sind über Specs implementiert. Echte Kalender-Monatsfilter (`calendar_month`) sind implementiert und arbeiten in UTC deterministisch. Rollierende Fenster (`date_window_days: 30`) existieren weiterhin für relative Zeitbezüge. Offen bleibt der breite Ausbau weiterer Specs.
+- **Echter Kalender-Monatsfilter:** Ein deterministischer Filter (`calendar_month`) für monatsscharfe Rollups (z. B. `events-2026-03.canvas`) auf Basis der Dokumenten-Zeitstempel wurde implementiert, inklusive Contracts-first Schema-Validation und Runtime-Schutz gegen ungültige Monate.
 
 ### 3. Offen
-- **Phase 4 – Vollständige Abdeckung (Monats-/Rollup-Canvas):** Es fehlen noch deklarative Spezifikationen für periodische Rollups. Die Roadmap fordert z.B. "Monats-Canvas". Ein solcher Spec-Vertrag existiert in `config/canvas-specs/` bisher nicht.
+- **Vollständige Spec-Abdeckung (Phase 4):** Die breite Anlage aller weiteren Monats- oder Themen-Specs (obwohl die Filter-Maschinerie dafür jetzt bereitsteht).
 - **Risiko-/Nutzenabschätzung / Alternativpfad:** Konzeptionelle Phase; auf Code-Ebene nicht direkt darstellbar.
 
 ---
 
-## Plan-Optimierung & Nächster Umsetzungsschritt
+## Jüngster Umsetzungsschritt: Kalender-Monatsfilter
 
-**Ursprüngliche Annahme / Reihenfolge:**
-Der nächste implizite Schritt gemäß Roadmap wäre vermutlich der restlose Ausbau von "Phase 4 - Vollständige Abdeckung", indem wir direkt hunderte Specs anlegen.
-
-**Optimiertes Vorgehen (Architekturwahrheit vor Aktionismus):**
-Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, hätte eine neue Baustelle geöffnet, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch auf einem rudimentären Grid-Fallback basierte. Ein solches Vorpreschen in Phase 4 ohne stabile Cluster-Darstellung hätte unweigerlich zu unlesbarem "Graph Spaghetti" geführt, dem in der Blaupause explizit entgegengewirkt werden soll.
-
-**Jüngster Umsetzungsschritt:**
-Nachdem die **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` implementiert und über `tests/test_layout_cluster.py` abgesichert wurde, ist die Basis für Cluster-Layouts (Phase 2) belastbar.
-Daraufhin wurde diese Architektur in **Phase 4** angewendet: Als ein erster periodik-ähnlicher Rollup für das Observatorium wurde eine neue deklarative Spec (`config/canvas-specs/observatorium-rollup-last-30-days.yaml`) eingeführt.
-Dieser Rollup testet das `cluster`-Layout an realen Artefakten. Er ist aktuell als rollierendes 30-Tage-Fenster umgesetzt (`date_window_days: 30`) und dient als verlässliche Brücke. Ein echter Kalender-Monatsfilter bleibt weiterhin offen.
+Die Roadmap forderte unter "Phase 4 - Vollständige Abdeckung" echte Monats-/Rollup-Canvas. Der Filtermechanismus fehlte bisher.
+Es wurde der deterministische Filter `calendar_month` implementiert:
+1. Schema-Härtung im Vertrag (`contracts/canvas-spec.v1.json`) für valides YYYY-MM Format.
+2. Robuste Runtime-Validierung und UTC-Normalisierung in `scripts/canvas/render_canvas.py`, um Zeitzonen-Drift an Monatsgrenzen zu verhindern.
+3. Testabdeckung (inkl. Boundaries und Negativtests) in `test_canvas_render.py`.
+4. Anlage der Bootstrap-Spec `config/canvas-specs/chronik-2026-03.yaml`.
