@@ -75,7 +75,6 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     max_depth_raw = spec.get("filters", {}).get("max_depth")
     max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
-    calendar_month = spec.get("filters", {}).get("calendar_month")
     prioritize_recent = spec.get("filters", {}).get("prioritize_recent", False)
     if not isinstance(prioritize_recent, bool):
         raise ValueError(f"Invalid prioritize_recent: {prioritize_recent}. Must be a boolean.")
@@ -139,10 +138,6 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             raise ValueError(f"date_window_days is set to {date_window_days}, but no valid timestamps were found in the relevant graph nodes.")
 
         cutoff_date = max_ts - timedelta(days=date_window_days)
-
-    if calendar_month is not None:
-        if not isinstance(calendar_month, str) or len(calendar_month) != 7 or calendar_month[4] != "-":
-            raise ValueError(f"Invalid calendar_month: {calendar_month}. Must be a string in YYYY-MM format.")
 
     import collections
 
@@ -252,11 +247,6 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         if cutoff_date is not None:
             node_ts = _parse_timestamp_utc(node.get("timestamp"))
             if not node_ts or node_ts < cutoff_date:
-                continue
-
-        if calendar_month is not None:
-            node_ts = _parse_timestamp_utc(node.get("timestamp"))
-            if not node_ts or node_ts.strftime("%Y-%m") != calendar_month:
                 continue
 
         if added_nodes >= max_nodes:
