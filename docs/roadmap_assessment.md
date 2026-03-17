@@ -31,5 +31,8 @@ Der nächste implizite Schritt gemäß Roadmap wäre vermutlich der restlose Aus
 Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, hätte eine neue Baustelle geöffnet, solange die Darstellungslogik für die zugrundeliegenden Layouts (insbesondere das *Cluster-Layout*, das in Observatorium-Rollups massiv genutzt werden wird) noch auf einem rudimentären Grid-Fallback basierte. Ein solches Vorpreschen in Phase 4 ohne stabile Cluster-Darstellung hätte unweigerlich zu unlesbarem "Graph Spaghetti" geführt, dem in der Blaupause explizit entgegengewirkt werden soll.
 
 **Ausgewählter nächster Schritt:**
-Um dieses strukturelle Risiko zu beheben, haben wir die **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` robuster ausgebaut und einen expliziten Unit-Test (`tests/test_layout_cluster.py`) als Beweis ergänzt.
-Das stärkte die architektonische Basis (Souveränitätsrichtung) und blieb im Scope sauber (ein PR). Inzwischen existiert somit eine dedizierte, deterministische und "incrementally stable" Basisimplementierung für Cluster. Für extrem komplexe semantische Rollup-Szenarien fehlt künftig zwar weiterhin eine tiefere Gruppierungslogik, aber die Leerstelle "Cluster-Grundform" aus Phase 2 ist verlässlich gefüllt. Danach sind die grundlegenden Observatorium-Rollups (Phase 4) gefahrlos machbar.
+Nachdem die **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` bereits implementiert und über `tests/test_layout_cluster.py` abgesichert wurde, ist die Basis für Cluster-Layouts (Phase 2) belastbar.
+Der logische nächste Schritt ist nun die Anwendung dieser Architektur in **Phase 4**: die Implementierung echter periodischer Rollups über die Spec-Engine.
+
+Wir haben als ersten periodik-ähnlichen Rollup für das Observatorium eine neue deklarative Spec (`config/canvas-specs/observatorium-rollup-last-30-days.yaml`) eingeführt.
+Dieser Rollup testet das `cluster`-Layout an realen Artefakten. Er ist aktuell als rollierendes 30-Tage-Fenster umgesetzt (`date_window_days: 30`) und dient als verlässliche Brücke. Die Entwicklung eines echten Kalender-Monatsfilters bleibt in der Roadmap weiterhin offen.

@@ -175,7 +175,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - priorisierte Relationstypen bei der deterministischen Kanten-Auswahl unter max_edges implementiert.
     - stärkste Kanten: Basisheuristiken implementiert (`prioritize_strongest`).
     - jüngste Artefakte als eigene Fokusheuristik: Basisheuristiken implementiert (`prioritize_recent`).
-  - Rollup-Regeln (Statt eines Mega-Canvas): echte periodische Rollups ausstehend (z. B. echter Monats-Filter).
+  - Rollup-Regeln (Statt eines Mega-Canvas): erste periodik-ähnliche Rollups vorhanden (rollierendes 30-Tage-Fenster), echte Kalender-Monatsfilter ausstehend.
 
 ---
 
@@ -187,7 +187,7 @@ Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungee
 - [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (teilweise implementiert)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen (deterministisch implementiert).
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen (deterministisch implementiert mit Golden Angle).
-  - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe (Grundform/Scaffold angelegt).
+  - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe (Basis deterministisch implementiert, tiefere Semantik offen).
   - `knowledge/*` (Hierarchie-/Graph-Layout): Konzepte oben, Entitäten mittig, konkrete Artefakte unten (deterministisch implementiert).
   - `system/*` (Organsystem-Layout): Feste Positionen für Organe (Grundform/Scaffold angelegt).
 - [x] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):** (Scaffold angelegt)
@@ -246,7 +246,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden, lückenhaft für diverse Canvas-Klassen, Timeline/Layout-Stabilität getestet)
+- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden, lückenhaft für diverse Canvas-Klassen, Timeline/Cluster/Radial/Layout-Stabilität getestet)
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`
@@ -263,7 +263,7 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen implementiert, z.B. Timeline & Radial robuster; Cluster & System noch ausbaufähig)
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen implementiert, z.B. Timeline, Radial & Cluster robuster; System noch ausbaufähig)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
@@ -272,7 +272,8 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Render-Build über Specs.
   - CI-Validierung (Schema-Validierung in build pipeline integriert).
 - [ ] **Phase 4 – Vollständige Abdeckung**
-  - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas, Monats-/Rollup-Canvas).
+  - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas teilweise implementiert).
+  - Monats-/Rollup-Canvas teilweise (rollierende 30-Tage-Fenster existieren, echter Kalender-Monatsfilter noch offen).
 
 ---
 

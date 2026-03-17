@@ -149,6 +149,16 @@
     },
     "knowledge-entity-network": {
       "nodes": {}
+    },
+    "observatorium-rollup-last-30-days": {
+      "nodes": {
+        "insight:ins-44": {
+          "x": 0,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        }
+      }
     }
   }
 }
