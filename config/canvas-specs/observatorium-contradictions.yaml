@@ -1,4 +1,4 @@
-id: observatorium-contradiction-network
+id: observatorium-contradictions
 type: observatorium
 source:
   artifact_types:
@@ -11,6 +11,4 @@ filters:
   max_clusters: 8
 relations:
   - contradicts
-  - derives_from
-  - causes
-output: canvases/observatorium/contradiction-network.canvas
+output: canvases/observatorium/contradictions.canvas

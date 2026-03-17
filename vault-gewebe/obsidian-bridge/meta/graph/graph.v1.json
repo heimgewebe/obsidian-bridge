@@ -1,18 +1,6 @@
 {
   "nodes": [
     {
-      "id": "contradiction:con-1",
-      "kind": "contradiction",
-      "title": "Observatorium Contradiction 1",
-      "file_path": "observatorium/contradictions/contradiction--2026-03-09--con-1.md",
-      "source_repo": "observatorium",
-      "timestamp": "2026-03-09T10:00:00Z",
-      "tags": [
-        "contradiction",
-        "observatorium"
-      ]
-    },
-    {
       "id": "decision:dec-12",
       "kind": "decision",
       "title": "Policy Decision Alpha",
@@ -61,13 +49,6 @@
     }
   ],
   "edges": [
-    {
-      "id": "edge:contradiction:con-1->insight:ins-44:contradicts",
-      "from": "contradiction:con-1",
-      "to": "insight:ins-44",
-      "relation": "contradicts",
-      "weight": 1.0
-    },
     {
       "id": "edge:event:evt-123->decision:dec-12:informed",
       "from": "event:evt-123",

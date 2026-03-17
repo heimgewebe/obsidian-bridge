@@ -79,12 +79,6 @@
           "y": 0,
           "width": 250,
           "height": 150
-        },
-        "contradiction:con-1": {
-          "x": 400,
-          "y": 0,
-          "width": 250,
-          "height": 150
         }
       }
     },
@@ -147,12 +141,6 @@
           "y": 0,
           "width": 250,
           "height": 150
-        },
-        "contradiction:con-1": {
-          "x": 400,
-          "y": 0,
-          "width": 250,
-          "height": 150
         }
       }
     },
@@ -166,12 +154,6 @@
       "nodes": {
         "insight:ins-44": {
           "x": 0,
-          "y": 0,
-          "width": 250,
-          "height": 150
-        },
-        "contradiction:con-1": {
-          "x": 400,
           "y": 0,
           "width": 250,
           "height": 150
@@ -200,16 +182,10 @@
         }
       }
     },
-    "observatorium-contradiction-network": {
+    "observatorium-contradictions": {
       "nodes": {
-        "contradiction:con-1": {
-          "x": 0,
-          "y": 0,
-          "width": 250,
-          "height": 150
-        },
         "insight:ins-44": {
-          "x": 400,
+          "x": 0,
           "y": 0,
           "width": 250,
           "height": 150
