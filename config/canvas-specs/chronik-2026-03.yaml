@@ -1,0 +1,18 @@
+id: chronik-2026-03
+type: chronik
+source:
+  artifact_types:
+    - event
+    - decision
+    - insight
+layout: timeline
+filters:
+  max_nodes: 50
+  max_edges: 100
+  calendar_month: "2026-03"
+relations:
+  - references
+  - causes
+  - informed
+  - precedes
+output: canvases/chronik/events-2026-03.canvas

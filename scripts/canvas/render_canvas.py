@@ -75,6 +75,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     max_depth_raw = spec.get("filters", {}).get("max_depth")
     max_clusters_raw = spec.get("filters", {}).get("max_clusters")
     date_window_days_raw = spec.get("filters", {}).get("date_window_days")
+    calendar_month_raw = spec.get("filters", {}).get("calendar_month")
     prioritize_recent = spec.get("filters", {}).get("prioritize_recent", False)
     if not isinstance(prioritize_recent, bool):
         raise ValueError(f"Invalid prioritize_recent: {prioritize_recent}. Must be a boolean.")
@@ -138,6 +139,15 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             raise ValueError(f"date_window_days is set to {date_window_days}, but no valid timestamps were found in the relevant graph nodes.")
 
         cutoff_date = max_ts - timedelta(days=date_window_days)
+
+    calendar_month_target = None
+    if calendar_month_raw is not None:
+        if not isinstance(calendar_month_raw, str):
+            raise ValueError(f"Invalid calendar_month: {calendar_month_raw}. Must be a string.")
+        import re
+        if not re.match(r"^\d{4}-\d{2}$", calendar_month_raw):
+            raise ValueError(f"Invalid calendar_month format: {calendar_month_raw}. Must match YYYY-MM.")
+        calendar_month_target = calendar_month_raw
 
     import collections
 
@@ -247,6 +257,14 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         if cutoff_date is not None:
             node_ts = _parse_timestamp_utc(node.get("timestamp"))
             if not node_ts or node_ts < cutoff_date:
+                continue
+
+        if calendar_month_target is not None:
+            node_ts = _parse_timestamp_utc(node.get("timestamp"))
+            if not node_ts:
+                continue
+            node_month_str = node_ts.strftime("%Y-%m")
+            if node_month_str != calendar_month_target:
                 continue
 
         if added_nodes >= max_nodes:

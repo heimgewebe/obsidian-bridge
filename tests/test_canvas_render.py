@@ -180,6 +180,44 @@ class TestCanvasRender(unittest.TestCase):
         # Edge from old to mid should not be present
         self.assertEqual(len(canvas["edges"]), 1)
 
+    def test_render_canvas_calendar_month(self):
+        graph_data = {
+            "nodes": [
+                {"id": "evt-feb", "kind": "event", "file_path": "chronik/feb.md", "timestamp": "2026-02-15T12:00:00Z"},
+                {"id": "evt-mar1", "kind": "event", "file_path": "chronik/mar1.md", "timestamp": "2026-03-01T12:00:00Z"},
+                {"id": "evt-mar2", "kind": "event", "file_path": "chronik/mar2.md", "timestamp": "2026-03-31T23:59:59Z"},
+                {"id": "evt-apr", "kind": "event", "file_path": "chronik/apr.md", "timestamp": "2026-04-01T00:00:00Z"},
+                {"id": "evt-none", "kind": "event", "file_path": "chronik/none.md"}
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-calendar-month",
+            "type": "chronik",
+            "output": "canvases/calendar-month.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"calendar_month": "2026-03"}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/calendar-month.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
+        node_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("chronik/mar1.md", node_files)
+        self.assertIn("chronik/mar2.md", node_files)
+        self.assertNotIn("chronik/feb.md", node_files)
+        self.assertNotIn("chronik/apr.md", node_files)
+        self.assertNotIn("chronik/none.md", node_files)
+
     def test_render_canvas_mixed_timestamps(self):
         graph_data = {
             "nodes": [

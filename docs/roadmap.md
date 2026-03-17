@@ -271,9 +271,9 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
   - CI-Validierung (Schema-Validierung in build pipeline integriert).
-- [ ] **Phase 4 – Vollständige Abdeckung** (Teilweise. Topic-Hubs und Index sind über entsprechende Specs implementiert. Bei den Rollup-Canvas ist das 30-Tage-Fenster als Brücke umgesetzt. Ein echter Kalender-Monatsfilter bleibt weiterhin offen.)
+- [ ] **Phase 4 – Vollständige Abdeckung** (Teilweise. Topic-Hubs und Index sind über entsprechende Specs implementiert. Echte Kalender-Monatsfilter (`calendar_month`) sind implementiert und ergänzen rollierende Fenster).
   - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas implementiert und generiert).
-  - Monats-/Rollup-Canvas teilweise (rollierende 30-Tage-Fenster existieren, echter Kalender-Monatsfilter offen).
+  - [x] Monats-/Rollup-Canvas teilweise (rollierende 30-Tage-Fenster existieren, echter Kalender-Monatsfilter umgesetzt).
 
 ---
 
