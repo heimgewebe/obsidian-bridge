@@ -1,0 +1,16 @@
+id: observatorium-rollup-2026-03
+type: observatorium
+source:
+  artifact_types:
+    - insight
+    - contradiction
+    - uncertainty
+layout: cluster
+filters:
+  max_nodes: 100
+  calendar_month: "2026-03"
+relations:
+  - references
+  - contradicts
+  - clusters_with
+output: canvases/observatorium/rollup-2026-03.canvas

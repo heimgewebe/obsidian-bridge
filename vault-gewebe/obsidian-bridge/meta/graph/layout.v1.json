@@ -159,6 +159,16 @@
           "height": 150
         }
       }
+    },
+    "observatorium-rollup-2026-03": {
+      "nodes": {
+        "insight:ins-44": {
+          "x": 0,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        }
+      }
     }
   }
 }

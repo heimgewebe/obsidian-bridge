@@ -115,11 +115,11 @@ Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.**
 
 Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stellt keine neue systemische Wahrheitsschicht neben Heimgewebe dar, sondern dient ausschließlich der deterministischen Ableitung von Canvas-Strukturen. **Artefakte + Relationen** sind die Quelle, nicht Markdown.
 
-- [ ] **Relationen extrahieren:** (teilweise / Scaffold angelegt - Basisfunktion da, keine vollständige Taxonomie-Abdeckung)
+- [ ] **Relationen extrahieren:** (teilweise / Scaffold angelegt - Basisfunktion `extract_relations.py` da, liest Wiki-Links aus Markdown. Komplexe semantische Ableitungen und vollständige Taxonomie-Abdeckung fehlen noch).
   - Quellen: chronik-Events, policy.decision, decision.preimage, knowledge.observatory, contradiction.report, uncertainty.report.
   - *Relationstypen:* references, causes, informed, contradicts, derives_from, clusters_with, precedes, belongs_to_topic.
   - *Auflösung:* Deterministische Link-Auflösung mit Priorität (exakter Pfad > basename). Mehrdeutigkeiten erzeugen Warnungen statt stiller Fehler.
-- [x] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):** (Scaffold angelegt)
+- [x] **Internes Graph-Artefakt erzeugen (`meta/graph/graph.v1.json`):** (Umgesetzt via `build_graph.py` mit id, kind, file_path, timestamp).
   - Soll `nodes`, `edges`, optional `clusters`, optional `topics` enthalten.
 - [x] **Knotenmodell definieren (Artefakt/Konzept):**
   ```json
@@ -150,7 +150,7 @@ Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stel
 
 Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verteilte Logik, CI-prüfbar).
 
-- [x] **Spec-Format implementieren:** (Scaffold angelegt)
+- [x] **Spec-Format implementieren:** (Vollständig implementiert in `contracts/canvas-spec.v1.json` inklusive Schema-Validierung).
   ```yaml
   id: observatorium-insight-network
   type: observatorium
@@ -184,16 +184,16 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (teilweise implementiert)
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (teilweise implementiert in `stabilize_layout.py`)
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen (deterministisch implementiert).
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen (deterministisch implementiert mit Golden Angle).
-  - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe (Basis deterministisch implementiert, tiefere Semantik offen).
+  - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe (Basis deterministisch implementiert über primäre Tags, tiefere Semantik und Sub-Cluster offen).
   - `knowledge/*` (Hierarchie-/Graph-Layout): Konzepte oben, Entitäten mittig, konkrete Artefakte unten (deterministisch implementiert).
-  - `system/*` (Organsystem-Layout): Feste Positionen für Organe (Grundform/Scaffold angelegt).
-- [x] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):** (Scaffold angelegt)
+  - `system/*` (Organsystem-Layout): Feste Positionen für Organe (Grundform/Scaffold implementiert, ausbaufähig).
+- [x] **Persistentes Layout-Artefakt erzeugen (`layout.v1.json`):** (Umgesetzt, unterstützt Migrationen von flachem Format zu hierarchischem Format per Canvas-ID).
   - Enthält pro Knoten: `x`, `y`, `width`, `height`.
   - *Regel:* Bestehende Knoten behalten Position, neue werden deterministisch ergänzt, gelöschte verschwinden kontrolliert.
-- [x] **Interne Canvas-Repräsentation erzeugen:** (Scaffold angelegt)
+- [x] **Interne Canvas-Repräsentation erzeugen:** (Umgesetzt via `render_canvas.py`)
   ```json
   {
     "nodes": [...],
@@ -235,7 +235,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `contracts/graph.v1.json`
   - `contracts/canvas-spec.v1.json`
   - `contracts/layout.v1.json`
-- [x] **Neue Python Skripte schreiben:** (Scaffold angelegt)
+- [x] **Neue Python Skripte schreiben:** (Alle Skripte implementiert und im Makefile `make build` integriert).
   - `scripts/graph/build_graph.py`
   - `scripts/graph/extract_relations.py`
   - `scripts/graph/stabilize_layout.py`
@@ -263,17 +263,17 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [ ] **Phase 2 – Deterministische Canvas-Renderer** (teilweise - Grundformen der Layout-Klassen implementiert, z.B. Timeline, Radial & Cluster robuster; System noch ausbaufähig)
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (Teilweise umgesetzt. `render_canvas.py` schreibt deterministische Canvases. Layouts wie Timeline, Radial und Cluster laufen belastbar in `stabilize_layout.py`. System-Layout existiert als Grundgerüst.)
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.
-- [x] **Phase 3 – Spec-System** (Basisimplementierung und CI/Build-Integration vorhanden)
+- [x] **Phase 3 – Spec-System** (Vollständig umgesetzt über `validate_specs.py`, JSON Schema in `contracts/` und Integration im `Makefile`.)
   - Deklarative Canvas-Specs.
   - Render-Build über Specs.
   - CI-Validierung (Schema-Validierung in build pipeline integriert).
-- [ ] **Phase 4 – Vollständige Abdeckung**
-  - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas teilweise implementiert).
-  - Monats-/Rollup-Canvas teilweise (rollierende 30-Tage-Fenster existieren, echter Kalender-Monatsfilter noch offen).
+- [ ] **Phase 4 – Vollständige Abdeckung** (Teilweise. Topic-Hubs und Index sind über entsprechende Specs implementiert. Bei den Rollup-Canvas ist das 30-Tage-Fenster als Brücke umgesetzt, der echte Kalender-Monatsfilter als Basis im Spec-Schema, aber eine vollständige Testabdeckung fehlt ggf.)
+  - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas implementiert und generiert).
+  - Monats-/Rollup-Canvas teilweise (rollierende 30-Tage-Fenster existieren, echter Kalender-Monatsfilter als nächster Umsetzungsschritt vorgesehen/in Arbeit).
 
 ---
 
