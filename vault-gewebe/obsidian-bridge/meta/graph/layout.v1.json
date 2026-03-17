@@ -150,7 +150,7 @@
     "knowledge-entity-network": {
       "nodes": {}
     },
-    "observatorium-rollup-monthly": {
+    "observatorium-rollup-last-30-days": {
       "nodes": {
         "insight:ins-44": {
           "x": 0,

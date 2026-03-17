@@ -34,5 +34,5 @@ Einfach nur YAML-Dateien (Monats-Rollups) anzulegen, hätte eine neue Baustelle 
 Nachdem die **Cluster-Layout-Stabilisierungslogik** in `scripts/graph/stabilize_layout.py` bereits implementiert und über `tests/test_layout_cluster.py` abgesichert wurde, ist die Basis für Cluster-Layouts (Phase 2) belastbar.
 Der logische nächste Schritt ist nun die Anwendung dieser Architektur in **Phase 4**: die Implementierung echter periodischer Rollups über die Spec-Engine.
 
-Wir implementieren im nächsten Schritt einen **Monats-Rollup für das Observatorium** als neue deklarative Spec (`config/canvas-specs/observatorium-rollup-monthly.yaml`).
-Dieser Rollup testet das `cluster`-Layout an realen Artefakten und schließt in der Roadmap den Punkt "echte periodische Rollups ausstehend (z. B. echter Monats-Filter)" für die Observatoriums-Ebene ab, ohne großen architektonischen Scope-Creep.
+Wir haben als ersten periodik-ähnlichen Rollup für das Observatorium eine neue deklarative Spec (`config/canvas-specs/observatorium-rollup-last-30-days.yaml`) eingeführt.
+Dieser Rollup testet das `cluster`-Layout an realen Artefakten. Er ist aktuell als rollierendes 30-Tage-Fenster umgesetzt (`date_window_days: 30`) und dient als verlässliche Brücke. Die Entwicklung eines echten Kalender-Monatsfilters bleibt in der Roadmap weiterhin offen.

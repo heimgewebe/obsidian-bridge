@@ -175,7 +175,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
     - priorisierte Relationstypen bei der deterministischen Kanten-Auswahl unter max_edges implementiert.
     - stärkste Kanten: Basisheuristiken implementiert (`prioritize_strongest`).
     - jüngste Artefakte als eigene Fokusheuristik: Basisheuristiken implementiert (`prioritize_recent`).
-  - Rollup-Regeln (Statt eines Mega-Canvas): echte periodische Rollups ausstehend (z. B. echter Monats-Filter).
+  - Rollup-Regeln (Statt eines Mega-Canvas): erste periodik-ähnliche Rollups vorhanden (rollierendes 30-Tage-Fenster), echte Kalender-Monatsfilter ausstehend.
 
 ---
 
@@ -272,7 +272,8 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Render-Build über Specs.
   - CI-Validierung (Schema-Validierung in build pipeline integriert).
 - [ ] **Phase 4 – Vollständige Abdeckung**
-  - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas, Monats-/Rollup-Canvas teilweise).
+  - Alle definierten Canvas-Klassen erzeugen (Hub-Canvas, Topic-Canvas teilweise implementiert).
+  - Monats-/Rollup-Canvas teilweise (rollierende 30-Tage-Fenster existieren, echter Kalender-Monatsfilter noch offen).
 
 ---
 

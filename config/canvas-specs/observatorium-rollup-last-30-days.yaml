@@ -1,4 +1,4 @@
-id: observatorium-rollup-monthly
+id: observatorium-rollup-last-30-days
 type: observatorium
 source:
   artifact_types:
@@ -13,4 +13,4 @@ relations:
   - references
   - contradicts
   - clusters_with
-output: canvases/observatorium/rollup-monthly.canvas
+output: canvases/observatorium/rollup-last-30-days.canvas
