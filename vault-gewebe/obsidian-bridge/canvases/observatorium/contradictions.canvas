@@ -1,8 +1,17 @@
 {
   "nodes": [
     {
-      "id": "canvas_node_2",
+      "id": "canvas_node_0",
       "x": 0,
+      "y": 0,
+      "width": 250,
+      "height": 150,
+      "type": "file",
+      "file": "observatorium/contradictions/contradiction--2026-03-09--con-1.md"
+    },
+    {
+      "id": "canvas_node_3",
+      "x": 400,
       "y": 0,
       "width": 250,
       "height": 150,
@@ -10,5 +19,14 @@
       "file": "observatorium/insights/insight--2026-03-08--ins-44.md"
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "id": "edge_contradiction_con-1_insight_43f0d5ec",
+      "fromNode": "canvas_node_0",
+      "fromSide": "right",
+      "toNode": "canvas_node_3",
+      "toSide": "left",
+      "label": "contradicts"
+    }
+  ]
 }
