@@ -1,0 +1,14 @@
+id: observatorium-contradictions
+type: observatorium
+source:
+  artifact_types:
+    - contradiction
+    - insight
+layout: cluster
+filters:
+  max_nodes: 100
+  max_edges: 200
+  max_clusters: 8
+relations:
+  - contradicts
+output: canvases/observatorium/contradictions.canvas

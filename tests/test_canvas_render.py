@@ -703,5 +703,42 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a list of strings", str(context.exception))
 
+    def test_render_canvas_contradictions(self):
+        graph_data = {
+            "nodes": [
+                {"id": "con-1", "kind": "contradiction", "file_path": "observatorium/con-1.md"},
+                {"id": "ins-1", "kind": "insight", "file_path": "observatorium/ins-1.md"}
+            ],
+            "edges": [
+                {"id": "edge-1", "from": "con-1", "to": "ins-1", "relation": "contradicts"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-contradictions",
+            "type": "observatorium",
+            "output": "canvases/contradictions.canvas",
+            "source": {"artifact_types": ["contradiction", "insight"]},
+            "relations": ["contradicts"]
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/contradictions.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
+        node_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("observatorium/con-1.md", node_files)
+        self.assertIn("observatorium/ins-1.md", node_files)
+
+        self.assertEqual(len(canvas["edges"]), 1)
+        self.assertEqual(canvas["edges"][0]["label"], "contradicts")
+
 if __name__ == '__main__':
     unittest.main()

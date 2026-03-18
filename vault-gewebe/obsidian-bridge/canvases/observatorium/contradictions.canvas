@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": "canvas_node_0",
-      "x": 400,
+      "x": 0,
       "y": 0,
       "width": 250,
       "height": 150,
@@ -11,7 +11,7 @@
     },
     {
       "id": "canvas_node_3",
-      "x": 0,
+      "x": 400,
       "y": 0,
       "width": 250,
       "height": 150,
