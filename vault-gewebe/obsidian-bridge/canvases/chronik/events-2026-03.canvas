@@ -1,7 +1,7 @@
 {
   "nodes": [
     {
-      "id": "canvas_node_1",
+      "id": "canvas_node_0",
       "x": 0,
       "y": 0,
       "width": 250,
@@ -10,7 +10,7 @@
       "file": "decisions/policy/decision--2026-03-08--dec-12.md"
     },
     {
-      "id": "canvas_node_2",
+      "id": "canvas_node_1",
       "x": 0,
       "y": 300,
       "width": 250,
@@ -19,7 +19,7 @@
       "file": "chronik/events/2026/03/event--2026-03-08--evt-123.md"
     },
     {
-      "id": "canvas_node_3",
+      "id": "canvas_node_2",
       "x": 0,
       "y": 600,
       "width": 250,
@@ -31,17 +31,17 @@
   "edges": [
     {
       "id": "edge_event_evt-123_decision_dec-_f3b5b473",
-      "fromNode": "canvas_node_2",
+      "fromNode": "canvas_node_1",
       "fromSide": "right",
-      "toNode": "canvas_node_1",
+      "toNode": "canvas_node_0",
       "toSide": "left",
       "label": "informed"
     },
     {
       "id": "edge_event_evt-123_insight_ins-4_6652b10d",
-      "fromNode": "canvas_node_2",
+      "fromNode": "canvas_node_1",
       "fromSide": "right",
-      "toNode": "canvas_node_3",
+      "toNode": "canvas_node_2",
       "toSide": "left",
       "label": "causes"
     }
