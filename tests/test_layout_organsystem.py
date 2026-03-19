@@ -87,7 +87,12 @@ class TestLayoutOrgansystem(unittest.TestCase):
             # Unbekannte Knoten wandern ins Fallback-Grid und werden dort deterministisch ergänzt
             self.assertIn("node:unknown-2", canvas_nodes2)
             self.assertTrue(canvas_nodes2["node:unknown-2"]["y"] >= 1200)
-            self.assertTrue(canvas_nodes2["node:unknown-2"]["x"] >= 350) # Assuming next index is 1
+
+            # Sie sollten deterministisch an einem neuen Platz abgelegt werden,
+            # ohne die exakte Implementierung des Grids hier starr zu kodieren.
+            pos1 = (canvas_nodes2["node:unknown-1"]["x"], canvas_nodes2["node:unknown-1"]["y"])
+            pos2 = (canvas_nodes2["node:unknown-2"]["x"], canvas_nodes2["node:unknown-2"]["y"])
+            self.assertNotEqual(pos1, pos2)
 
 if __name__ == '__main__':
     unittest.main()

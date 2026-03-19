@@ -32,4 +32,4 @@ Es wurden dedizierte Basistests für die noch fehlenden Layout-Typen implementie
 1. `test_layout_hierarchy.py`: Prüft deterministisches Gruppieren nach `kind` (`concept`, `entity`, `other`) sowie X-Positionsinkremente zur Vermeidung von Overlaps in den Layern.
 2. `test_layout_organsystem.py`: Verifiziert Invarianten wie die Positionierung bekannter Repos (`chronik`, `hausKI`, etc.) an fixierten (x, y) Koordinaten sowie das Fallback-Grid-Verhalten für unbekannte Knoten. Dabei wurde bewusst darauf geachtet, bekannte Schwächen (wie Überlappungen von Knoten desselben Typs) nicht als hartes Soll-Verhalten einzufrieren.
 
-Durch diese Ergänzungen wurde die Basisabdeckung im Bereich Layout vervollständigt, auch wenn Randfall-Validierungen weiterhin ausbaufähig bleiben.
+Durch diese Ergänzungen wurde die Basisabdeckung für die derzeit implementierten Layout-Typen auf eine breite Basis gestellt, auch wenn Randfall-Validierungen weiterhin ausbaufähig bleiben.
