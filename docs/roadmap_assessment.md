@@ -15,7 +15,7 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 ### 2. Teilweise umgesetzt (Teilweise)
 - **Relationen extrahieren:** Scaffold und Basisfunktion (`extract_relations.py`) sind implementiert und lesen aus Markdown-Wikilinks. Komplexe semantische Ableitungen und vollständige Taxonomie-Abdeckung fehlen noch.
 - **Phase 2 – Deterministische Canvas-Renderer:** Die Grundformen der Layout-Klassen sind implementiert und robuster geworden. Insbesondere das *Cluster*-Layout arbeitet deterministisch auf Basis von Tags. Tiefere semantische Gruppierungslogik fehlt jedoch.
-- **Tests implementieren:** Eine Suite von Python-Tests (Smoke, Rendering, Layout-Stabilität) und BATS-Tests läuft. Es fehlen dezidierte Abdeckungen für komplexe Layout-Randfälle. Dedizierte Tests für alle Layout-Typen (Hierarchy, Organsystem, Cluster, Timeline, Radial) existieren nun, es fehlt jedoch noch Testtiefe für weitere Randfälle.
+- **Tests implementieren:** Eine Suite von Python-Tests (Smoke, Rendering, Layout-Stabilität) und BATS-Tests läuft. Dedizierte Basistests für die derzeit implementierten Layout-Typen (Hierarchy, Organsystem, Cluster, Timeline, Radial) existieren nun, um grundlegende Invarianten abzusichern. Es fehlt jedoch weiterhin Testtiefe für komplexere Layout-Randfälle und Algorithmus-Schwächen.
 - **Phase 4 – Vollständige Abdeckung:** Topic-Hubs und Index sind über Specs implementiert. Echte Kalender-Monatsfilter (`calendar_month`) sind implementiert und arbeiten in UTC deterministisch. Rollierende Fenster (`date_window_days: 30`) existieren weiterhin für relative Zeitbezüge. Offen bleibt der breite Ausbau weiterer Specs.
 - **Echter Kalender-Monatsfilter:** Ein deterministischer Filter (`calendar_month`) für monatsscharfe Rollups (z. B. `events-2026-03.canvas`) auf Basis der Dokumenten-Zeitstempel wurde implementiert, inklusive Contracts-first Schema-Validation und Runtime-Schutz gegen ungültige Monate.
 
@@ -28,7 +28,8 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 ## Jüngster Umsetzungsschritt: Layout-Tests (Hierarchy & Organsystem)
 
 Die Roadmap listete "Tests implementieren" als teilweise offen, insbesondere in Bezug auf lückenhafte Layout-Testabdeckung für diverse Canvas-Klassen.
-Es wurden dezidierte Tests für die noch fehlenden Layout-Typen implementiert:
+Es wurden dedizierte Basistests für die noch fehlenden Layout-Typen implementiert:
 1. `test_layout_hierarchy.py`: Prüft deterministisches Gruppieren nach `kind` (`concept`, `entity`, `other`) sowie X-Positionsinkremente zur Vermeidung von Overlaps in den Layern.
-2. `test_layout_organsystem.py`: Verifiziert die korrekte feste Positionierung bekannter Repos (`chronik`, `hausKI`, etc.) an fixierten (x, y) Koordinaten sowie das Fallback-Grid-Verhalten.
-Durch diese Ergänzungen wird die Regression-Safety für die Canvas-Render-Pipeline gestärkt (Vorwärtsgang und Stabilität ausgebaut).
+2. `test_layout_organsystem.py`: Verifiziert Invarianten wie die Positionierung bekannter Repos (`chronik`, `hausKI`, etc.) an fixierten (x, y) Koordinaten sowie das Fallback-Grid-Verhalten für unbekannte Knoten. Dabei wurde bewusst darauf geachtet, bekannte Schwächen (wie Überlappungen von Knoten desselben Typs) nicht als hartes Soll-Verhalten einzufrieren.
+
+Durch diese Ergänzungen wurde die Basisabdeckung im Bereich Layout vervollständigt, auch wenn Randfall-Validierungen weiterhin ausbaufähig bleiben.

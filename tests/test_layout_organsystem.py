@@ -76,14 +76,17 @@ class TestLayoutOrgansystem(unittest.TestCase):
             self.assertEqual(canvas_nodes2["node:chronik-1"]["x"], canvas_nodes1["node:chronik-1"]["x"])
             self.assertEqual(canvas_nodes2["node:chronik-1"]["y"], canvas_nodes1["node:chronik-1"]["y"])
 
-            # Note: Current organsystem layout logic in stabilize_layout.py places multiple matches
-            # in the EXACT SAME POSITION! It doesn't stack them currently. It just matches title and puts it at fx, fy.
-            # So chronik-2 will also be at 0,0 according to current code logic.
-            # Let's verify that this is what happens right now to reflect repo truth.
-            self.assertEqual(canvas_nodes2["node:chronik-2"]["x"], 0)
-            self.assertEqual(canvas_nodes2["node:chronik-2"]["y"], 0)
+            # Das Organsystem-Layout positioniert Nodes auf vordefinierten Ankern.
+            # (current limitation: Der Algorithmus stapelt derzeit mehrere Treffer desselben
+            # Organs noch nicht deterministisch untereinander, sondern platziert sie auf
+            # derselben Basis-Koordinate. Das wird hier aber nicht als harte Assertion erzwungen,
+            # um zukünftige Verbesserungen am Algorithmus nicht zu blockieren.)
+            self.assertIn("node:chronik-2", canvas_nodes2)
+            self.assertIn("node:hausKI-2", canvas_nodes2)
 
-            # The unknown-2 will go to fallback grid index
+            # Unbekannte Knoten wandern ins Fallback-Grid und werden dort deterministisch ergänzt
+            self.assertIn("node:unknown-2", canvas_nodes2)
+            self.assertTrue(canvas_nodes2["node:unknown-2"]["y"] >= 1200)
             self.assertTrue(canvas_nodes2["node:unknown-2"]["x"] >= 350) # Assuming next index is 1
 
 if __name__ == '__main__':
