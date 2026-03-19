@@ -806,9 +806,8 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(len(canvas["edges"]), 1)
         self.assertEqual(canvas["edges"][0]["label"], "contradicts")
 
-    def test_render_canvas_edge_stability_irrelevant_edge(self):
-        # Even if an irrelevant edge (which alphabetically sorts first) exists,
-        # it should not consume the max_edges quota of the canvas.
+    def test_render_canvas_edge_quota_ignores_irrelevant_edges(self):
+        # Irrelevant edges sorted before relevant edges must not consume the max_edges quota.
         graph_data = {
             "nodes": [
                 {"id": "evt-1", "kind": "event", "file_path": "chronik/evt1.md"},
@@ -840,8 +839,8 @@ class TestCanvasRender(unittest.TestCase):
             canvas = json.load(f)
 
         self.assertEqual(len(canvas["edges"]), 1)
-        # Verify the relevant edge was actually picked, meaning the irrelevant edge was correctly skipped
-        # and didn't consume the quota
+        # Verify the relevant edge was actually picked, meaning the irrelevant edge was explicitly skipped
+        # without incrementing the quota counter.
         self.assertTrue("z-relevant-edge" in canvas["edges"][0]["id"])
 
 if __name__ == '__main__':

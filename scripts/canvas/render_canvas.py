@@ -231,7 +231,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
         all_nodes.sort(key=_recent_node_sort_key)
     else:
-        # Default deterministic sort safely handling potential None IDs from dirty graphs
+        # Default deterministic sort, safely handling potential None IDs from dirty graphs
         all_nodes.sort(key=lambda x: str(x.get("id") or ""))
 
     # Process nodes up to max_nodes
