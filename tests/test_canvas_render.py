@@ -806,5 +806,48 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(len(canvas["edges"]), 1)
         self.assertEqual(canvas["edges"][0]["label"], "contradicts")
 
+    def test_render_canvas_edge_quota_ignores_irrelevant_edges(self):
+        # Irrelevant edges sorted before relevant edges must not consume the max_edges quota.
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt1.md"},
+                {"id": "evt-2", "kind": "event", "file_path": "chronik/evt2.md"}
+            ],
+            "edges": [
+                {"id": "a-irrelevant-edge", "from": "nonexistent", "to": "evt-2", "relation": "references"},
+                {"id": "z-relevant-edge", "from": "evt-1", "to": "evt-2", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Spec limits to 1 edge
+        spec_data = {
+            "id": "test-edge-quota",
+            "type": "chronik",
+            "output": "canvases/edge-quota.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"max_edges": 1}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/edge-quota.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["edges"]), 1)
+        # Verify the relevant edge was actually picked by checking its semantic connections,
+        # meaning the irrelevant edge was explicitly skipped without incrementing the quota counter.
+        edge = canvas["edges"][0]
+        self.assertEqual(edge["label"], "references")
+
+        # Map local canvas node IDs to their file paths to verify semantic connections
+        node_file_by_id = {n["id"]: n["file"] for n in canvas["nodes"]}
+        self.assertEqual(node_file_by_id[edge["fromNode"]], "chronik/evt1.md")
+        self.assertEqual(node_file_by_id[edge["toNode"]], "chronik/evt2.md")
+
 if __name__ == '__main__':
     unittest.main()
