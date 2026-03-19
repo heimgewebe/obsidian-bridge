@@ -46,8 +46,7 @@ class TestLayoutHierarchy(unittest.TestCase):
             self.assertEqual(canvas_nodes1["concept:c1"]["y"], 0)
             # Entities should be at y=400
             self.assertEqual(canvas_nodes1["entity:e1"]["y"], 400)
-            # Other should be at y=800+
-            # stabilize_layout line 440 (or near there) uses hardcoded 800 for other, let's just test > 400 or == 800.
+            # Alle übrigen Kind-Typen ('other') werden deterministisch auf y=800 gesammelt
             self.assertEqual(canvas_nodes1["event:ev1"]["y"], 800)
 
             # Save layout cache

@@ -76,6 +76,10 @@ class TestLayoutOrgansystem(unittest.TestCase):
             self.assertEqual(canvas_nodes2["node:chronik-1"]["x"], canvas_nodes1["node:chronik-1"]["x"])
             self.assertEqual(canvas_nodes2["node:chronik-1"]["y"], canvas_nodes1["node:chronik-1"]["y"])
 
+            # Auch alte Fallback-Knoten müssen ihre deterministische Position behalten
+            self.assertEqual(canvas_nodes2["node:unknown-1"]["x"], canvas_nodes1["node:unknown-1"]["x"])
+            self.assertEqual(canvas_nodes2["node:unknown-1"]["y"], canvas_nodes1["node:unknown-1"]["y"])
+
             # Das Organsystem-Layout positioniert Nodes auf vordefinierten Ankern.
             # (current limitation: Der Algorithmus stapelt derzeit mehrere Treffer desselben
             # Organs noch nicht deterministisch untereinander, sondern platziert sie auf
