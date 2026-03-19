@@ -221,23 +221,24 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         # Sort by timestamp descending (most recent first), then ID for determinism
         def _recent_node_sort_key(node: Dict[str, Any]) -> tuple:
             ts = _parse_timestamp_utc(node.get("timestamp"))
+            node_id = str(node.get("id") or "")
             if ts is not None:
                 # Valid dates go first, sorted by highest timestamp (using negation)
-                return (0, -ts.timestamp(), node.get("id", ""))
+                return (0, -ts.timestamp(), node_id)
             else:
                 # Missing or invalid dates go last
-                return (1, 0, node.get("id", ""))
+                return (1, 0, node_id)
 
         all_nodes.sort(key=_recent_node_sort_key)
     else:
-        # Default deterministic sort
-        all_nodes.sort(key=lambda x: x.get("id", ""))
+        # Default deterministic sort safely handling potential None IDs from dirty graphs
+        all_nodes.sort(key=lambda x: str(x.get("id") or ""))
 
     # Process nodes up to max_nodes
     added_nodes = 0
     node_id_map = {}
 
-    for i, node in enumerate(all_nodes):
+    for node in all_nodes:
         node_id = node.get("id")
         if not node_id:
             # Skip nodes without a valid ID to avoid None mapping collisions
@@ -314,10 +315,10 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             relation_rank.get(e.get("relation"), float('inf')),
             # If prioritize_strongest is set, rank by highest weight first
             (_parse_weight(e) * -1) if prioritize_strongest else 0.0,
-            _get_edge_id(e),
-            e.get("from", ""),
-            e.get("to", ""),
-            e.get("relation", "")
+            str(_get_edge_id(e) or ""),
+            str(e.get("from") or ""),
+            str(e.get("to") or ""),
+            str(e.get("relation") or "")
         )
     )
 

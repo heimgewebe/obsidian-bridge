@@ -806,5 +806,43 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(len(canvas["edges"]), 1)
         self.assertEqual(canvas["edges"][0]["label"], "contradicts")
 
+    def test_render_canvas_edge_stability_irrelevant_edge(self):
+        # Even if an irrelevant edge (which alphabetically sorts first) exists,
+        # it should not consume the max_edges quota of the canvas.
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt1.md"},
+                {"id": "evt-2", "kind": "event", "file_path": "chronik/evt2.md"}
+            ],
+            "edges": [
+                {"id": "a-irrelevant-edge", "from": "nonexistent", "to": "evt-2", "relation": "references"},
+                {"id": "z-relevant-edge", "from": "evt-1", "to": "evt-2", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # Spec limits to 1 edge
+        spec_data = {
+            "id": "test-edge-quota",
+            "type": "chronik",
+            "output": "canvases/edge-quota.canvas",
+            "source": {"artifact_types": ["event"]},
+            "filters": {"max_edges": 1}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/edge-quota.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["edges"]), 1)
+        # Verify the relevant edge was actually picked, meaning the irrelevant edge was correctly skipped
+        # and didn't consume the quota
+        self.assertTrue("z-relevant-edge" in canvas["edges"][0]["id"])
+
 if __name__ == '__main__':
     unittest.main()
