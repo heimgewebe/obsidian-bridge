@@ -703,6 +703,72 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a list of strings", str(context.exception))
 
+    def test_render_canvas_local_id_stability(self):
+        # Initial graph with 2 nodes relevant to the spec
+        graph_data_1 = {
+            "nodes": [
+                {"id": "n1", "kind": "event", "file_path": "n1.md"},
+                {"id": "n2", "kind": "event", "file_path": "n2.md"}
+            ],
+            "edges": [
+                {"id": "e1", "from": "n1", "to": "n2", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data_1, f)
+
+        spec_data = {
+            "id": "test-stability",
+            "type": "chronik",
+            "output": "canvases/stability.canvas",
+            "source": {"artifact_types": ["event"]}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/stability.canvas")
+        with open(output_path, 'r') as f:
+            canvas1 = json.load(f)
+
+        node_ids_1 = [n["id"] for n in canvas1["nodes"]]
+        # IDs should be strictly sequential based on added nodes (0 and 1)
+        self.assertEqual(node_ids_1, ["canvas_node_0", "canvas_node_1"])
+
+        # Verify edge references the correct local IDs
+        self.assertEqual(canvas1["edges"][0]["fromNode"], "canvas_node_0")
+        self.assertEqual(canvas1["edges"][0]["toNode"], "canvas_node_1")
+
+        # Now add an irrelevant node that comes alphabetically BEFORE the relevant nodes
+        # In the old logic, this would shift 'i' and change canvas_node_ids
+        graph_data_2 = {
+            "nodes": [
+                {"id": "a-irrelevant", "kind": "concept", "file_path": "irrelevant.md"},
+                {"id": "n1", "kind": "event", "file_path": "n1.md"},
+                {"id": "n2", "kind": "event", "file_path": "n2.md"}
+            ],
+            "edges": [
+                {"id": "e1", "from": "n1", "to": "n2", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data_2, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        with open(output_path, 'r') as f:
+            canvas2 = json.load(f)
+
+        node_ids_2 = [n["id"] for n in canvas2["nodes"]]
+
+        # The node IDs should be identical to canvas1, unharmed by the irrelevant node
+        self.assertEqual(node_ids_2, ["canvas_node_0", "canvas_node_1"])
+
+        # Edges should still correctly map to the stable IDs
+        self.assertEqual(canvas2["edges"][0]["fromNode"], "canvas_node_0")
+        self.assertEqual(canvas2["edges"][0]["toNode"], "canvas_node_1")
+
     def test_render_canvas_contradictions(self):
         graph_data = {
             "nodes": [

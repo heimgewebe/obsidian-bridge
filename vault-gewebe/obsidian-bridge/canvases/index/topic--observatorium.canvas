@@ -10,7 +10,7 @@
       "file": "observatorium/contradictions/contradiction--2026-03-09--con-1.md"
     },
     {
-      "id": "canvas_node_3",
+      "id": "canvas_node_1",
       "x": 0,
       "y": 0,
       "width": 250,
@@ -24,7 +24,7 @@
       "id": "edge_contradiction_con-1_insight_43f0d5ec",
       "fromNode": "canvas_node_0",
       "fromSide": "right",
-      "toNode": "canvas_node_3",
+      "toNode": "canvas_node_1",
       "toSide": "left",
       "label": "contradicts"
     }

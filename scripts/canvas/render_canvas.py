@@ -274,11 +274,11 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         if added_nodes >= max_nodes:
             break
 
-        # Simple text representation of node type for canvas internal ID
-        canvas_node_id = f"canvas_node_{i}"
+        # Deterministic, locally dense canvas node ID based on the current included-node index
+        canvas_node_id = f"canvas_node_{added_nodes}"
         node_id_map[node_id] = canvas_node_id
 
-        node_layout = layout.get("nodes", {}).get(node_id, {"x": i*100, "y": 0, "width": 250, "height": 150})
+        node_layout = layout.get("nodes", {}).get(node_id, {"x": added_nodes*100, "y": 0, "width": 250, "height": 150})
 
         # Determine canvas node type (file or text)
         canvas_node = {
