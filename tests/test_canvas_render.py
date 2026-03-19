@@ -839,9 +839,15 @@ class TestCanvasRender(unittest.TestCase):
             canvas = json.load(f)
 
         self.assertEqual(len(canvas["edges"]), 1)
-        # Verify the relevant edge was actually picked, meaning the irrelevant edge was explicitly skipped
-        # without incrementing the quota counter.
-        self.assertTrue("z-relevant-edge" in canvas["edges"][0]["id"])
+        # Verify the relevant edge was actually picked by checking its semantic connections,
+        # meaning the irrelevant edge was explicitly skipped without incrementing the quota counter.
+        edge = canvas["edges"][0]
+        self.assertEqual(edge["label"], "references")
+
+        # Map local canvas node IDs to their file paths to verify semantic connections
+        node_file_by_id = {n["id"]: n["file"] for n in canvas["nodes"]}
+        self.assertEqual(node_file_by_id[edge["fromNode"]], "chronik/evt1.md")
+        self.assertEqual(node_file_by_id[edge["toNode"]], "chronik/evt2.md")
 
 if __name__ == '__main__':
     unittest.main()
