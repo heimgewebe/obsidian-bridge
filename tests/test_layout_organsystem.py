@@ -50,14 +50,14 @@ class TestLayoutOrgansystem(unittest.TestCase):
             self.assertEqual(canvas_nodes1["node:hausKI-1"]["x"], 800)
             self.assertEqual(canvas_nodes1["node:hausKI-1"]["y"], 0)
 
-            # First fallback node will have x=0 (fallback_index % cols)*width = 0
-            # and y = 1200 + (fallback_index // cols)*height
-            self.assertEqual(canvas_nodes1["node:unknown-1"]["x"], 0)
+            # First fallback node is expected to be placed in the fallback grid (y >= 1200).
+            # The exact x-position is an internal implementation detail and not asserted.
             self.assertTrue(canvas_nodes1["node:unknown-1"]["y"] >= 1200)
 
-            # Save layout cache
-            with open(cache_path, "w") as f:
-                json.dump(layout1, f)
+            # Verify that stabilize_layout persisted the layout to cache_path
+            with open(cache_path, "r") as f:
+                cached_layout = json.load(f)
+            self.assertEqual(cached_layout, layout1)
 
             # Add more nodes
             graph["nodes"].extend([

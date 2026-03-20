@@ -49,9 +49,10 @@ class TestLayoutHierarchy(unittest.TestCase):
             # Alle übrigen Kind-Typen ('other') werden deterministisch auf y=800 gesammelt
             self.assertEqual(canvas_nodes1["event:ev1"]["y"], 800)
 
-            # Save layout cache
-            with open(cache_path, "w") as f:
-                json.dump(layout1, f)
+            # Verify that stabilize_layout persisted the layout to cache_path
+            with open(cache_path, "r") as f:
+                cached_layout = json.load(f)
+            self.assertEqual(cached_layout, layout1)
 
             # Add more nodes
             graph["nodes"].extend([
