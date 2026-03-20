@@ -107,10 +107,6 @@ artifact_id: t-3
         self.assertIn(("test:src", "test:t-2", "causes"), edges)
         self.assertIn(("test:src", "test:t-3", "contradicts"), edges)
 
-        # Verify that explicit duplicate definitions don't crash
-        # and that basic references are still extracted if also linked in body
-        # (Assuming body parsing didn't find duplicate targets, or they are merged by the edge ID)
-
     def test_extract_relations_exact_priority(self):
         file_contents = {
             "vault-gewebe/obsidian-bridge/folder1/source.md": """---

@@ -184,7 +184,7 @@ Jede Canvas-Datei muss durch eine deklarative Spec definiert werden (keine verte
 Layout muss deterministisch sein. Ein rein physikalisches Force-Layout ist ungeeignet, da es Orientierung zerstört.
 *Pipeline:* `graph snapshot → layout cache → canvas render`
 
-- [x] **Layout-Typen pro Canvas-Klasse implementieren:** (weitgehend implementiert in `stabilize_layout.py` - Basis für Timeline, Radial, Cluster, Hierarchie und System existiert und ist deterministisch getestet).
+- [ ] **Layout-Typen pro Canvas-Klasse implementieren:** (teilweise implementiert in `stabilize_layout.py` - Basis für Timeline, Radial, Cluster, Hierarchie und System existiert, komplexere Layout-Randfälle fehlen noch).
   - `chronik/*` (Timeline-Layout): links → rechts = Zeit, oben / unten = Typgruppen (deterministisch implementiert).
   - `decisions/*` (Radial-Layout): Zentrum = Entscheidung, innen = Inputs / Preimages, außen = Outcomes / Folgen (deterministisch implementiert mit Golden Angle).
   - `observatorium/*` (Cluster-Layout): Cluster je Thema / Unsicherheitsfeld / Widerspruchsgruppe (Basis deterministisch implementiert über primäre Tags, tiefere Semantik und Sub-Cluster offen).
@@ -246,7 +246,7 @@ Alle definierten Canvas-Klassen müssen automatisch durch die Bridge generiert w
   - `config/canvas-specs/chronik-latest.yaml`
   - `config/canvas-specs/observatorium-insights.yaml`
   - `config/canvas-specs/decisions-network.yaml`
-- [x] **Tests implementieren:** (Basisabdeckung der Layouts Timeline, Radial, Cluster, Hierarchy, Organsystem sowie Rendering/Filter-Limits ist vorhanden).
+- [ ] **Tests implementieren:** (teilweise / Basisimplementierung vorhanden, lückenhaft für diverse Canvas-Klassen, Timeline/Cluster/Radial/Layout-Stabilität getestet, dedizierte Tests für neue Filter wie `calendar_month` vorhanden).
   - `tests/test_graph_build.py`
   - `tests/test_canvas_render.py`
   - `tests/test_layout_stability.py`
@@ -263,7 +263,7 @@ Die Umsetzung erfolgt iterativ in 4 Phasen und durchläuft eine feste Render-Pip
   - Relationsextraktion implementieren.
   - Markdown weiter wie bisher rendern.
   - *Output:* `meta/graph/graph.v1.json`
-- [x] **Phase 2 – Deterministische Canvas-Renderer** (Umgesetzt. `render_canvas.py` schreibt deterministische Canvases. Layouts wie Timeline, Radial, Cluster, Hierarchy und System laufen belastbar in `stabilize_layout.py`).
+- [ ] **Phase 2 – Deterministische Canvas-Renderer** (Teilweise umgesetzt. `render_canvas.py` schreibt deterministische Canvases. Layouts wie Timeline, Radial und Cluster laufen belastbar in `stabilize_layout.py`. System-Layout existiert als Grundgerüst).
   - Canvas-Writer implementieren.
   - Layout-Logik pro Canvas-Klasse bauen.
   - *Erste Canvas erzeugen:* `system-architecture.canvas`, `events-latest.canvas`, `insight-network.canvas`.

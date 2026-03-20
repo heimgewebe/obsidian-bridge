@@ -1,7 +1,7 @@
 import re
 import os
 import yaml
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 def _parse_frontmatter(content: str) -> Dict[str, Any]:
     parts = content.split("---")
@@ -96,7 +96,7 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                     "weight": 1.0
                 })
 
-    def resolve_target_id(target_raw: str, norm_md_path: str) -> str:
+    def resolve_target_id(target_raw: str, norm_md_path: str) -> Optional[str]:
         # Clean link (remove aliases if present e.g. [[path|alias]])
         target_path = target_raw.split("|")[0]
         # Clean link (remove anchor links if present e.g. [[path#heading]])
