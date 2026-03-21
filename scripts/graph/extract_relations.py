@@ -107,36 +107,20 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
             normalized_target_path = normalized_target_path[len(vault_prefix):]
 
         # 1. Exact path match
-        exact_match_candidates = [
-            p for p in path_to_id
-            if p == normalized_target_path
-        ]
+        if normalized_target_path in path_to_id:
+            return path_to_id[normalized_target_path]
 
         # 2. Exact path + .md match
         target_path_md = normalized_target_path if normalized_target_path.endswith(".md") else f"{normalized_target_path}.md"
-        exact_md_match_candidates = [
-            p for p in path_to_id
-            if p == target_path_md
-        ]
+        if target_path_md in path_to_id:
+            return path_to_id[target_path_md]
 
         # 3. Basename match
         basename = os.path.basename(target_path_md)
         basename_match_candidates = basename_to_paths.get(basename, [])
 
         # Resolution logic:
-        if len(exact_match_candidates) == 1:
-            return path_to_id[exact_match_candidates[0]]
-        elif len(exact_match_candidates) > 1:
-            candidates_str = ", ".join(exact_match_candidates)
-            print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
-            return None
-        elif len(exact_md_match_candidates) == 1:
-            return path_to_id[exact_md_match_candidates[0]]
-        elif len(exact_md_match_candidates) > 1:
-            candidates_str = ", ".join(exact_md_match_candidates)
-            print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
-            return None
-        elif len(basename_match_candidates) == 1:
+        if len(basename_match_candidates) == 1:
             return path_to_id[basename_match_candidates[0]]
         elif len(basename_match_candidates) > 1:
             candidates_str = ", ".join(basename_match_candidates)
@@ -175,7 +159,14 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                                 add_edge(source_id, target_id, relation_type)
 
         # 2. Process body links
-        lines = content.splitlines()
+        # Strip out the YAML frontmatter to avoid scanning it twice
+        body_content = content
+        if content.startswith("---"):
+            parts = content.split("---", 2)
+            if len(parts) >= 3:
+                body_content = parts[2]
+
+        lines = body_content.splitlines()
         for line in lines:
             # Check explicit outgoing
             out_match = rel_out_regex.search(line)

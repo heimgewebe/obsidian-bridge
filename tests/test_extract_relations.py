@@ -107,6 +107,12 @@ artifact_id: t-3
         self.assertIn(("test:src", "test:t-2", "causes"), edges)
         self.assertIn(("test:src", "test:t-3", "contradicts"), edges)
 
+        # Verify that these frontmatter links didn't ALSO get parsed as generic 'references'
+        # when scanning the body
+        self.assertNotIn(("test:src", "test:t-1", "references"), edges)
+        self.assertNotIn(("test:src", "test:t-2", "references"), edges)
+        self.assertNotIn(("test:src", "test:t-3", "references"), edges)
+
     def test_extract_relations_exact_priority(self):
         file_contents = {
             "vault-gewebe/obsidian-bridge/folder1/source.md": """---
