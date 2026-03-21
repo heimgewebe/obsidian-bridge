@@ -215,6 +215,28 @@
           "height": 150
         }
       }
+    },
+    "investigations-topic-analysis": {
+      "nodes": {
+        "decision:dec-12": {
+          "x": 0,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        },
+        "event:evt-123": {
+          "x": 400,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        },
+        "insight:ins-44": {
+          "x": 800,
+          "y": 0,
+          "width": 250,
+          "height": 150
+        }
+      }
     }
   }
 }
