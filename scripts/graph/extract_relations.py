@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import yaml
 from typing import List, Dict, Any, Optional
 
@@ -26,8 +27,6 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
     path_to_id = {}
     basename_to_paths = {}
     contents = {}
-
-    import sys
 
     # Vault-relative paths are canonical.
     vault_prefix = "vault-gewebe/obsidian-bridge/"
