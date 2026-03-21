@@ -1,4 +1,4 @@
-id: investigations-topic-analysis
+id: investigations-exploratory-analysis
 type: investigations
 source:
   artifact_types:
@@ -15,4 +15,4 @@ relations:
   - derives_from
   - informed
   - contradicts
-output: canvases/investigations/topic-analysis.canvas
+output: canvases/investigations/exploratory-analysis.canvas

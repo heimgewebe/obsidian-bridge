@@ -216,7 +216,7 @@
         }
       }
     },
-    "investigations-topic-analysis": {
+    "investigations-exploratory-analysis": {
       "nodes": {
         "decision:dec-12": {
           "x": 0,
