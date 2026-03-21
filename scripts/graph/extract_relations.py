@@ -1,7 +1,8 @@
 import re
 import os
+import sys
 import yaml
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 def _parse_frontmatter(content: str) -> Dict[str, Any]:
     parts = content.split("---")
@@ -26,8 +27,6 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
     path_to_id = {}
     basename_to_paths = {}
     contents = {}
-
-    import sys
 
     # Vault-relative paths are canonical.
     vault_prefix = "vault-gewebe/obsidian-bridge/"
@@ -70,6 +69,19 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
     # Second pass: extract links and build edges
     edge_set = set()
 
+    # Pre-defined known relation fields in frontmatter to map to edge types
+    frontmatter_relation_fields = {
+        "causes": "causes",
+        "contradicts": "contradicts",
+        "derives_from": "derives_from",
+        "informed": "informed",
+        "precedes": "precedes",
+        "clusters_with": "clusters_with",
+        "belongs_to_topic": "belongs_to_topic",
+        "references": "references",
+        "related": "references"  # Often used as a fallback or generic field
+    }
+
     def add_edge(frm: str, to: str, rel: str):
         if frm != to:
             edge_key = f"{frm}->{to}:{rel}"
@@ -83,6 +95,40 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                     "weight": 1.0
                 })
 
+    def resolve_target_id(target_raw: str, norm_md_path: str) -> Optional[str]:
+        # Clean link (remove aliases if present e.g. [[path|alias]])
+        target_path = target_raw.split("|")[0]
+        # Clean link (remove anchor links if present e.g. [[path#heading]])
+        target_path = target_path.split("#")[0]
+        # Try to resolve target_path against path_to_id
+
+        normalized_target_path = os.path.normpath(target_path).replace("\\", "/").lstrip("./")
+        if normalized_target_path.startswith(vault_prefix):
+            normalized_target_path = normalized_target_path[len(vault_prefix):]
+
+        # 1. Exact path match
+        if normalized_target_path in path_to_id:
+            return path_to_id[normalized_target_path]
+
+        # 2. Exact path + .md match
+        target_path_md = normalized_target_path if normalized_target_path.endswith(".md") else f"{normalized_target_path}.md"
+        if target_path_md in path_to_id:
+            return path_to_id[target_path_md]
+
+        # 3. Basename match
+        basename = os.path.basename(target_path_md)
+        basename_match_candidates = basename_to_paths.get(basename, [])
+
+        # Resolution logic:
+        if len(basename_match_candidates) == 1:
+            return path_to_id[basename_match_candidates[0]]
+        elif len(basename_match_candidates) > 1:
+            candidates_str = ", ".join(basename_match_candidates)
+            print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
+            return None
+
+        return None
+
     for md_path, content in contents.items():
         norm_md_path = md_path.replace('\\', '/')
         if norm_md_path.startswith(vault_prefix):
@@ -92,7 +138,35 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
         if not source_id:
             continue
 
-        lines = content.splitlines()
+        # 1. Process Frontmatter relations
+        fm = _parse_frontmatter(content)
+        for fm_field, relation_type in frontmatter_relation_fields.items():
+            targets = fm.get(fm_field, [])
+            if targets:
+                # If a single string is provided instead of a list, wrap it
+                if isinstance(targets, str):
+                    targets = [targets]
+                if isinstance(targets, list):
+                    for target in targets:
+                        # Some frontmatters might include the [[ ]] syntax or quotes in lists, strip it
+                        if isinstance(target, str):
+                            # Remove surrounding brackets/whitespace
+                            clean_target = target.strip("[] \t\"'")
+                            # Handle cases where multiple links might be squished in a single string,
+                            # though normally YAML parsing lists handles this.
+                            target_id = resolve_target_id(clean_target, norm_md_path)
+                            if target_id:
+                                add_edge(source_id, target_id, relation_type)
+
+        # 2. Process body links
+        # Strip out the YAML frontmatter to avoid scanning it twice
+        body_content = content
+        if content.startswith("---"):
+            parts = content.split("---", 2)
+            if len(parts) >= 3:
+                body_content = parts[2]
+
+        lines = body_content.splitlines()
         for line in lines:
             # Check explicit outgoing
             out_match = rel_out_regex.search(line)
@@ -112,54 +186,7 @@ def extract_relations(markdown_paths: List[str]) -> List[Dict[str, Any]]:
                 links_to_process = [(l, "references", "out") for l in links]
 
             for target_raw, rel, direction in links_to_process:
-                # Clean link (remove aliases if present e.g. [[path|alias]])
-                target_path = target_raw.split("|")[0]
-                # Clean link (remove anchor links if present e.g. [[path#heading]])
-                target_path = target_path.split("#")[0]
-                # Try to resolve target_path against path_to_id
-                target_id = None
-
-                normalized_target_path = os.path.normpath(target_path).replace("\\", "/").lstrip("./")
-                if normalized_target_path.startswith(vault_prefix):
-                    normalized_target_path = normalized_target_path[len(vault_prefix):]
-
-                # 1. Exact path match
-                exact_match_candidates = [
-                    p for p in path_to_id
-                    if p == normalized_target_path
-                ]
-
-                # 2. Exact path + .md match
-                target_path_md = normalized_target_path if normalized_target_path.endswith(".md") else f"{normalized_target_path}.md"
-                exact_md_match_candidates = [
-                    p for p in path_to_id
-                    if p == target_path_md
-                ]
-
-                # 3. Basename match
-                basename = os.path.basename(target_path_md)
-                basename_match_candidates = basename_to_paths.get(basename, [])
-
-                # Resolution logic:
-                if len(exact_match_candidates) == 1:
-                    target_id = path_to_id[exact_match_candidates[0]]
-                elif len(exact_match_candidates) > 1:
-                    candidates_str = ", ".join(exact_match_candidates)
-                    print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
-                    continue
-                elif len(exact_md_match_candidates) == 1:
-                    target_id = path_to_id[exact_md_match_candidates[0]]
-                elif len(exact_md_match_candidates) > 1:
-                    candidates_str = ", ".join(exact_md_match_candidates)
-                    print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
-                    continue
-                elif len(basename_match_candidates) == 1:
-                    target_id = path_to_id[basename_match_candidates[0]]
-                elif len(basename_match_candidates) > 1:
-                    candidates_str = ", ".join(basename_match_candidates)
-                    print(f"Warning: Ambiguous link '[[{target_raw}]]' in {norm_md_path}. Candidates: {candidates_str}. No edge created.", file=sys.stderr)
-                    continue
-
+                target_id = resolve_target_id(target_raw, norm_md_path)
                 if target_id:
                     if direction == "out":
                         add_edge(source_id, target_id, rel)

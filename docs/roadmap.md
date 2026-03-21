@@ -115,7 +115,7 @@ Die Bridge arbeitet deterministisch: **read-only, idempotent, artifact-driven.**
 
 Der Graph-Layer ist die kanonische interne Render-Grundlage für Canvas. Er stellt keine neue systemische Wahrheitsschicht neben Heimgewebe dar, sondern dient ausschließlich der deterministischen Ableitung von Canvas-Strukturen. **Artefakte + Relationen** sind die Quelle, nicht Markdown.
 
-- [ ] **Relationen extrahieren:** (teilweise / Scaffold angelegt - Basisfunktion `extract_relations.py` da, liest Wiki-Links aus Markdown. Komplexe semantische Ableitungen und vollständige Taxonomie-Abdeckung fehlen noch).
+- [ ] **Relationen extrahieren:** (teilweise / Scaffold angelegt - Basisfunktion `extract_relations.py` da, liest Wiki-Links aus Markdown sowie Relationen aus Frontmatter-Feldern (Listen oder Einzelstrings). Komplexe semantische Ableitungen und vollständige Taxonomie-Abdeckung fehlen noch).
   - Quellen: chronik-Events, policy.decision, decision.preimage, knowledge.observatory, contradiction.report, uncertainty.report.
   - *Relationstypen:* references, causes, informed, contradicts, derives_from, clusters_with, precedes, belongs_to_topic.
   - *Auflösung:* Deterministische Link-Auflösung mit Priorität (exakter Pfad > basename). Mehrdeutigkeiten erzeugen Warnungen statt stiller Fehler.

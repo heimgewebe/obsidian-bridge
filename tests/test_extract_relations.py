@@ -68,6 +68,51 @@ artifact_id: t-4
         self.assertIn("Ambiguous link '[[exact_target.md]]'", warnings)
         self.assertIn("Ambiguous link '[[ambiguous_target.md]]'", warnings)
 
+    def test_extract_relations_frontmatter(self):
+        file_contents = {
+            "vault-gewebe/obsidian-bridge/folder1/source.md": """---
+artifact_type: test
+artifact_id: src
+causes:
+  - "[[target_1.md]]"
+  - "target_2"
+contradicts: "[[target_3.md]]"
+---
+""",
+            "vault-gewebe/obsidian-bridge/folder1/target_1.md": """---
+artifact_type: test
+artifact_id: t-1
+---""",
+            "vault-gewebe/obsidian-bridge/folder1/target_2.md": """---
+artifact_type: test
+artifact_id: t-2
+---""",
+            "vault-gewebe/obsidian-bridge/folder1/target_3.md": """---
+artifact_type: test
+artifact_id: t-3
+---"""
+        }
+
+        def mock_open_side_effect(path, *args, **kwargs):
+            return mock_open(read_data=file_contents.get(path, ""))()
+
+        files = list(file_contents.keys())
+
+        with patch('builtins.open', side_effect=mock_open_side_effect):
+            relations = extract_relations(files)
+
+        edges = {(r["from"], r["to"], r["relation"]) for r in relations}
+
+        self.assertIn(("test:src", "test:t-1", "causes"), edges)
+        self.assertIn(("test:src", "test:t-2", "causes"), edges)
+        self.assertIn(("test:src", "test:t-3", "contradicts"), edges)
+
+        # Verify that these frontmatter links didn't ALSO get parsed as generic 'references'
+        # when scanning the body
+        self.assertNotIn(("test:src", "test:t-1", "references"), edges)
+        self.assertNotIn(("test:src", "test:t-2", "references"), edges)
+        self.assertNotIn(("test:src", "test:t-3", "references"), edges)
+
     def test_extract_relations_exact_priority(self):
         file_contents = {
             "vault-gewebe/obsidian-bridge/folder1/source.md": """---
