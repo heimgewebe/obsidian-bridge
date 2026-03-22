@@ -863,6 +863,7 @@ class TestCanvasRender(unittest.TestCase):
                 {"id": "dec-1", "kind": "decision", "file_path": "decisions/dec-1.md", "tags": ["investigation"]},
                 {"id": "hyp-1", "kind": "hypothesis", "file_path": "knowledge/hyp-1.md", "tags": ["investigation"]},
                 {"id": "con-1", "kind": "contradiction", "file_path": "observatorium/con-1.md", "tags": ["investigation"]},
+                {"id": "ins-2", "kind": "insight", "file_path": "observatorium/ins-2.md", "tags": ["completely-unrelated-tag"]},
                 {"id": "other-1", "kind": "concept", "file_path": "knowledge/con-1.md", "tags": ["other"]}
             ],
             "edges": [
@@ -870,6 +871,7 @@ class TestCanvasRender(unittest.TestCase):
                 {"id": "e2", "from": "ins-1", "to": "dec-1", "relation": "causes"},
                 {"id": "e3", "from": "hyp-1", "to": "ins-1", "relation": "derives_from"},
                 {"id": "e4", "from": "con-1", "to": "hyp-1", "relation": "contradicts"},
+                {"id": "e6", "from": "evt-1", "to": "ins-2", "relation": "informed"},
                 {"id": "e5", "from": "other-1", "to": "evt-1", "relation": "references"}
             ]
         }
@@ -878,7 +880,8 @@ class TestCanvasRender(unittest.TestCase):
 
         # We load the actual spec from the repository rather than mocking it,
         # ensuring this test acts as a true regression anchor against the active contract.
-        spec_path = "config/canvas-specs/investigations-exploratory-analysis.yaml"
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        spec_path = os.path.join(repo_root, "config/canvas-specs/investigations-exploratory-analysis.yaml")
         render_canvas(spec_path, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
 
         output_path = os.path.join(self.temp_dir.name, "canvases/investigations/exploratory-analysis.canvas")
@@ -886,17 +889,18 @@ class TestCanvasRender(unittest.TestCase):
             canvas = json.load(f)
 
         # Verify semantic node inclusion
-        self.assertEqual(len(canvas["nodes"]), 5)
+        self.assertEqual(len(canvas["nodes"]), 6)
         node_files = [n["file"] for n in canvas["nodes"]]
         self.assertIn("chronik/evt-1.md", node_files)
         self.assertIn("observatorium/ins-1.md", node_files)
         self.assertIn("decisions/dec-1.md", node_files)
         self.assertIn("knowledge/hyp-1.md", node_files)
         self.assertIn("observatorium/con-1.md", node_files)
+        self.assertIn("observatorium/ins-2.md", node_files)
         self.assertNotIn("knowledge/con-1.md", node_files)
 
         # Verify semantic edge inclusion (strict exact set matching)
-        self.assertEqual(len(canvas["edges"]), 4)
+        self.assertEqual(len(canvas["edges"]), 5)
 
         node_file_by_id = {n["id"]: n["file"] for n in canvas["nodes"]}
         semantic_edges = {
@@ -908,6 +912,7 @@ class TestCanvasRender(unittest.TestCase):
             ("observatorium/ins-1.md", "decisions/dec-1.md", "causes"),
             ("knowledge/hyp-1.md", "observatorium/ins-1.md", "derives_from"),
             ("observatorium/con-1.md", "knowledge/hyp-1.md", "contradicts"),
+            ("chronik/evt-1.md", "observatorium/ins-2.md", "informed"),
         }
 
         self.assertEqual(semantic_edges, expected_edges)
