@@ -1,0 +1,19 @@
+id: investigations-exploratory-analysis
+type: investigations
+source:
+  artifact_types:
+    - event
+    - insight
+    - decision
+    - hypothesis
+    - contradiction
+layout: cluster
+filters:
+  max_nodes: 50
+  max_edges: 100
+relations:
+  - causes
+  - derives_from
+  - informed
+  - contradicts
+output: canvases/investigations/exploratory-analysis.canvas
