@@ -895,14 +895,22 @@ class TestCanvasRender(unittest.TestCase):
         self.assertIn("observatorium/con-1.md", node_files)
         self.assertNotIn("knowledge/con-1.md", node_files)
 
-        # Verify semantic edge inclusion
+        # Verify semantic edge inclusion (hard endpoint mapping)
         self.assertEqual(len(canvas["edges"]), 4)
-        edge_labels = [e["label"] for e in canvas["edges"]]
-        self.assertIn("informed", edge_labels)
-        self.assertIn("causes", edge_labels)
-        self.assertIn("derives_from", edge_labels)
-        self.assertIn("contradicts", edge_labels)
-        self.assertNotIn("references", edge_labels)
 
+        node_file_by_id = {n["id"]: n["file"] for n in canvas["nodes"]}
+        semantic_edges = set()
+        for e in canvas["edges"]:
+            # Ensure both endpoints exist in our mapped nodes before adding
+            if e["fromNode"] in node_file_by_id and e["toNode"] in node_file_by_id:
+                semantic_edges.add((node_file_by_id[e["fromNode"]], node_file_by_id[e["toNode"]], e["label"]))
+
+        self.assertIn(("chronik/evt-1.md", "observatorium/ins-1.md", "informed"), semantic_edges)
+        self.assertIn(("observatorium/ins-1.md", "decisions/dec-1.md", "causes"), semantic_edges)
+        self.assertIn(("knowledge/hyp-1.md", "observatorium/ins-1.md", "derives_from"), semantic_edges)
+        self.assertIn(("observatorium/con-1.md", "knowledge/hyp-1.md", "contradicts"), semantic_edges)
+
+        # Ensure the excluded edge is strictly absent
+        self.assertNotIn(("knowledge/con-1.md", "chronik/evt-1.md", "references"), semantic_edges)
 if __name__ == '__main__':
     unittest.main()
