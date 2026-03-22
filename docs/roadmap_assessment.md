@@ -29,6 +29,6 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 
 Die Roadmap listete "Phase 4 – Vollständige Abdeckung" als teilweise offen. Um diesen Punkt voranzutreiben, wurde der konkrete nächste Schritt durchgeführt:
 1. Erstellung der ersten investigations-orientierten deklarativen Spec `config/canvas-specs/investigations-exploratory-analysis.yaml`.
-2. Diese Spec generiert deterministisch eine explorative, bereichsübergreifende Sicht auf vorhandene Artefakte (Events, Insights, Decisions und Hypothesen) im Cluster-Layout, welche diese über ursächliche (`causes`), ableitende (`derives_from`), informierende (`informed`) und widersprechende (`contradicts`) Kanten zusammenführt.
+2. Diese Spec generiert deterministisch eine explorative, bereichsübergreifende Sicht auf vorhandene Artefakte (Events, Insights, Decisions, Hypothesen und Contradictions) im Cluster-Layout, welche diese über ursächliche (`causes`), ableitende (`derives_from`), informierende (`informed`) und widersprechende (`contradicts`) Kanten zusammenführt, sofern entsprechende Widerspruchsartefakte im Datensatz vorhanden sind.
 
 Hinweis: Es ist derzeit *kein dediziertes Topic-Scoping* und *keine eigenständige Investigations-Semantik* implementiert. Die generierte Ansicht liefert einen globalen explorativen Ausschnitt nach Typen und Relationen.

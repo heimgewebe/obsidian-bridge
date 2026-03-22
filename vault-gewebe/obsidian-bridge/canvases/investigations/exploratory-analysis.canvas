@@ -2,6 +2,15 @@
   "nodes": [
     {
       "id": "canvas_node_0",
+      "x": 1200,
+      "y": 0,
+      "width": 250,
+      "height": 150,
+      "type": "file",
+      "file": "observatorium/contradictions/contradiction--2026-03-09--con-1.md"
+    },
+    {
+      "id": "canvas_node_1",
       "x": 0,
       "y": 0,
       "width": 250,
@@ -10,7 +19,7 @@
       "file": "decisions/policy/decision--2026-03-08--dec-12.md"
     },
     {
-      "id": "canvas_node_1",
+      "id": "canvas_node_2",
       "x": 400,
       "y": 0,
       "width": 250,
@@ -19,7 +28,7 @@
       "file": "chronik/events/2026/03/event--2026-03-08--evt-123.md"
     },
     {
-      "id": "canvas_node_2",
+      "id": "canvas_node_3",
       "x": 800,
       "y": 0,
       "width": 250,
@@ -30,26 +39,34 @@
   ],
   "edges": [
     {
-      "id": "edge_event_evt-123_decision_dec-_f3b5b473",
-      "fromNode": "canvas_node_1",
+      "id": "edge_contradiction_con-1_insight_43f0d5ec",
+      "fromNode": "canvas_node_0",
       "fromSide": "right",
-      "toNode": "canvas_node_0",
+      "toNode": "canvas_node_3",
+      "toSide": "left",
+      "label": "contradicts"
+    },
+    {
+      "id": "edge_event_evt-123_decision_dec-_f3b5b473",
+      "fromNode": "canvas_node_2",
+      "fromSide": "right",
+      "toNode": "canvas_node_1",
       "toSide": "left",
       "label": "informed"
     },
     {
       "id": "edge_event_evt-123_insight_ins-4_6652b10d",
-      "fromNode": "canvas_node_1",
+      "fromNode": "canvas_node_2",
       "fromSide": "right",
-      "toNode": "canvas_node_2",
+      "toNode": "canvas_node_3",
       "toSide": "left",
       "label": "causes"
     },
     {
       "id": "edge_insight_ins-44_decision_dec_c8f8cb62",
-      "fromNode": "canvas_node_2",
+      "fromNode": "canvas_node_3",
       "fromSide": "right",
-      "toNode": "canvas_node_0",
+      "toNode": "canvas_node_1",
       "toSide": "left",
       "label": "derives_from"
     }

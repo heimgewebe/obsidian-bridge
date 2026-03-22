@@ -6,6 +6,7 @@ source:
     - insight
     - decision
     - hypothesis
+    - contradiction
 layout: cluster
 filters:
   max_nodes: 50
