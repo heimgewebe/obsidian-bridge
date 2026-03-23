@@ -849,5 +849,72 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(node_file_by_id[edge["fromNode"]], "chronik/evt1.md")
         self.assertEqual(node_file_by_id[edge["toNode"]], "chronik/evt2.md")
 
+
+    def test_render_canvas_investigations_exploratory_analysis(self):
+        # This test ensures that the real 'investigations-exploratory-analysis.yaml'
+        # spec is renderable and actually pulls the correct subset of node types and
+        # relations (event, insight, decision, hypothesis, contradiction, causes, derives_from,
+        # informed, contradicts). It explicitly tests the "global explorative slice
+        # without implicit tag-based topic scoping" to prevent semantic drift.
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt-1.md", "tags": ["investigation"]},
+                {"id": "ins-1", "kind": "insight", "file_path": "observatorium/ins-1.md", "tags": ["investigation"]},
+                {"id": "dec-1", "kind": "decision", "file_path": "decisions/dec-1.md", "tags": ["investigation"]},
+                {"id": "hyp-1", "kind": "hypothesis", "file_path": "knowledge/hyp-1.md", "tags": ["investigation"]},
+                {"id": "con-1", "kind": "contradiction", "file_path": "observatorium/con-1.md", "tags": ["investigation"]},
+                {"id": "ins-2", "kind": "insight", "file_path": "observatorium/ins-2.md", "tags": ["completely-unrelated-tag"]},
+                {"id": "other-1", "kind": "concept", "file_path": "knowledge/con-1.md", "tags": ["other"]}
+            ],
+            "edges": [
+                {"id": "e1", "from": "evt-1", "to": "ins-1", "relation": "informed"},
+                {"id": "e2", "from": "ins-1", "to": "dec-1", "relation": "causes"},
+                {"id": "e3", "from": "hyp-1", "to": "ins-1", "relation": "derives_from"},
+                {"id": "e4", "from": "con-1", "to": "hyp-1", "relation": "contradicts"},
+                {"id": "e6", "from": "evt-1", "to": "ins-2", "relation": "informed"},
+                {"id": "e5", "from": "other-1", "to": "evt-1", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # We load the actual spec from the repository rather than mocking it,
+        # ensuring this test acts as a true regression anchor against the active contract.
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        spec_path = os.path.join(repo_root, "config/canvas-specs/investigations-exploratory-analysis.yaml")
+        render_canvas(spec_path, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/investigations/exploratory-analysis.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        # Verify semantic node inclusion
+        self.assertEqual(len(canvas["nodes"]), 6)
+        node_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("chronik/evt-1.md", node_files)
+        self.assertIn("observatorium/ins-1.md", node_files)
+        self.assertIn("decisions/dec-1.md", node_files)
+        self.assertIn("knowledge/hyp-1.md", node_files)
+        self.assertIn("observatorium/con-1.md", node_files)
+        self.assertIn("observatorium/ins-2.md", node_files)
+        self.assertNotIn("knowledge/con-1.md", node_files)
+
+        # Verify semantic edge inclusion (strict exact set matching)
+        self.assertEqual(len(canvas["edges"]), 5)
+
+        node_file_by_id = {n["id"]: n["file"] for n in canvas["nodes"]}
+        semantic_edges = {
+            (node_file_by_id[e["fromNode"]], node_file_by_id[e["toNode"]], e["label"])
+            for e in canvas["edges"]
+        }
+        expected_edges = {
+            ("chronik/evt-1.md", "observatorium/ins-1.md", "informed"),
+            ("observatorium/ins-1.md", "decisions/dec-1.md", "causes"),
+            ("knowledge/hyp-1.md", "observatorium/ins-1.md", "derives_from"),
+            ("observatorium/con-1.md", "knowledge/hyp-1.md", "contradicts"),
+            ("chronik/evt-1.md", "observatorium/ins-2.md", "informed"),
+        }
+
+        self.assertEqual(semantic_edges, expected_edges)
 if __name__ == '__main__':
     unittest.main()
