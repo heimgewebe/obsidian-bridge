@@ -855,7 +855,7 @@ class TestCanvasRender(unittest.TestCase):
         # spec is renderable and actually pulls the correct subset of node types and
         # relations (event, insight, decision, hypothesis, contradiction, causes, derives_from,
         # informed, contradicts). It explicitly tests the "global explorative slice
-        # without topic scoping" to prevent semantic drift.
+        # without implicit tag-based topic scoping" to prevent semantic drift.
         graph_data = {
             "nodes": [
                 {"id": "evt-1", "kind": "event", "file_path": "chronik/evt-1.md", "tags": ["investigation"]},
