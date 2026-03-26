@@ -854,7 +854,7 @@ class TestCanvasRender(unittest.TestCase):
         # This test ensures that the real production spec 'investigations-exploratory-analysis.yaml'
         # is renderable and actually pulls the correct subset of node types and relations.
         # It explicitly protects against implicit tag-based topic scoping:
-        # A valid artifact with a foreign tag ('ins-2') must be intentionally included,
+        # A valid artifact (node 'ins-2') carrying a foreign tag ('completely-unrelated-tag') must be intentionally included,
         # while a foreign-typed artifact ('concept') remains intentionally excluded.
         graph_data = {
             "nodes": [
