@@ -83,6 +83,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     if not isinstance(prioritize_strongest, bool):
         raise ValueError(f"Invalid prioritize_strongest: {prioritize_strongest}. Must be a boolean.")
     prioritized_relations_raw = spec.get("filters", {}).get("prioritized_relations", [])
+    required_tags_raw = spec.get("filters", {}).get("required_tags", [])
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
 
@@ -96,6 +97,12 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             prioritized_relations = [rel for rel in prioritized_relations_raw if rel in valid_relations]
         else:
             prioritized_relations = prioritized_relations_raw
+
+    required_tags = []
+    if required_tags_raw:
+        if not isinstance(required_tags_raw, list) or not all(isinstance(x, str) for x in required_tags_raw):
+            raise ValueError(f"Invalid required_tags: {required_tags_raw}. Must be a list of strings.")
+        required_tags = required_tags_raw
 
     max_depth = None
     if max_depth_raw is not None:
@@ -256,6 +263,11 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
         if valid_types and node.get("kind") not in valid_types:
             continue
+
+        if required_tags:
+            node_tags = node.get("tags") or []
+            if not all(req_tag in node_tags for req_tag in required_tags):
+                continue
 
         if cutoff_date is not None:
             node_ts = _parse_timestamp_utc(node.get("timestamp"))

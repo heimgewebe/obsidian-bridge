@@ -919,5 +919,63 @@ class TestCanvasRender(unittest.TestCase):
         }
 
         self.assertEqual(semantic_edges, expected_edges)
+
+    def test_render_canvas_required_tags_filter(self):
+        spec = {
+            "id": "test-required-tags",
+            "type": "index",
+            "source": {"artifact_types": ["concept", "event"]},
+            "layout": "hierarchy",
+            "output": "canvases/test-tags.canvas",
+            "filters": {
+                "max_nodes": 100,
+                "required_tags": ["AI", "security"]
+            }
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        # Include 1 fully matching node, 1 partially matching, 1 completely non-matching, 1 without tags
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "concept", "tags": ["AI", "security", "other"]}, # MATCH
+                {"id": "n2", "kind": "event", "tags": ["AI", "policy"]}, # EXCLUDE (missing security)
+                {"id": "n3", "kind": "event", "tags": ["random"]}, # EXCLUDE
+                {"id": "n4", "kind": "concept"} # EXCLUDE (no tags)
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/test-tags.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 1)
+        # Verify deterministic ID mapping (n1 mapped to canvas_node_0)
+        # Because we only have 1 valid node.
+        # But we only assert the content here, as it's sufficient
+        pass # The length check is exactly what we need
+
+    def test_render_canvas_invalid_required_tags_raises(self):
+        spec = {
+            "id": "test-invalid-tags",
+            "type": "index",
+            "source": {"artifact_types": ["concept"]},
+            "layout": "hierarchy",
+            "output": "canvases/test.canvas",
+            "filters": {
+                "required_tags": "not-a-list"
+            }
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        with self.assertRaisesRegex(ValueError, "Invalid required_tags"):
+            render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
 if __name__ == '__main__':
     unittest.main()
