@@ -938,10 +938,10 @@ class TestCanvasRender(unittest.TestCase):
         # Include 1 fully matching node, 1 partially matching, 1 completely non-matching, 1 without tags
         graph_data = {
             "nodes": [
-                {"id": "n1", "kind": "concept", "tags": ["AI", "security", "other"]}, # MATCH
-                {"id": "n2", "kind": "event", "tags": ["AI", "policy"]}, # EXCLUDE (missing security)
-                {"id": "n3", "kind": "event", "tags": ["random"]}, # EXCLUDE
-                {"id": "n4", "kind": "concept"} # EXCLUDE (no tags)
+                {"id": "n1", "kind": "concept", "file_path": "knowledge/concept-ai-sec.md", "tags": ["AI", "security", "other"]}, # MATCH
+                {"id": "n2", "kind": "event", "file_path": "chronik/event-policy.md", "tags": ["AI", "policy"]}, # EXCLUDE (missing security)
+                {"id": "n3", "kind": "event", "file_path": "chronik/event-random.md", "tags": ["random"]}, # EXCLUDE
+                {"id": "n4", "kind": "concept", "file_path": "knowledge/concept-empty.md"} # EXCLUDE (no tags)
             ],
             "edges": []
         }
@@ -955,10 +955,11 @@ class TestCanvasRender(unittest.TestCase):
             canvas = json.load(f)
 
         self.assertEqual(len(canvas["nodes"]), 1)
-        # Verify deterministic ID mapping (n1 mapped to canvas_node_0)
-        # Because we only have 1 valid node.
-        # But we only assert the content here, as it's sufficient
-        pass # The length check is exactly what we need
+        node_files = [n.get("file") for n in canvas["nodes"]]
+        self.assertIn("knowledge/concept-ai-sec.md", node_files)
+        self.assertNotIn("chronik/event-policy.md", node_files)
+        self.assertNotIn("chronik/event-random.md", node_files)
+        self.assertNotIn("knowledge/concept-empty.md", node_files)
 
     def test_render_canvas_invalid_required_tags_raises(self):
         spec = {
@@ -976,6 +977,55 @@ class TestCanvasRender(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "Invalid required_tags"):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+    def test_render_canvas_required_tags_edge_filter(self):
+        spec = {
+            "id": "test-required-tags-edges",
+            "type": "index",
+            "source": {"artifact_types": ["concept", "event"]},
+            "layout": "hierarchy",
+            "output": "canvases/test-tags-edges.canvas",
+            "filters": {
+                "max_nodes": 100,
+                "required_tags": ["AI"]
+            },
+            "relations": ["references", "causes"]
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "concept", "file_path": "n1.md", "tags": ["AI"]},
+                {"id": "n2", "kind": "event", "file_path": "n2.md", "tags": ["AI"]},
+                {"id": "n3", "kind": "concept", "file_path": "n3.md", "tags": ["other"]}
+            ],
+            "edges": [
+                {"id": "e1", "from": "n1", "to": "n2", "relation": "references"}, # Both valid
+                {"id": "e2", "from": "n1", "to": "n3", "relation": "causes"}      # n3 is excluded
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/test-tags-edges.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
+        node_files = [n.get("file") for n in canvas["nodes"]]
+        self.assertIn("n1.md", node_files)
+        self.assertIn("n2.md", node_files)
+        self.assertNotIn("n3.md", node_files)
+
+        self.assertEqual(len(canvas["edges"]), 1)
+        node_id_to_canvas_id = {n["file"]: n["id"] for n in canvas["nodes"]}
+        edge = canvas["edges"][0]
+        self.assertEqual(edge["fromNode"], node_id_to_canvas_id["n1.md"])
+        self.assertEqual(edge["toNode"], node_id_to_canvas_id["n2.md"])
+
 
 if __name__ == '__main__':
     unittest.main()
