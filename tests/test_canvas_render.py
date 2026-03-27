@@ -851,11 +851,11 @@ class TestCanvasRender(unittest.TestCase):
 
 
     def test_render_canvas_investigations_exploratory_analysis(self):
-        # This test ensures that the real 'investigations-exploratory-analysis.yaml'
-        # spec is renderable and actually pulls the correct subset of node types and
-        # relations (event, insight, decision, hypothesis, contradiction, causes, derives_from,
-        # informed, contradicts). It explicitly tests the "global explorative slice
-        # without implicit tag-based topic scoping" to prevent semantic drift.
+        # This test ensures that the real production spec 'investigations-exploratory-analysis.yaml'
+        # is renderable and actually pulls the correct subset of node types and relations.
+        # It explicitly protects against implicit tag-based topic scoping:
+        # A valid artifact (node 'ins-2') carrying a foreign tag ('completely-unrelated-tag') must be intentionally included,
+        # while a foreign-typed artifact ('concept') remains intentionally excluded.
         graph_data = {
             "nodes": [
                 {"id": "evt-1", "kind": "event", "file_path": "chronik/evt-1.md", "tags": ["investigation"]},
@@ -907,6 +907,9 @@ class TestCanvasRender(unittest.TestCase):
             (node_file_by_id[e["fromNode"]], node_file_by_id[e["toNode"]], e["label"])
             for e in canvas["edges"]
         }
+        # The exact semantic edge set is intentionally frozen here as a strict contract of the active spec.
+        # If the production spec is expanded or scoped differently in the future, this test should consciously break.
+        # This is intended behavior and not an accidentally brittle test.
         expected_edges = {
             ("chronik/evt-1.md", "observatorium/ins-1.md", "informed"),
             ("observatorium/ins-1.md", "decisions/dec-1.md", "causes"),
