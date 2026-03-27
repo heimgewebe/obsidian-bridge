@@ -1027,5 +1027,48 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(edge["toNode"], node_id_to_canvas_id["n2.md"])
 
 
+    def test_render_canvas_observatorium_topic_spec(self):
+        # We load the actual production spec index-topic-observatorium.yaml
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        spec_path = os.path.join(repo_root, "config/canvas-specs/index-topic-observatorium.yaml")
+
+        graph_data = {
+            "nodes": [
+                # Valid type AND valid tag
+                {"id": "ins-1", "kind": "insight", "file_path": "observatorium/ins-1.md", "tags": ["observatorium", "insight"]},
+                {"id": "con-1", "kind": "contradiction", "file_path": "observatorium/con-1.md", "tags": ["observatorium"]},
+                # Valid type, MISSING tag
+                {"id": "ins-2", "kind": "insight", "file_path": "other/ins-2.md", "tags": ["random"]},
+                # Invalid type, valid tag
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt-1.md", "tags": ["observatorium"]}
+            ],
+            "edges": [
+                {"id": "e1", "from": "con-1", "to": "ins-1", "relation": "contradicts"}, # Should be included
+                {"id": "e2", "from": "ins-1", "to": "ins-2", "relation": "references"} # Edge to excluded node, should be dropped
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(spec_path, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/index/topic--observatorium.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
+        node_files = [n.get("file") for n in canvas["nodes"]]
+        self.assertIn("observatorium/ins-1.md", node_files)
+        self.assertIn("observatorium/con-1.md", node_files)
+        self.assertNotIn("other/ins-2.md", node_files) # Missing tag
+        self.assertNotIn("chronik/evt-1.md", node_files) # Invalid type
+
+        self.assertEqual(len(canvas["edges"]), 1)
+        # Ensure it's the right edge
+        node_id_to_canvas_id = {n["file"]: n["id"] for n in canvas["nodes"]}
+        edge = canvas["edges"][0]
+        self.assertEqual(edge["fromNode"], node_id_to_canvas_id["observatorium/con-1.md"])
+        self.assertEqual(edge["toNode"], node_id_to_canvas_id["observatorium/ins-1.md"])
+
 if __name__ == '__main__':
     unittest.main()
