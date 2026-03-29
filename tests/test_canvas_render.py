@@ -1029,6 +1029,7 @@ class TestCanvasRender(unittest.TestCase):
 
     def test_render_canvas_observatorium_topic_spec(self):
         # We load the actual production spec index-topic-observatorium.yaml
+        # This explicitly tests that the 'required_tags' array intersection reliably drops missing tags.
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         spec_path = os.path.join(repo_root, "config/canvas-specs/index-topic-observatorium.yaml")
 
