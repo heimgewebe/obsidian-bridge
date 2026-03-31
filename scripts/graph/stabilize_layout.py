@@ -300,13 +300,25 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
             grid_cols = 4
             cell_width, cell_height = 350, 250
             fallback_index = len(canvas_layout["nodes"])
+
+            # Count existing nodes per organ to offset new nodes deterministically
+            organ_counts = {}
+            for rn in relevant_nodes:
+                if rn["id"] in canvas_layout["nodes"]:
+                    for key in fixed_positions:
+                        if key.lower() in rn.get("title", "").lower() or key.lower() in rn["id"].lower():
+                            organ_counts[key] = organ_counts.get(key, 0) + 1
+                            break
+
             for n in new_nodes:
                 nid = n["id"]
                 # Heuristic: use title or ID to map
                 found = False
                 for key, (fx, fy) in fixed_positions.items():
                     if key.lower() in n.get("title", "").lower() or key.lower() in nid.lower():
-                        canvas_layout["nodes"][nid] = {"x": fx, "y": fy, "width": 250, "height": 150}
+                        count = organ_counts.get(key, 0)
+                        canvas_layout["nodes"][nid] = {"x": fx, "y": fy + count * 200, "width": 250, "height": 150}
+                        organ_counts[key] = count + 1
                         found = True
                         break
                 if not found:

@@ -1,3 +1,4 @@
+import collections
 import json
 import os
 import yaml
@@ -70,19 +71,20 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     }
 
     # Apply filters (Guards)
-    max_nodes = spec.get("filters", {}).get("max_nodes", 100)
-    max_edges = spec.get("filters", {}).get("max_edges", 200)
-    max_depth_raw = spec.get("filters", {}).get("max_depth")
-    max_clusters_raw = spec.get("filters", {}).get("max_clusters")
-    date_window_days_raw = spec.get("filters", {}).get("date_window_days")
-    calendar_month_raw = spec.get("filters", {}).get("calendar_month")
-    prioritize_recent = spec.get("filters", {}).get("prioritize_recent", False)
+    filters = spec.get("filters") or {}
+    max_nodes = filters.get("max_nodes", 100)
+    max_edges = filters.get("max_edges", 200)
+    max_depth_raw = filters.get("max_depth")
+    max_clusters_raw = filters.get("max_clusters")
+    date_window_days_raw = filters.get("date_window_days")
+    calendar_month_raw = filters.get("calendar_month")
+    prioritize_recent = filters.get("prioritize_recent", False)
     if not isinstance(prioritize_recent, bool):
         raise ValueError(f"Invalid prioritize_recent: {prioritize_recent}. Must be a boolean.")
-    prioritize_strongest = spec.get("filters", {}).get("prioritize_strongest", False)
+    prioritize_strongest = filters.get("prioritize_strongest", False)
     if not isinstance(prioritize_strongest, bool):
         raise ValueError(f"Invalid prioritize_strongest: {prioritize_strongest}. Must be a boolean.")
-    prioritized_relations_raw = spec.get("filters", {}).get("prioritized_relations", [])
+    prioritized_relations_raw = filters.get("prioritized_relations", [])
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
 
@@ -151,11 +153,9 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         except ValueError:
             raise ValueError(f"Invalid calendar_month: {calendar_month_raw}. Must be a valid month in YYYY-MM format.")
 
-    import collections
-
     # Determine allowed nodes based on depth
     allowed_by_depth = set()
-    if max_depth is not None and isinstance(max_depth, int) and max_depth >= 0:
+    if max_depth is not None:
         # We need a starting point for depth traversal relative to this canvas (filtered nodes/edges).
         relevant_node_ids = {
             n.get("id") for n in graph.get("nodes", [])
@@ -202,7 +202,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
     # Calculate clusters if max_clusters is set
     allowed_tags = None
-    if max_clusters is not None and isinstance(max_clusters, int) and max_clusters > 0:
+    if max_clusters is not None:
         tag_counts = {}
         for node in graph.get("nodes", []):
             if valid_types and node.get("kind") not in valid_types:
