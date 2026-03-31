@@ -1070,6 +1070,87 @@ class TestCanvasRender(unittest.TestCase):
         edge = canvas["edges"][0]
         self.assertEqual(edge["fromNode"], node_id_to_canvas_id["observatorium/con-1.md"])
         self.assertEqual(edge["toNode"], node_id_to_canvas_id["observatorium/ins-1.md"])
+    def test_render_canvas_required_tags_max_clusters(self):
+        # tests that tags from out-of-scope nodes don't monopolize cluster slots
+        spec = {
+            "id": "test-clusters",
+            "type": "index",
+            "source": {"artifact_types": ["insight"]},
+            "layout": "cluster",
+            "output": "canvases/test.canvas",
+            "filters": {
+                "max_clusters": 1,
+                "required_tags": ["in-scope"]
+            }
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                # In scope, tag 'important' appears once
+                {"id": "n1", "kind": "insight", "tags": ["in-scope", "important"]},
+                # Out of scope, tag 'noise' appears heavily
+                {"id": "n2", "kind": "insight", "tags": ["noise"]},
+                {"id": "n3", "kind": "insight", "tags": ["noise"]},
+                {"id": "n4", "kind": "insight", "tags": ["noise"]}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/test.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        # n1 should be included. If max_clusters counted 'noise', 'important' wouldn't make the cut.
+        self.assertEqual(len(canvas["nodes"]), 1)
+        self.assertEqual(canvas["nodes"][0]["text"], "Unknown Node") # Fallback title
+
+    def test_render_canvas_required_tags_max_depth(self):
+        # tests that depth calculation doesn't bleed through out-of-scope nodes.
+        # Without the patch, the BFS would traverse through n2, marking n3 as depth 2 (and excluding it since max_depth=1).
+        # With the patch, n2 is removed from the subgraph. n1 and n3 both become roots (depth 0) and are BOTH included.
+        spec = {
+            "id": "test-depth",
+            "type": "index",
+            "source": {"artifact_types": ["event"]},
+            "layout": "hierarchy",
+            "output": "canvases/test.canvas",
+            "filters": {
+                "max_depth": 1,
+                "required_tags": ["in-scope"]
+            },
+            "relations": ["causes"]
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "event", "tags": ["in-scope"]},
+                {"id": "n2", "kind": "event", "tags": ["out-of-scope"]},
+                {"id": "n3", "kind": "event", "tags": ["in-scope"]}
+            ],
+            "edges": [
+                {"id": "e1", "from": "n1", "to": "n2", "relation": "causes"},
+                {"id": "e2", "from": "n2", "to": "n3", "relation": "causes"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/test.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        # Both n1 and n3 should be included because n2's exclusion breaks the graph into two roots.
+        self.assertEqual(len(canvas["nodes"]), 2)
+
 
 if __name__ == '__main__':
     unittest.main()

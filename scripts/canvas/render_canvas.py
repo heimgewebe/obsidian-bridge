@@ -104,6 +104,16 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             raise ValueError(f"Invalid required_tags: {required_tags_raw}. Must be a list of strings.")
         required_tags = required_tags_raw
 
+
+    def _node_in_scope(n: Dict[str, Any]) -> bool:
+        if valid_types and n.get("kind") not in valid_types:
+            return False
+        if required_tags:
+            n_tags = n.get("tags") or []
+            if not all(req_tag in n_tags for req_tag in required_tags):
+                return False
+        return True
+
     max_depth = None
     if max_depth_raw is not None:
         try:
@@ -135,7 +145,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         # Die Systemzeit wird bewusst nicht verwendet, um Churn zu vermeiden.
         max_ts = None
         for n in graph.get("nodes", []):
-            if valid_types and n.get("kind") not in valid_types:
+            if not _node_in_scope(n):
                 continue
             ts = _parse_timestamp_utc(n.get("timestamp"))
             if ts:
@@ -166,7 +176,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         # We need a starting point for depth traversal relative to this canvas (filtered nodes/edges).
         relevant_node_ids = {
             n.get("id") for n in graph.get("nodes", [])
-            if n.get("id") and (not valid_types or n.get("kind") in valid_types)
+            if n.get("id") and _node_in_scope(n)
         }
 
         incoming_counts = {}
@@ -212,7 +222,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     if max_clusters is not None and isinstance(max_clusters, int) and max_clusters > 0:
         tag_counts = {}
         for node in graph.get("nodes", []):
-            if valid_types and node.get("kind") not in valid_types:
+            if not _node_in_scope(node):
                 continue
             tags = node.get("tags") or []
             for tag in tags:
@@ -261,13 +271,8 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             if not node_tags or not any(t in allowed_tags for t in node_tags):
                 continue
 
-        if valid_types and node.get("kind") not in valid_types:
+        if not _node_in_scope(node):
             continue
-
-        if required_tags:
-            node_tags = node.get("tags") or []
-            if not all(req_tag in node_tags for req_tag in required_tags):
-                continue
 
         if cutoff_date is not None:
             node_ts = _parse_timestamp_utc(node.get("timestamp"))
