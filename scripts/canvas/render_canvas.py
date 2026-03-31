@@ -109,6 +109,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         if valid_types and n.get("kind") not in valid_types:
             return False
         if required_tags:
+            # Implements AND semantics: all required tags must be present
             n_tags = n.get("tags") or []
             if not all(req_tag in n_tags for req_tag in required_tags):
                 return False

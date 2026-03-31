@@ -1089,11 +1089,11 @@ class TestCanvasRender(unittest.TestCase):
         graph_data = {
             "nodes": [
                 # In scope, tag 'important' appears once
-                {"id": "n1", "kind": "insight", "tags": ["in-scope", "important"]},
+                {"id": "n1", "kind": "insight", "file_path": "n1.md", "tags": ["in-scope", "important"]},
                 # Out of scope, tag 'noise' appears heavily
-                {"id": "n2", "kind": "insight", "tags": ["noise"]},
-                {"id": "n3", "kind": "insight", "tags": ["noise"]},
-                {"id": "n4", "kind": "insight", "tags": ["noise"]}
+                {"id": "n2", "kind": "insight", "file_path": "n2.md", "tags": ["noise"]},
+                {"id": "n3", "kind": "insight", "file_path": "n3.md", "tags": ["noise"]},
+                {"id": "n4", "kind": "insight", "file_path": "n4.md", "tags": ["noise"]}
             ]
         }
         with open(self.graph_file.name, 'w') as f:
@@ -1107,7 +1107,11 @@ class TestCanvasRender(unittest.TestCase):
 
         # n1 should be included. If max_clusters counted 'noise', 'important' wouldn't make the cut.
         self.assertEqual(len(canvas["nodes"]), 1)
-        self.assertEqual(canvas["nodes"][0]["text"], "Unknown Node") # Fallback title
+        node_files = [n.get("file") for n in canvas["nodes"]]
+        self.assertIn("n1.md", node_files)
+        self.assertNotIn("n2.md", node_files)
+        self.assertNotIn("n3.md", node_files)
+        self.assertNotIn("n4.md", node_files)
 
     def test_render_canvas_required_tags_max_depth(self):
         # tests that depth calculation doesn't bleed through out-of-scope nodes.
@@ -1130,9 +1134,9 @@ class TestCanvasRender(unittest.TestCase):
 
         graph_data = {
             "nodes": [
-                {"id": "n1", "kind": "event", "tags": ["in-scope"]},
-                {"id": "n2", "kind": "event", "tags": ["out-of-scope"]},
-                {"id": "n3", "kind": "event", "tags": ["in-scope"]}
+                {"id": "n1", "kind": "event", "file_path": "n1.md", "tags": ["in-scope"]},
+                {"id": "n2", "kind": "event", "file_path": "n2.md", "tags": ["out-of-scope"]},
+                {"id": "n3", "kind": "event", "file_path": "n3.md", "tags": ["in-scope"]}
             ],
             "edges": [
                 {"id": "e1", "from": "n1", "to": "n2", "relation": "causes"},
@@ -1150,6 +1154,10 @@ class TestCanvasRender(unittest.TestCase):
 
         # Both n1 and n3 should be included because n2's exclusion breaks the graph into two roots.
         self.assertEqual(len(canvas["nodes"]), 2)
+        node_files = [n.get("file") for n in canvas["nodes"]]
+        self.assertIn("n1.md", node_files)
+        self.assertIn("n3.md", node_files)
+        self.assertNotIn("n2.md", node_files)
 
 
     def test_render_canvas_required_tags_date_window(self):
@@ -1172,13 +1180,13 @@ class TestCanvasRender(unittest.TestCase):
         graph_data = {
             "nodes": [
                 # In scope: highest timestamp is 2026-03-10
-                {"id": "n1", "kind": "event", "tags": ["in-scope"], "timestamp": "2026-03-10T12:00:00Z"},
-                {"id": "n2", "kind": "event", "tags": ["in-scope"], "timestamp": "2026-03-05T12:00:00Z"}, # within 10 days
-                {"id": "n3", "kind": "event", "tags": ["in-scope"], "timestamp": "2026-02-01T12:00:00Z"}, # outside 10 days of March 10
+                {"id": "n1", "kind": "event", "file_path": "n1.md", "tags": ["in-scope"], "timestamp": "2026-03-10T12:00:00Z"},
+                {"id": "n2", "kind": "event", "file_path": "n2.md", "tags": ["in-scope"], "timestamp": "2026-03-05T12:00:00Z"}, # within 10 days
+                {"id": "n3", "kind": "event", "file_path": "n3.md", "tags": ["in-scope"], "timestamp": "2026-02-01T12:00:00Z"}, # outside 10 days of March 10
 
                 # Out of scope: highest timestamp is 2026-05-01
                 # If this node skewed the cutoff_date (max_ts = May 1), then all March nodes would be excluded!
-                {"id": "n4", "kind": "event", "tags": ["out-of-scope"], "timestamp": "2026-05-01T12:00:00Z"}
+                {"id": "n4", "kind": "event", "file_path": "n4.md", "tags": ["out-of-scope"], "timestamp": "2026-05-01T12:00:00Z"}
             ]
         }
         with open(self.graph_file.name, 'w') as f:
@@ -1192,8 +1200,11 @@ class TestCanvasRender(unittest.TestCase):
 
         # Both n1 and n2 should be included. n3 is too old. n4 is out of scope.
         self.assertEqual(len(canvas["nodes"]), 2)
-        # We don't check names because they fall back to 'Unknown Node'.
-        # The fact that 2 nodes are returned proves the window was anchored to March 10, not May 1.
+        node_files = [n.get("file") for n in canvas["nodes"]]
+        self.assertIn("n1.md", node_files)
+        self.assertIn("n2.md", node_files)
+        self.assertNotIn("n3.md", node_files)
+        self.assertNotIn("n4.md", node_files)
 
 
 if __name__ == '__main__':
