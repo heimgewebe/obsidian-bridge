@@ -1152,5 +1152,49 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(len(canvas["nodes"]), 2)
 
 
+    def test_render_canvas_required_tags_date_window(self):
+        # tests that the cutoff_date is anchored ONLY to the max_timestamp of in-scope nodes
+        # Out-of-scope nodes with future dates must not skew the window.
+        spec = {
+            "id": "test-date-window",
+            "type": "index",
+            "source": {"artifact_types": ["event"]},
+            "layout": "timeline",
+            "output": "canvases/test.canvas",
+            "filters": {
+                "date_window_days": 10,
+                "required_tags": ["in-scope"]
+            }
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                # In scope: highest timestamp is 2026-03-10
+                {"id": "n1", "kind": "event", "tags": ["in-scope"], "timestamp": "2026-03-10T12:00:00Z"},
+                {"id": "n2", "kind": "event", "tags": ["in-scope"], "timestamp": "2026-03-05T12:00:00Z"}, # within 10 days
+                {"id": "n3", "kind": "event", "tags": ["in-scope"], "timestamp": "2026-02-01T12:00:00Z"}, # outside 10 days of March 10
+
+                # Out of scope: highest timestamp is 2026-05-01
+                # If this node skewed the cutoff_date (max_ts = May 1), then all March nodes would be excluded!
+                {"id": "n4", "kind": "event", "tags": ["out-of-scope"], "timestamp": "2026-05-01T12:00:00Z"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/test.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        # Both n1 and n2 should be included. n3 is too old. n4 is out of scope.
+        self.assertEqual(len(canvas["nodes"]), 2)
+        # We don't check names because they fall back to 'Unknown Node'.
+        # The fact that 2 nodes are returned proves the window was anchored to March 10, not May 1.
+
+
 if __name__ == '__main__':
     unittest.main()
