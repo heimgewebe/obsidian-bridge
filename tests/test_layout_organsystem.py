@@ -80,13 +80,13 @@ class TestLayoutOrgansystem(unittest.TestCase):
             self.assertEqual(canvas_nodes2["node:unknown-1"]["x"], canvas_nodes1["node:unknown-1"]["x"])
             self.assertEqual(canvas_nodes2["node:unknown-1"]["y"], canvas_nodes1["node:unknown-1"]["y"])
 
-            # Das Organsystem-Layout positioniert Nodes auf vordefinierten Ankern.
-            # (current limitation: Der Algorithmus stapelt derzeit mehrere Treffer desselben
-            # Organs noch nicht deterministisch untereinander, sondern platziert sie auf
-            # derselben Basis-Koordinate. Das wird hier aber nicht als harte Assertion erzwungen,
-            # um zukünftige Verbesserungen am Algorithmus nicht zu blockieren.)
+            # Das Organsystem-Layout positioniert Nodes auf vordefinierten Ankern und
+            # staffelt mehrere Treffer desselben Organs deterministisch per Y-Offset.
             self.assertIn("node:chronik-2", canvas_nodes2)
             self.assertIn("node:hausKI-2", canvas_nodes2)
+            # chronik-1 is cached at y=0 (slot 0); chronik-2 must land on slot 1 (y=200)
+            self.assertEqual(canvas_nodes2["node:chronik-2"]["x"], canvas_nodes1["node:chronik-1"]["x"])
+            self.assertEqual(canvas_nodes2["node:chronik-2"]["y"], 200)
 
             # Unbekannte Knoten wandern ins Fallback-Grid und werden dort deterministisch ergänzt
             self.assertIn("node:unknown-2", canvas_nodes2)
@@ -150,6 +150,100 @@ class TestLayoutOrgansystem(unittest.TestCase):
             self.assertEqual(xs, {0})
 
             # No two nodes may share the same (x, y) — no overlap
+            positions = [(n["x"], n["y"]) for n in nodes.values()]
+            self.assertEqual(len(positions), len(set(positions)))
+
+    def test_organsystem_gap_slot_no_collision(self):
+        """New node must not collide when existing nodes occupy non-contiguous slots.
+
+        Scenario: two existing nodes already cached on slot 0 (y=0) and slot 2 (y=400).
+        The count-based approach would yield count=2 → y=400, causing a collision.
+        The slot-based approach must yield next_slot = max({0,2})+1 = 3 → y=600.
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            graph_path = os.path.join(temp_dir, "graph.json")
+            cache_path = os.path.join(temp_dir, "layout.json")
+            specs_dir = os.path.join(temp_dir, "specs")
+            os.makedirs(specs_dir)
+
+            spec = {"id": "test-organ-gap", "layout": "organsystem"}
+            with open(os.path.join(specs_dir, "test-organ-gap.yaml"), "w") as f:
+                yaml.dump(spec, f)
+
+            graph = {
+                "nodes": [
+                    {"id": "node:chronik-slot0", "title": "Chronik Slot0"},
+                    {"id": "node:chronik-slot2", "title": "Chronik Slot2"},
+                    {"id": "node:chronik-new",   "title": "Chronik New"},
+                ],
+                "edges": []
+            }
+            with open(graph_path, "w") as f:
+                json.dump(graph, f)
+
+            # Pre-populate cache with nodes on slot 0 (y=0) and slot 2 (y=400), leaving slot 1 empty.
+            # chronik anchor is (x=0, y=0).
+            pre_cache = {
+                "canvases": {
+                    "test-organ-gap": {
+                        "nodes": {
+                            "node:chronik-slot0": {"x": 0, "y": 0,   "width": 250, "height": 150},
+                            "node:chronik-slot2": {"x": 0, "y": 400, "width": 250, "height": 150},
+                        }
+                    }
+                }
+            }
+            with open(cache_path, "w") as f:
+                json.dump(pre_cache, f)
+
+            layout = stabilize_layout(graph_path, cache_path, specs_dir)
+            nodes = layout["canvases"]["test-organ-gap"]["nodes"]
+
+            self.assertIn("node:chronik-new", nodes)
+            new_node = nodes["node:chronik-new"]
+
+            # Must land on slot 3 (y=600), not slot 2 (y=400) which is already occupied.
+            self.assertEqual(new_node["x"], 0)
+            self.assertEqual(new_node["y"], 600)
+
+            # No two nodes share the same (x, y)
+            positions = [(n["x"], n["y"]) for n in nodes.values()]
+            self.assertEqual(len(positions), len(set(positions)))
+
+    def test_organsystem_two_new_nodes_same_run_no_collision(self):
+        """Two new nodes added in the same stabilize run must receive distinct consecutive slots."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            graph_path = os.path.join(temp_dir, "graph.json")
+            cache_path = os.path.join(temp_dir, "layout.json")
+            specs_dir = os.path.join(temp_dir, "specs")
+            os.makedirs(specs_dir)
+
+            spec = {"id": "test-organ-tworun", "layout": "organsystem"}
+            with open(os.path.join(specs_dir, "test-organ-tworun.yaml"), "w") as f:
+                yaml.dump(spec, f)
+
+            graph = {
+                "nodes": [
+                    {"id": "node:chronik-x", "title": "Chronik X"},
+                    {"id": "node:chronik-y", "title": "Chronik Y"},
+                ],
+                "edges": []
+            }
+            with open(graph_path, "w") as f:
+                json.dump(graph, f)
+
+            layout = stabilize_layout(graph_path, cache_path, specs_dir)
+            nodes = layout["canvases"]["test-organ-tworun"]["nodes"]
+
+            self.assertIn("node:chronik-x", nodes)
+            self.assertIn("node:chronik-y", nodes)
+
+            # Both must be on x=0 (chronik anchor), on different y values
+            self.assertEqual(nodes["node:chronik-x"]["x"], 0)
+            self.assertEqual(nodes["node:chronik-y"]["x"], 0)
+            self.assertNotEqual(nodes["node:chronik-x"]["y"], nodes["node:chronik-y"]["y"])
+
+            # No two nodes share the same (x, y)
             positions = [(n["x"], n["y"]) for n in nodes.values()]
             self.assertEqual(len(positions), len(set(positions)))
 
