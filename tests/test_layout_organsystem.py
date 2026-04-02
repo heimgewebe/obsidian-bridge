@@ -98,5 +98,60 @@ class TestLayoutOrgansystem(unittest.TestCase):
             pos2 = (canvas_nodes2["node:unknown-2"]["x"], canvas_nodes2["node:unknown-2"]["y"])
             self.assertNotEqual(pos1, pos2)
 
+    def test_organsystem_stacks_multiple_nodes_by_y_offset(self):
+        """Multiple nodes that map to the same organ must be stacked vertically (y += 200 per node).
+
+        Without Y-offset stacking, every additional node for the same organ would be
+        placed at the same (fx, fy) coordinate and overlap visually.
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            graph_path = os.path.join(temp_dir, "graph.json")
+            cache_path = os.path.join(temp_dir, "layout.json")
+            specs_dir = os.path.join(temp_dir, "specs")
+            os.makedirs(specs_dir)
+
+            spec = {"id": "test-organ-stack", "layout": "organsystem"}
+            with open(os.path.join(specs_dir, "test-organ-stack.yaml"), "w") as f:
+                yaml.dump(spec, f)
+
+            # Three nodes all mapping to "chronik" (fixed position x=0, y=0)
+            graph = {
+                "nodes": [
+                    {"id": "node:chronik-a", "title": "Chronik A"},
+                    {"id": "node:chronik-b", "title": "Chronik B"},
+                    {"id": "node:chronik-c", "title": "Chronik C"},
+                ],
+                "edges": []
+            }
+            with open(graph_path, "w") as f:
+                json.dump(graph, f)
+
+            layout = stabilize_layout(graph_path, cache_path, specs_dir)
+            nodes = layout["canvases"]["test-organ-stack"]["nodes"]
+
+            # All three nodes must exist
+            self.assertIn("node:chronik-a", nodes)
+            self.assertIn("node:chronik-b", nodes)
+            self.assertIn("node:chronik-c", nodes)
+
+            # Nodes are processed in sorted-ID order: -a, -b, -c
+            # chronik anchor: x=0, y=0; each additional node gets +200 on y
+            ys = sorted([nodes["node:chronik-a"]["y"],
+                         nodes["node:chronik-b"]["y"],
+                         nodes["node:chronik-c"]["y"]])
+            self.assertEqual(ys[0], 0)    # first: y=0
+            self.assertEqual(ys[1], 200)  # second: y=200
+            self.assertEqual(ys[2], 400)  # third: y=400
+
+            # All share the same x anchor (x=0 for chronik)
+            xs = {nodes["node:chronik-a"]["x"],
+                  nodes["node:chronik-b"]["x"],
+                  nodes["node:chronik-c"]["x"]}
+            self.assertEqual(xs, {0})
+
+            # No two nodes may share the same (x, y) — no overlap
+            positions = [(n["x"], n["y"]) for n in nodes.values()]
+            self.assertEqual(len(positions), len(set(positions)))
+
 if __name__ == '__main__':
     unittest.main()
