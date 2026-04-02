@@ -2,16 +2,16 @@ id: index-topic-observatorium
 type: index
 source:
   artifact_types:
-    - insight
-    - contradiction
-    - uncertainty
+  - insight
+  - contradiction
+  - uncertainty
 layout: cluster
 filters:
   max_nodes: 100
   required_tags:
-    - observatorium
+  - observatorium
 relations:
-  - contradicts
-  - clusters_with
-  - references
+- contradicts
+- clusters_with
+- references
 output: canvases/index/topic--observatorium.canvas
