@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 from typing import Dict, Any
 
@@ -35,8 +36,6 @@ def build_graph(output_file: str = "vault-gewebe/obsidian-bridge/meta/graph/grap
 
     # To guarantee determinism
     markdown_files.sort()
-
-    import re
 
     for md_path in markdown_files:
         try:

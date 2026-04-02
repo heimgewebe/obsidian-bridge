@@ -30,6 +30,10 @@
         "prioritized_relations": {
           "type": "array",
           "items": { "type": "string" }
+        },
+        "required_tags": {
+          "type": "array",
+          "items": { "type": "string" }
         }
       }
     },
