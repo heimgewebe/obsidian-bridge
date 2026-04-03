@@ -138,11 +138,6 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             raise ValueError(f"Invalid max_clusters: {max_clusters_raw}. Must be an integer >= 1.")
 
     cutoff_date = None
-
-    # Pre-parse timestamps to optimize filtering and sorting pipeline
-    for n in graph.get("nodes", []):
-        n["_parsed_ts"] = _parse_timestamp_utc(n.get("timestamp"))
-
     if date_window_days_raw is not None:
         try:
             date_window_days = int(date_window_days_raw)
@@ -159,7 +154,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         for n in graph.get("nodes", []):
             if not _node_in_scope(n, valid_types, required_tags):
                 continue
-            ts = n.get("_parsed_ts")
+            ts = _parse_timestamp_utc(n.get("timestamp"))
             if ts:
                 if max_ts is None or ts > max_ts:
                     max_ts = ts
@@ -247,7 +242,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     if prioritize_recent:
         # Sort by timestamp descending (most recent first), then ID for determinism
         def _recent_node_sort_key(node: Dict[str, Any]) -> tuple:
-            ts = node.get("_parsed_ts")
+            ts = _parse_timestamp_utc(node.get("timestamp"))
             node_id = str(node.get("id") or "")
             if ts is not None:
                 # Valid dates go first, sorted by highest timestamp (using negation)
@@ -285,12 +280,12 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             continue
 
         if cutoff_date is not None:
-            node_ts = node.get("_parsed_ts")
+            node_ts = _parse_timestamp_utc(node.get("timestamp"))
             if not node_ts or node_ts < cutoff_date:
                 continue
 
         if calendar_month_target is not None:
-            node_ts = node.get("_parsed_ts")
+            node_ts = _parse_timestamp_utc(node.get("timestamp"))
             if not node_ts:
                 continue
             # Ensure time is evaluated in UTC to prevent timezone boundary Schrödinger months
