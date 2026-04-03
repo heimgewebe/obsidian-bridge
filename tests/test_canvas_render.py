@@ -297,7 +297,6 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a valid month in YYYY-MM format", str(context.exception))
 
-
     def test_render_canvas_mixed_timestamps(self):
         graph_data = {
             "nodes": [
@@ -849,7 +848,6 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(node_file_by_id[edge["fromNode"]], "chronik/evt1.md")
         self.assertEqual(node_file_by_id[edge["toNode"]], "chronik/evt2.md")
 
-
     def test_render_canvas_investigations_exploratory_analysis(self):
         # This test ensures that the real production spec 'investigations-exploratory-analysis.yaml'
         # is renderable and actually pulls the correct subset of node types and relations.
@@ -962,8 +960,6 @@ class TestCanvasRender(unittest.TestCase):
         # Exactly one node — not just a count check, but the identity is verified above
         self.assertEqual(len(canvas["nodes"]), 1)
 
-
-
     def test_render_canvas_required_tags_max_depth(self):
         # Prove that max_depth BFS only traverses in-scope nodes (those matching required_tags).
         # n2 lacks the required tag, so it is excluded from the BFS graph.
@@ -976,7 +972,6 @@ class TestCanvasRender(unittest.TestCase):
             "filters": {"max_depth": 1, "required_tags": ["scope"]},
             "relations": ["references"]
         }
-        import yaml
         with open(self.spec_file.name, 'w') as f:
             yaml.dump(spec, f)
 
@@ -992,14 +987,11 @@ class TestCanvasRender(unittest.TestCase):
                 {"id": "e3", "from": "n2", "to": "n3", "relation": "references"},
             ]
         }
-        import json
         with open(self.graph_file.name, 'w') as f:
             json.dump(graph_data, f)
 
-        from scripts.canvas.render_canvas import render_canvas
         render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
 
-        import os
         output_path = os.path.join(self.temp_dir.name, "canvases/req-tags-depth.canvas")
         with open(output_path, 'r') as f:
             canvas = json.load(f)
@@ -1018,6 +1010,19 @@ class TestCanvasRender(unittest.TestCase):
         # Prove that the date_window_days cutoff is anchored to the max timestamp of
         # in-scope nodes only — an out-of-scope node with a future timestamp must NOT
         # push the anchor forward and wrongly exclude valid in-scope nodes.
+        #
+        # Setup:
+        #   n1 (scope, 2026-03-08): most-recent in-scope node -> anchor
+        #   n2 (scope, 2026-03-06): within the 5-day window from n1
+        #   n3 (scope, 2026-01-01): too old, outside the window
+        #   n4 (no scope, 2026-04-01): future, but out-of-scope — must not shift the anchor
+        #
+        # Expected with required_tags=["scope"] and date_window_days=5:
+        #   anchor = 2026-03-08, cutoff = 2026-03-03
+        #   n1 included (2026-03-08 >= cutoff)
+        #   n2 included (2026-03-06 >= cutoff)
+        #   n3 excluded (2026-01-01 < cutoff)
+        #   n4 excluded (no "scope" tag)
         spec = {
             "id": "test-req-tags-date",
             "type": "observatorium",
@@ -1025,7 +1030,6 @@ class TestCanvasRender(unittest.TestCase):
             "source": {"artifact_types": ["insight"]},
             "filters": {"date_window_days": 5, "required_tags": ["scope"]}
         }
-        import yaml
         with open(self.spec_file.name, 'w') as f:
             yaml.dump(spec, f)
 
@@ -1038,14 +1042,11 @@ class TestCanvasRender(unittest.TestCase):
             ],
             "edges": []
         }
-        import json
         with open(self.graph_file.name, 'w') as f:
             json.dump(graph_data, f)
 
-        from scripts.canvas.render_canvas import render_canvas
         render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
 
-        import os
         output_path = os.path.join(self.temp_dir.name, "canvases/req-tags-date.canvas")
         with open(output_path, 'r') as f:
             canvas = json.load(f)
@@ -1061,7 +1062,6 @@ class TestCanvasRender(unittest.TestCase):
         self.assertNotIn("obs/n4.md", node_files)
 
         self.assertEqual(len(canvas["nodes"]), 2)
-
 
 if __name__ == '__main__':
     unittest.main()
