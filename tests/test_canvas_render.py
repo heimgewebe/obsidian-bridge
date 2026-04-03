@@ -963,5 +963,105 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(len(canvas["nodes"]), 1)
 
 
+
+    def test_render_canvas_required_tags_max_depth(self):
+        # Prove that max_depth BFS only traverses in-scope nodes (those matching required_tags).
+        # n2 lacks the required tag, so it is excluded from the BFS graph.
+        # n3 is reachable from n1 via a direct edge that does not pass through n2.
+        spec = {
+            "id": "test-req-tags-depth",
+            "type": "knowledge",
+            "output": "canvases/req-tags-depth.canvas",
+            "source": {"artifact_types": ["concept"]},
+            "filters": {"max_depth": 1, "required_tags": ["scope"]},
+            "relations": ["references"]
+        }
+        import yaml
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "concept", "file_path": "k/n1.md", "tags": ["scope"]},
+                {"id": "n2", "kind": "concept", "file_path": "k/n2.md", "tags": []},      # out of scope
+                {"id": "n3", "kind": "concept", "file_path": "k/n3.md", "tags": ["scope"]},
+            ],
+            "edges": [
+                {"id": "e1", "from": "n1", "to": "n2", "relation": "references"},
+                {"id": "e2", "from": "n1", "to": "n3", "relation": "references"},
+                {"id": "e3", "from": "n2", "to": "n3", "relation": "references"},
+            ]
+        }
+        import json
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        from scripts.canvas.render_canvas import render_canvas
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        import os
+        output_path = os.path.join(self.temp_dir.name, "canvases/req-tags-depth.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        node_files = [n["file"] for n in canvas["nodes"]]
+
+        # n1 (root, in-scope) and n3 (depth-1 child of n1, in-scope) must be included
+        self.assertIn("k/n1.md", node_files)
+        self.assertIn("k/n3.md", node_files)
+        # n2 lacks the required tag and is excluded
+        self.assertNotIn("k/n2.md", node_files)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
+
+    def test_render_canvas_required_tags_date_window(self):
+        # Prove that the date_window_days cutoff is anchored to the max timestamp of
+        # in-scope nodes only — an out-of-scope node with a future timestamp must NOT
+        # push the anchor forward and wrongly exclude valid in-scope nodes.
+        spec = {
+            "id": "test-req-tags-date",
+            "type": "observatorium",
+            "output": "canvases/req-tags-date.canvas",
+            "source": {"artifact_types": ["insight"]},
+            "filters": {"date_window_days": 5, "required_tags": ["scope"]}
+        }
+        import yaml
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "insight", "file_path": "obs/n1.md", "tags": ["scope"], "timestamp": "2026-03-08T12:00:00Z"},
+                {"id": "n2", "kind": "insight", "file_path": "obs/n2.md", "tags": ["scope"], "timestamp": "2026-03-06T12:00:00Z"},
+                {"id": "n3", "kind": "insight", "file_path": "obs/n3.md", "tags": ["scope"], "timestamp": "2026-01-01T12:00:00Z"},
+                {"id": "n4", "kind": "insight", "file_path": "obs/n4.md", "tags": [],         "timestamp": "2026-04-01T12:00:00Z"},
+            ],
+            "edges": []
+        }
+        import json
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        from scripts.canvas.render_canvas import render_canvas
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        import os
+        output_path = os.path.join(self.temp_dir.name, "canvases/req-tags-date.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        node_files = [n["file"] for n in canvas["nodes"]]
+
+        # n1 and n2 are in-scope and within the window anchored at n1's timestamp
+        self.assertIn("obs/n1.md", node_files)
+        self.assertIn("obs/n2.md", node_files)
+        # n3 is in-scope but too old
+        self.assertNotIn("obs/n3.md", node_files)
+        # n4 lacks the required tag — must not appear and must not shift the anchor
+        self.assertNotIn("obs/n4.md", node_files)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
+
+
 if __name__ == '__main__':
     unittest.main()
