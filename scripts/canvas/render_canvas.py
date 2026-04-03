@@ -50,6 +50,10 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         with open(graph_path, 'r') as f:
             graph = json.load(f)
 
+    # Pre-parse timestamps for performance optimization
+    for node in graph.get("nodes", []):
+        node["_parsed_ts"] = _parse_timestamp_utc(node.get("timestamp"))
+
     layout = {"nodes": {}}
     if os.path.exists(layout_path):
         with open(layout_path, 'r') as f:
@@ -130,7 +134,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         for n in graph.get("nodes", []):
             if valid_types and n.get("kind") not in valid_types:
                 continue
-            ts = _parse_timestamp_utc(n.get("timestamp"))
+            ts = n.get("_parsed_ts")
             if ts:
                 if max_ts is None or ts > max_ts:
                     max_ts = ts
@@ -220,10 +224,11 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     if prioritize_recent:
         # Sort by timestamp descending (most recent first), then ID for determinism
         def _recent_node_sort_key(node: Dict[str, Any]) -> tuple:
-            ts = _parse_timestamp_utc(node.get("timestamp"))
+            ts = node.get("_parsed_ts")
             node_id = str(node.get("id") or "")
             if ts is not None:
                 # Valid dates go first, sorted by highest timestamp (using negation)
+                # Ensure ts is a datetime object as expected from _parsed_ts
                 return (0, -ts.timestamp(), node_id)
             else:
                 # Missing or invalid dates go last
@@ -258,12 +263,12 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             continue
 
         if cutoff_date is not None:
-            node_ts = _parse_timestamp_utc(node.get("timestamp"))
+            node_ts = node.get("_parsed_ts")
             if not node_ts or node_ts < cutoff_date:
                 continue
 
         if calendar_month_target is not None:
-            node_ts = _parse_timestamp_utc(node.get("timestamp"))
+            node_ts = node.get("_parsed_ts")
             if not node_ts:
                 continue
             # Ensure time is evaluated in UTC to prevent timezone boundary Schrödinger months
