@@ -297,7 +297,6 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a valid month in YYYY-MM format", str(context.exception))
 
-
     def test_render_canvas_mixed_timestamps(self):
         graph_data = {
             "nodes": [
@@ -849,7 +848,6 @@ class TestCanvasRender(unittest.TestCase):
         self.assertEqual(node_file_by_id[edge["fromNode"]], "chronik/evt1.md")
         self.assertEqual(node_file_by_id[edge["toNode"]], "chronik/evt2.md")
 
-
     def test_render_canvas_investigations_exploratory_analysis(self):
         # This test ensures that the real production spec 'investigations-exploratory-analysis.yaml'
         # is renderable and actually pulls the correct subset of node types and relations.
@@ -966,6 +964,17 @@ class TestCanvasRender(unittest.TestCase):
         # Prove that max_depth BFS only traverses in-scope nodes (those matching required_tags).
         # n2 lacks the required tag, so it is excluded from the BFS graph.
         # n3 is reachable from n1 via a direct edge that does not pass through n2.
+        spec = {
+            "id": "test-req-tags-depth",
+            "type": "knowledge",
+            "output": "canvases/req-tags-depth.canvas",
+            "source": {"artifact_types": ["concept"]},
+            "filters": {"max_depth": 1, "required_tags": ["scope"]},
+            "relations": ["references"]
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
         graph_data = {
             "nodes": [
                 {"id": "n1", "kind": "concept", "file_path": "k/n1.md", "tags": ["scope"]},
@@ -980,16 +989,6 @@ class TestCanvasRender(unittest.TestCase):
         }
         with open(self.graph_file.name, 'w') as f:
             json.dump(graph_data, f)
-
-        spec_data = {
-            "id": "test-req-tags-depth",
-            "type": "knowledge",
-            "output": "canvases/req-tags-depth.canvas",
-            "source": {"artifact_types": ["concept"]},
-            "filters": {"max_depth": 1, "required_tags": ["scope"]}
-        }
-        with open(self.spec_file.name, 'w') as f:
-            yaml.dump(spec_data, f)
 
         render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
 
@@ -1013,7 +1012,7 @@ class TestCanvasRender(unittest.TestCase):
         # push the anchor forward and wrongly exclude valid in-scope nodes.
         #
         # Setup:
-        #   n1 (scope, 2026-03-08): most-recent in-scope node → anchor
+        #   n1 (scope, 2026-03-08): most-recent in-scope node -> anchor
         #   n2 (scope, 2026-03-06): within the 5-day window from n1
         #   n3 (scope, 2026-01-01): too old, outside the window
         #   n4 (no scope, 2026-04-01): future, but out-of-scope — must not shift the anchor
@@ -1024,6 +1023,16 @@ class TestCanvasRender(unittest.TestCase):
         #   n2 included (2026-03-06 >= cutoff)
         #   n3 excluded (2026-01-01 < cutoff)
         #   n4 excluded (no "scope" tag)
+        spec = {
+            "id": "test-req-tags-date",
+            "type": "observatorium",
+            "output": "canvases/req-tags-date.canvas",
+            "source": {"artifact_types": ["insight"]},
+            "filters": {"date_window_days": 5, "required_tags": ["scope"]}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
         graph_data = {
             "nodes": [
                 {"id": "n1", "kind": "insight", "file_path": "obs/n1.md", "tags": ["scope"], "timestamp": "2026-03-08T12:00:00Z"},
@@ -1035,16 +1044,6 @@ class TestCanvasRender(unittest.TestCase):
         }
         with open(self.graph_file.name, 'w') as f:
             json.dump(graph_data, f)
-
-        spec_data = {
-            "id": "test-req-tags-date",
-            "type": "observatorium",
-            "output": "canvases/req-tags-date.canvas",
-            "source": {"artifact_types": ["insight"]},
-            "filters": {"date_window_days": 5, "required_tags": ["scope"]}
-        }
-        with open(self.spec_file.name, 'w') as f:
-            yaml.dump(spec_data, f)
 
         render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
 
