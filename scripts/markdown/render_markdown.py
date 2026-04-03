@@ -37,12 +37,26 @@ def calculate_deterministic_path(node: Dict[str, Any]) -> str:
     # Fallback to file_path from node if present, else a generic path
     return node.get("file_path", f"{source_repo}/{filename}")
 
-def is_safe_path(base_dir: str, file_path: str) -> bool:
-    """Ensures the file_path is safe and remains within the base_dir."""
-    normalized_base = os.path.abspath(base_dir)
+def resolve_safe_output_path(base_dir: str, file_path: str) -> str:
+    """
+    Resolves the target path and ensures it stays within the base directory.
+    Uses realpath to robustly handle textual traversal and symlinks.
+    Returns the absolute, validated path or raises ValueError.
+    """
+    # Ensure base_dir is absolute and normalized
+    normalized_base = os.path.realpath(base_dir)
+
+    # join handles both relative and absolute file_path (if absolute, it discards base_dir)
     joined_path = os.path.join(normalized_base, file_path)
-    normalized_joined = os.path.abspath(joined_path)
-    return os.path.commonpath([normalized_base, normalized_joined]) == normalized_base
+
+    # resolve symlinks and '..'
+    normalized_joined = os.path.realpath(joined_path)
+
+    # Check if the result is still under base_dir
+    if os.path.commonpath([normalized_base, normalized_joined]) != normalized_base:
+        raise ValueError(f"Potentially malicious path detected: {file_path} (resolved to {normalized_joined})")
+
+    return normalized_joined
 
 def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-bridge") -> None:
     """
@@ -102,10 +116,7 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         if not file_path or not file_path.endswith(".md"):
             continue
 
-        if not is_safe_path(output_root, file_path):
-            raise ValueError(f"Potentially malicious path detected for node {node_id}: {file_path}")
-
-        full_path = os.path.join(output_root, file_path)
+        full_path = resolve_safe_output_path(output_root, file_path)
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
         artifact_id = node_id.split(":")[-1] if ":" in node_id else node_id
