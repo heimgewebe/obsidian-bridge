@@ -37,6 +37,13 @@ def calculate_deterministic_path(node: Dict[str, Any]) -> str:
     # Fallback to file_path from node if present, else a generic path
     return node.get("file_path", f"{source_repo}/{filename}")
 
+def is_safe_path(base_dir: str, file_path: str) -> bool:
+    """Ensures the file_path is safe and remains within the base_dir."""
+    normalized_base = os.path.abspath(base_dir)
+    joined_path = os.path.join(normalized_base, file_path)
+    normalized_joined = os.path.abspath(joined_path)
+    return os.path.commonpath([normalized_base, normalized_joined]) == normalized_base
+
 def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-bridge") -> None:
     """
     Generates deterministic Markdown files from the canonical graph layer.
@@ -94,6 +101,9 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         file_path = node_paths.get(node_id)
         if not file_path or not file_path.endswith(".md"):
             continue
+
+        if not is_safe_path(output_root, file_path):
+            raise ValueError(f"Potentially malicious path detected for node {node_id}: {file_path}")
 
         full_path = os.path.join(output_root, file_path)
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
