@@ -181,5 +181,48 @@ class TestMarkdownRender(unittest.TestCase):
             content = f.read()
             self.assertIn("[[chronik/events/special_folder/my_event]]", content)
 
+    def test_path_traversal_protection(self):
+        # Case 1: Simple traversal
+        bad_graph_data = {
+            "nodes": [
+                {
+                    "id": "event:evil",
+                    "kind": "event",
+                    "title": "Evil Event",
+                    "file_path": "../evil.md",
+                    "source_repo": "chronik",
+                    "timestamp": "2026-01-01T12:00:00Z"
+                }
+            ],
+            "edges": []
+        }
+        bad_graph_file = os.path.join(self.temp_dir.name, "bad_graph_1.json")
+        with open(bad_graph_file, "w", encoding="utf-8") as f:
+            json.dump(bad_graph_data, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_markdown(bad_graph_file, self.output_dir)
+        self.assertIn("Potentially malicious path detected", str(context.exception))
+
+        # Case 2: Absolute path
+        bad_graph_data["nodes"][0]["file_path"] = "/tmp/evil.md"
+        bad_graph_file = os.path.join(self.temp_dir.name, "bad_graph_2.json")
+        with open(bad_graph_file, "w", encoding="utf-8") as f:
+            json.dump(bad_graph_data, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_markdown(bad_graph_file, self.output_dir)
+        self.assertIn("Potentially malicious path detected", str(context.exception))
+
+        # Case 3: Nested traversal
+        bad_graph_data["nodes"][0]["file_path"] = "foo/../../evil.md"
+        bad_graph_file = os.path.join(self.temp_dir.name, "bad_graph_3.json")
+        with open(bad_graph_file, "w", encoding="utf-8") as f:
+            json.dump(bad_graph_data, f)
+
+        with self.assertRaises(ValueError) as context:
+            render_markdown(bad_graph_file, self.output_dir)
+        self.assertIn("Potentially malicious path detected", str(context.exception))
+
 if __name__ == "__main__":
     unittest.main()
