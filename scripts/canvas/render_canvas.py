@@ -65,6 +65,12 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         with open(graph_path, 'r') as f:
             graph = json.load(f)
 
+    # Pre-parse timestamps for performance optimization.
+    # This avoids redundant calls to _parse_timestamp_utc in sorting and filtering.
+    # Mutating in-place is safe here as the 'graph' object is local to render_canvas.
+    for node in graph.get("nodes", []):
+        node["_parsed_ts"] = _parse_timestamp_utc(node.get("timestamp"))
+
     layout = {"nodes": {}}
     if os.path.exists(layout_path):
         with open(layout_path, 'r') as f:
