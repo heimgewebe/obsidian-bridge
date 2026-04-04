@@ -50,7 +50,9 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         with open(graph_path, 'r') as f:
             graph = json.load(f)
 
-    # Pre-parse timestamps for performance optimization
+    # Pre-parse timestamps for performance optimization.
+    # This avoids redundant calls to _parse_timestamp_utc in sorting and filtering.
+    # Mutating in-place is safe here as the 'graph' object is local to render_canvas.
     for node in graph.get("nodes", []):
         node["_parsed_ts"] = _parse_timestamp_utc(node.get("timestamp"))
 
@@ -228,7 +230,6 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             node_id = str(node.get("id") or "")
             if ts is not None:
                 # Valid dates go first, sorted by highest timestamp (using negation)
-                # Ensure ts is a datetime object as expected from _parsed_ts
                 return (0, -ts.timestamp(), node_id)
             else:
                 # Missing or invalid dates go last
