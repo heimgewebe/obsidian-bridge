@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import yaml
 from typing import Dict, Any
 
@@ -37,6 +38,27 @@ def calculate_deterministic_path(node: Dict[str, Any]) -> str:
     # Fallback to file_path from node if present, else a generic path
     return node.get("file_path", f"{source_repo}/{filename}")
 
+def resolve_safe_output_path(base_dir: str, file_path: str) -> str:
+    """
+    Resolves the target path and ensures it stays within the base directory.
+    Uses realpath to robustly handle textual traversal and symlinks.
+    Returns the absolute, validated path or raises ValueError.
+    """
+    # Ensure base_dir is absolute and normalized
+    normalized_base = os.path.realpath(base_dir)
+
+    # join handles both relative and absolute file_path (if absolute, it discards base_dir)
+    joined_path = os.path.join(normalized_base, file_path)
+
+    # resolve symlinks and '..'
+    normalized_joined = os.path.realpath(joined_path)
+
+    # Check if the result is still under base_dir
+    if os.path.commonpath([normalized_base, normalized_joined]) != normalized_base:
+        raise ValueError(f"Potentially malicious path detected: {file_path} (resolved to {normalized_joined})")
+
+    return normalized_joined
+
 def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-bridge") -> None:
     """
     Generates deterministic Markdown files from the canonical graph layer.
@@ -66,7 +88,6 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
             if canonical_path != calculated_path:
                 # canonical_path from the graph is the absolute source of truth.
                 # calculated_path is only used to detect architectural drift.
-                import sys
                 print(f"Warning: Node {node_id} has canonical path '{canonical_path}' which differs from calculated deterministic path '{calculated_path}'. Using canonical.", file=sys.stderr)
             file_path = canonical_path
         else:
@@ -95,7 +116,7 @@ def render_markdown(graph_path: str, output_root: str = "vault-gewebe/obsidian-b
         if not file_path or not file_path.endswith(".md"):
             continue
 
-        full_path = os.path.join(output_root, file_path)
+        full_path = resolve_safe_output_path(output_root, file_path)
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
         artifact_id = node_id.split(":")[-1] if ":" in node_id else node_id

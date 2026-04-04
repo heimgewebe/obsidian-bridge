@@ -3,21 +3,32 @@
   "title": "Layout.v1",
   "type": "object",
   "properties": {
-    "nodes": {
+    "canvases": {
       "type": "object",
       "patternProperties": {
         "^.*$": {
           "type": "object",
           "properties": {
-            "x": { "type": "number" },
-            "y": { "type": "number" },
-            "width": { "type": "number" },
-            "height": { "type": "number" }
+            "nodes": {
+              "type": "object",
+              "patternProperties": {
+                "^.*$": {
+                  "type": "object",
+                  "properties": {
+                    "x": { "type": "number" },
+                    "y": { "type": "number" },
+                    "width": { "type": "number" },
+                    "height": { "type": "number" }
+                  },
+                  "required": ["x", "y", "width", "height"]
+                }
+              }
+            }
           },
-          "required": ["x", "y", "width", "height"]
+          "required": ["nodes"]
         }
       }
     }
   },
-  "required": ["nodes"]
+  "required": ["canvases"]
 }

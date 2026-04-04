@@ -297,7 +297,6 @@ class TestCanvasRender(unittest.TestCase):
             render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
         self.assertIn("Must be a valid month in YYYY-MM format", str(context.exception))
 
-
     def test_render_canvas_mixed_timestamps(self):
         graph_data = {
             "nodes": [
@@ -848,6 +847,221 @@ class TestCanvasRender(unittest.TestCase):
         node_file_by_id = {n["id"]: n["file"] for n in canvas["nodes"]}
         self.assertEqual(node_file_by_id[edge["fromNode"]], "chronik/evt1.md")
         self.assertEqual(node_file_by_id[edge["toNode"]], "chronik/evt2.md")
+
+    def test_render_canvas_investigations_exploratory_analysis(self):
+        # This test ensures that the real production spec 'investigations-exploratory-analysis.yaml'
+        # is renderable and actually pulls the correct subset of node types and relations.
+        # It explicitly protects against implicit tag-based topic scoping:
+        # A valid artifact (node 'ins-2') carrying a foreign tag ('completely-unrelated-tag') must be intentionally included,
+        # while a foreign-typed artifact ('concept') remains intentionally excluded.
+        graph_data = {
+            "nodes": [
+                {"id": "evt-1", "kind": "event", "file_path": "chronik/evt-1.md", "tags": ["investigation"]},
+                {"id": "ins-1", "kind": "insight", "file_path": "observatorium/ins-1.md", "tags": ["investigation"]},
+                {"id": "dec-1", "kind": "decision", "file_path": "decisions/dec-1.md", "tags": ["investigation"]},
+                {"id": "hyp-1", "kind": "hypothesis", "file_path": "knowledge/hyp-1.md", "tags": ["investigation"]},
+                {"id": "con-1", "kind": "contradiction", "file_path": "observatorium/con-1.md", "tags": ["investigation"]},
+                {"id": "ins-2", "kind": "insight", "file_path": "observatorium/ins-2.md", "tags": ["completely-unrelated-tag"]},
+                {"id": "other-1", "kind": "concept", "file_path": "knowledge/con-1.md", "tags": ["other"]}
+            ],
+            "edges": [
+                {"id": "e1", "from": "evt-1", "to": "ins-1", "relation": "informed"},
+                {"id": "e2", "from": "ins-1", "to": "dec-1", "relation": "causes"},
+                {"id": "e3", "from": "hyp-1", "to": "ins-1", "relation": "derives_from"},
+                {"id": "e4", "from": "con-1", "to": "hyp-1", "relation": "contradicts"},
+                {"id": "e6", "from": "evt-1", "to": "ins-2", "relation": "informed"},
+                {"id": "e5", "from": "other-1", "to": "evt-1", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        # We load the actual spec from the repository rather than mocking it,
+        # ensuring this test acts as a true regression anchor against the active contract.
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        spec_path = os.path.join(repo_root, "config/canvas-specs/investigations-exploratory-analysis.yaml")
+        render_canvas(spec_path, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/investigations/exploratory-analysis.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        # Verify semantic node inclusion
+        self.assertEqual(len(canvas["nodes"]), 6)
+        node_files = [n["file"] for n in canvas["nodes"]]
+        self.assertIn("chronik/evt-1.md", node_files)
+        self.assertIn("observatorium/ins-1.md", node_files)
+        self.assertIn("decisions/dec-1.md", node_files)
+        self.assertIn("knowledge/hyp-1.md", node_files)
+        self.assertIn("observatorium/con-1.md", node_files)
+        self.assertIn("observatorium/ins-2.md", node_files)
+        self.assertNotIn("knowledge/con-1.md", node_files)
+
+        # Verify semantic edge inclusion (strict exact set matching)
+        self.assertEqual(len(canvas["edges"]), 5)
+
+        node_file_by_id = {n["id"]: n["file"] for n in canvas["nodes"]}
+        semantic_edges = {
+            (node_file_by_id[e["fromNode"]], node_file_by_id[e["toNode"]], e["label"])
+            for e in canvas["edges"]
+        }
+        # The exact semantic edge set is intentionally frozen here as a strict contract of the active spec.
+        # If the production spec is expanded or scoped differently in the future, this test should consciously break.
+        # This is intended behavior and not an accidentally brittle test.
+        expected_edges = {
+            ("chronik/evt-1.md", "observatorium/ins-1.md", "informed"),
+            ("observatorium/ins-1.md", "decisions/dec-1.md", "causes"),
+            ("knowledge/hyp-1.md", "observatorium/ins-1.md", "derives_from"),
+            ("observatorium/con-1.md", "knowledge/hyp-1.md", "contradicts"),
+            ("chronik/evt-1.md", "observatorium/ins-2.md", "informed"),
+        }
+
+        self.assertEqual(semantic_edges, expected_edges)
+
+    def test_render_canvas_required_tags_max_clusters(self):
+        # Prove that max_clusters counts tags only over in-scope nodes (those matching required_tags).
+        # Without scoping: "noise" (2 nodes) beats "important" (1 node) → wrong cluster wins.
+        # With scoping: only the "important" node contributes to tag counts → correct cluster.
+        graph_data = {
+            "nodes": [
+                {"id": "ins-in",  "kind": "insight", "file_path": "obs/in-scope.md",  "tags": ["important"]},
+                {"id": "ins-n1",  "kind": "insight", "file_path": "obs/noise-1.md",   "tags": ["noise"]},
+                {"id": "ins-n2",  "kind": "insight", "file_path": "obs/noise-2.md",   "tags": ["noise"]},
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-req-tags-clusters",
+            "type": "observatorium",
+            "output": "canvases/req-tags-clusters.canvas",
+            "source": {"artifact_types": ["insight"]},
+            "filters": {"max_clusters": 1, "required_tags": ["important"]}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/req-tags-clusters.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        node_files = [n["file"] for n in canvas["nodes"]]
+
+        # The in-scope node must be included
+        self.assertIn("obs/in-scope.md", node_files)
+        # Noise nodes are excluded: they lack the required tag
+        self.assertNotIn("obs/noise-1.md", node_files)
+        self.assertNotIn("obs/noise-2.md", node_files)
+
+        # Exactly one node — not just a count check, but the identity is verified above
+        self.assertEqual(len(canvas["nodes"]), 1)
+
+    def test_render_canvas_required_tags_max_depth(self):
+        # Prove that max_depth BFS only traverses in-scope nodes (those matching required_tags).
+        # n2 lacks the required tag, so it is excluded from the BFS graph.
+        # n3 is reachable from n1 via a direct edge that does not pass through n2.
+        spec = {
+            "id": "test-req-tags-depth",
+            "type": "knowledge",
+            "output": "canvases/req-tags-depth.canvas",
+            "source": {"artifact_types": ["concept"]},
+            "filters": {"max_depth": 1, "required_tags": ["scope"]},
+            "relations": ["references"]
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "concept", "file_path": "k/n1.md", "tags": ["scope"]},
+                {"id": "n2", "kind": "concept", "file_path": "k/n2.md", "tags": []},      # out of scope
+                {"id": "n3", "kind": "concept", "file_path": "k/n3.md", "tags": ["scope"]},
+            ],
+            "edges": [
+                {"id": "e1", "from": "n1", "to": "n2", "relation": "references"},
+                {"id": "e2", "from": "n1", "to": "n3", "relation": "references"},
+                {"id": "e3", "from": "n2", "to": "n3", "relation": "references"},
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/req-tags-depth.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        node_files = [n["file"] for n in canvas["nodes"]]
+
+        # n1 (root, in-scope) and n3 (depth-1 child of n1, in-scope) must be included
+        self.assertIn("k/n1.md", node_files)
+        self.assertIn("k/n3.md", node_files)
+        # n2 lacks the required tag and is excluded
+        self.assertNotIn("k/n2.md", node_files)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
+
+    def test_render_canvas_required_tags_date_window(self):
+        # Prove that the date_window_days cutoff is anchored to the max timestamp of
+        # in-scope nodes only — an out-of-scope node with a future timestamp must NOT
+        # push the anchor forward and wrongly exclude valid in-scope nodes.
+        #
+        # Setup:
+        #   n1 (scope, 2026-03-08): most-recent in-scope node -> anchor
+        #   n2 (scope, 2026-03-06): within the 5-day window from n1
+        #   n3 (scope, 2026-01-01): too old, outside the window
+        #   n4 (no scope, 2026-04-01): future, but out-of-scope — must not shift the anchor
+        #
+        # Expected with required_tags=["scope"] and date_window_days=5:
+        #   anchor = 2026-03-08, cutoff = 2026-03-03
+        #   n1 included (2026-03-08 >= cutoff)
+        #   n2 included (2026-03-06 >= cutoff)
+        #   n3 excluded (2026-01-01 < cutoff)
+        #   n4 excluded (no "scope" tag)
+        spec = {
+            "id": "test-req-tags-date",
+            "type": "observatorium",
+            "output": "canvases/req-tags-date.canvas",
+            "source": {"artifact_types": ["insight"]},
+            "filters": {"date_window_days": 5, "required_tags": ["scope"]}
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec, f)
+
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "insight", "file_path": "obs/n1.md", "tags": ["scope"], "timestamp": "2026-03-08T12:00:00Z"},
+                {"id": "n2", "kind": "insight", "file_path": "obs/n2.md", "tags": ["scope"], "timestamp": "2026-03-06T12:00:00Z"},
+                {"id": "n3", "kind": "insight", "file_path": "obs/n3.md", "tags": ["scope"], "timestamp": "2026-01-01T12:00:00Z"},
+                {"id": "n4", "kind": "insight", "file_path": "obs/n4.md", "tags": [],         "timestamp": "2026-04-01T12:00:00Z"},
+            ],
+            "edges": []
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        output_path = os.path.join(self.temp_dir.name, "canvases/req-tags-date.canvas")
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        node_files = [n["file"] for n in canvas["nodes"]]
+
+        # n1 and n2 are in-scope and within the window anchored at n1's timestamp
+        self.assertIn("obs/n1.md", node_files)
+        self.assertIn("obs/n2.md", node_files)
+        # n3 is in-scope but too old
+        self.assertNotIn("obs/n3.md", node_files)
+        # n4 lacks the required tag — must not appear and must not shift the anchor
+        self.assertNotIn("obs/n4.md", node_files)
+
+        self.assertEqual(len(canvas["nodes"]), 2)
 
 if __name__ == '__main__':
     unittest.main()

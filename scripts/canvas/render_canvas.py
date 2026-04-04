@@ -1,3 +1,4 @@
+import collections
 import json
 import os
 import yaml
@@ -35,14 +36,19 @@ def _parse_weight(edge: Dict[str, Any]) -> float:
     except (ValueError, TypeError):
         return 0.0
 
-def _generate_canvas_edge_id(base_edge_id: str) -> str:
+def _node_in_scope(node: Dict[str, Any], valid_types: list, required_tags: list) -> bool:
+    """Returns True if the node passes both the artifact_type and required_tags filters.
+
+    required_tags uses AND semantics: every tag in required_tags must be present on the
+    node.  A node that carries only a subset of the required tags is excluded.
     """
-    Creates a safe and collision-free ID for the canvas.
-    We use a hash of the stable base_edge_id to ensure there are no collisions from normalization.
-    """
-    safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
-    fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
-    return f"{safe_prefix}_{fingerprint}"
+    if valid_types and node.get("kind") not in valid_types:
+        return False
+    if required_tags:
+        node_tags = set(node.get("tags") or [])
+        if not all(tag in node_tags for tag in required_tags):
+            return False
+    return True
 
 def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root: str = "vault-gewebe/obsidian-bridge") -> None:
     """
@@ -58,6 +64,12 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     if os.path.exists(graph_path):
         with open(graph_path, 'r') as f:
             graph = json.load(f)
+
+    # Pre-parse timestamps for performance optimization.
+    # This avoids redundant calls to _parse_timestamp_utc in sorting and filtering.
+    # Mutating in-place is safe here as the 'graph' object is local to render_canvas.
+    for node in graph.get("nodes", []):
+        node["_parsed_ts"] = _parse_timestamp_utc(node.get("timestamp"))
 
     layout = {"nodes": {}}
     if os.path.exists(layout_path):
@@ -79,21 +91,28 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     }
 
     # Apply filters (Guards)
-    max_nodes = spec.get("filters", {}).get("max_nodes", 100)
-    max_edges = spec.get("filters", {}).get("max_edges", 200)
-    max_depth_raw = spec.get("filters", {}).get("max_depth")
-    max_clusters_raw = spec.get("filters", {}).get("max_clusters")
-    date_window_days_raw = spec.get("filters", {}).get("date_window_days")
-    calendar_month_raw = spec.get("filters", {}).get("calendar_month")
-    prioritize_recent = spec.get("filters", {}).get("prioritize_recent", False)
+    filters = spec.get("filters") or {}
+    max_nodes = filters.get("max_nodes", 100)
+    max_edges = filters.get("max_edges", 200)
+    max_depth_raw = filters.get("max_depth")
+    max_clusters_raw = filters.get("max_clusters")
+    date_window_days_raw = filters.get("date_window_days")
+    calendar_month_raw = filters.get("calendar_month")
+    prioritize_recent = filters.get("prioritize_recent", False)
     if not isinstance(prioritize_recent, bool):
         raise ValueError(f"Invalid prioritize_recent: {prioritize_recent}. Must be a boolean.")
-    prioritize_strongest = spec.get("filters", {}).get("prioritize_strongest", False)
+    prioritize_strongest = filters.get("prioritize_strongest", False)
     if not isinstance(prioritize_strongest, bool):
         raise ValueError(f"Invalid prioritize_strongest: {prioritize_strongest}. Must be a boolean.")
-    prioritized_relations_raw = spec.get("filters", {}).get("prioritized_relations", [])
+    prioritized_relations_raw = filters.get("prioritized_relations", [])
+    required_tags_raw = filters.get("required_tags", [])
     valid_relations = spec.get("relations", [])
     valid_types = spec.get("source", {}).get("artifact_types", [])
+
+    if required_tags_raw:
+        if not isinstance(required_tags_raw, list) or not all(isinstance(x, str) for x in required_tags_raw):
+            raise ValueError(f"Invalid required_tags: {required_tags_raw}. Must be a list of strings.")
+    required_tags = list(required_tags_raw) if required_tags_raw else []
 
     prioritized_relations = []
     if prioritized_relations_raw:
@@ -125,6 +144,11 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             raise ValueError(f"Invalid max_clusters: {max_clusters_raw}. Must be an integer >= 1.")
 
     cutoff_date = None
+
+    # Pre-parse timestamps to optimize filtering and sorting pipeline
+    for n in graph.get("nodes", []):
+        n["_parsed_ts"] = _parse_timestamp_utc(n.get("timestamp"))
+
     if date_window_days_raw is not None:
         try:
             date_window_days = int(date_window_days_raw)
@@ -135,11 +159,13 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
         # Der Zeitfilter wird am maximalen Graph-Timestamp verankert, um deterministische Builds zu erhalten.
         # Die Systemzeit wird bewusst nicht verwendet, um Churn zu vermeiden.
+        # Nur in-scope Knoten (valid_types + required_tags) fließen in die Berechnung ein, damit
+        # out-of-scope Knoten den Anker nicht verzerren.
         max_ts = None
         for n in graph.get("nodes", []):
-            if valid_types and n.get("kind") not in valid_types:
+            if not _node_in_scope(n, valid_types, required_tags):
                 continue
-            ts = _parse_timestamp_utc(n.get("timestamp"))
+            ts = n.get("_parsed_ts")
             if ts:
                 if max_ts is None or ts > max_ts:
                     max_ts = ts
@@ -160,15 +186,13 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         except ValueError:
             raise ValueError(f"Invalid calendar_month: {calendar_month_raw}. Must be a valid month in YYYY-MM format.")
 
-    import collections
-
     # Determine allowed nodes based on depth
     allowed_by_depth = set()
-    if max_depth is not None and isinstance(max_depth, int) and max_depth >= 0:
+    if max_depth is not None:
         # We need a starting point for depth traversal relative to this canvas (filtered nodes/edges).
         relevant_node_ids = {
             n.get("id") for n in graph.get("nodes", [])
-            if n.get("id") and (not valid_types or n.get("kind") in valid_types)
+            if n.get("id") and _node_in_scope(n, valid_types, required_tags)
         }
 
         incoming_counts = {}
@@ -211,10 +235,10 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
 
     # Calculate clusters if max_clusters is set
     allowed_tags = None
-    if max_clusters is not None and isinstance(max_clusters, int) and max_clusters > 0:
+    if max_clusters is not None:
         tag_counts = {}
         for node in graph.get("nodes", []):
-            if valid_types and node.get("kind") not in valid_types:
+            if not _node_in_scope(node, valid_types, required_tags):
                 continue
             tags = node.get("tags") or []
             for tag in tags:
@@ -229,7 +253,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     if prioritize_recent:
         # Sort by timestamp descending (most recent first), then ID for determinism
         def _recent_node_sort_key(node: Dict[str, Any]) -> tuple:
-            ts = _parse_timestamp_utc(node.get("timestamp"))
+            ts = node.get("_parsed_ts")
             node_id = str(node.get("id") or "")
             if ts is not None:
                 # Valid dates go first, sorted by highest timestamp (using negation)
@@ -263,16 +287,16 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             if not node_tags or not any(t in allowed_tags for t in node_tags):
                 continue
 
-        if valid_types and node.get("kind") not in valid_types:
+        if not _node_in_scope(node, valid_types, required_tags):
             continue
 
         if cutoff_date is not None:
-            node_ts = _parse_timestamp_utc(node.get("timestamp"))
+            node_ts = node.get("_parsed_ts")
             if not node_ts or node_ts < cutoff_date:
                 continue
 
         if calendar_month_target is not None:
-            node_ts = _parse_timestamp_utc(node.get("timestamp"))
+            node_ts = node.get("_parsed_ts")
             if not node_ts:
                 continue
             # Ensure time is evaluated in UTC to prevent timezone boundary Schrödinger months
