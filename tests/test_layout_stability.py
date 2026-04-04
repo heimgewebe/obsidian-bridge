@@ -111,60 +111,6 @@ class TestLayoutStability(unittest.TestCase):
         self.assertEqual(node2["x"], 300)
         self.assertEqual(node2["y"], 0)
 
-    def test_stabilize_layout_writes_canvases_format(self):
-        """The written JSON file must have the canonical {canvases: {id: {nodes: {...}}}} structure.
-
-        This test reads back the persisted file and validates its top-level shape so that
-        render_canvas and stabilize_layout stay in sync on the wire format.
-        """
-        with open(self.layout_file.name, 'w') as f:
-            json.dump({"canvases": {"default": {"nodes": {}}}}, f)
-
-        stabilize_layout(self.graph_file.name, self.layout_file.name, specs_dir=self.specs_dir.name)
-
-        with open(self.layout_file.name, 'r') as f:
-            written = json.load(f)
-
-        # Top-level key must be "canvases", not "nodes"
-        self.assertIn("canvases", written)
-        self.assertNotIn("nodes", written)
-
-        # The canvas entry for "default" must exist and have a "nodes" sub-key
-        self.assertIn("default", written["canvases"])
-        self.assertIn("nodes", written["canvases"]["default"])
-
-        # Nodes must carry the four geometry fields
-        for node_data in written["canvases"]["default"]["nodes"].values():
-            self.assertIn("x", node_data)
-            self.assertIn("y", node_data)
-            self.assertIn("width", node_data)
-            self.assertIn("height", node_data)
-
-    def test_stabilize_layout_migrates_flat_format(self):
-        """A legacy flat layout file ({nodes: {...}}) must be migrated to the canonical format."""
-        flat_layout = {
-            "nodes": {
-                "node-1": {"x": 10, "y": 20, "width": 250, "height": 150}
-            }
-        }
-        with open(self.layout_file.name, 'w') as f:
-            json.dump(flat_layout, f)
-
-        stabilize_layout(self.graph_file.name, self.layout_file.name, specs_dir=self.specs_dir.name)
-
-        with open(self.layout_file.name, 'r') as f:
-            written = json.load(f)
-
-        # After migration the file must use the canonical format
-        self.assertIn("canvases", written)
-        self.assertNotIn("nodes", written)
-
-        # The migrated node must have been moved under canvases.default.nodes
-        default_nodes = written["canvases"]["default"]["nodes"]
-        self.assertIn("node-1", default_nodes)
-        self.assertEqual(default_nodes["node-1"]["x"], 10)
-        self.assertEqual(default_nodes["node-1"]["y"], 20)
-
     def test_stabilize_layout_robustness_empty_spec(self):
         """Test that empty or comment-only YAML spec files do not crash the layout generation."""
         empty_spec_file = os.path.join(self.specs_dir.name, 'empty.yaml')

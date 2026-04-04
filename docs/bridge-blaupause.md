@@ -282,7 +282,7 @@ Canvas ergänzt dies durch graphische Wissensräume.
 * Unsicherheitsbereiche
 
 ### Investigation-Maps
-`canvases/investigations/exploratory-analysis.canvas`
+`canvases/investigations/topic-analysis.canvas`
 
 Dienen der explorativen Analyse.
 

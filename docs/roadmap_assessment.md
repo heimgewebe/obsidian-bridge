@@ -25,10 +25,11 @@ Basierend auf einer systematischen Untersuchung des Repositories (Konfiguratione
 
 ---
 
-## Jüngster Umsetzungsschritt: Explorative Canvas-Spec für Investigations
+## Jüngster Umsetzungsschritt: Layout-Tests (Hierarchy & Organsystem)
 
-Die Roadmap listete "Phase 4 – Vollständige Abdeckung" als teilweise offen. Um diesen Punkt voranzutreiben, wurde der konkrete nächste Schritt durchgeführt:
-1. Erstellung der ersten investigations-orientierten deklarativen Spec `config/canvas-specs/investigations-exploratory-analysis.yaml`.
-2. Diese Spec generiert deterministisch eine explorative, bereichsübergreifende Sicht auf vorhandene Artefakte (Events, Insights, Decisions, Hypothesen und Contradictions) im Cluster-Layout, welche diese über ursächliche (`causes`), ableitende (`derives_from`), informierende (`informed`) und widersprechende (`contradicts`) Kanten zusammenführt, sofern entsprechende Widerspruchsartefakte im Datensatz vorhanden sind.
+Die Roadmap listete "Tests implementieren" als teilweise offen, insbesondere in Bezug auf lückenhafte Layout-Testabdeckung für diverse Canvas-Klassen.
+Es wurden dedizierte Basistests für die noch fehlenden Layout-Typen implementiert:
+1. `test_layout_hierarchy.py`: Prüft deterministisches Gruppieren nach `kind` (`concept`, `entity`, `other`) sowie X-Positionsinkremente zur Vermeidung von Overlaps in den Layern.
+2. `test_layout_organsystem.py`: Verifiziert Invarianten wie die Positionierung bekannter Repos (`chronik`, `hausKI`, etc.) an fixierten (x, y) Koordinaten sowie das Fallback-Grid-Verhalten für unbekannte Knoten. Dabei wurde bewusst darauf geachtet, bekannte Schwächen (wie Überlappungen von Knoten desselben Typs) nicht als hartes Soll-Verhalten einzufrieren.
 
-Hinweis: Mit `required_tags` wurde ein deterministischer Spec-Filter für tagbasierte thematische Abgrenzung eingeführt. Er wird exemplarisch im Hub `topic--observatorium.canvas` genutzt. Eine allgemeine Topic- oder Investigations-Semantik, Tag-Governance oder tiefergehende thematische Modellierung ist damit noch nicht etabliert.
+Durch diese Ergänzungen wurde die Basisabdeckung für die derzeit implementierten Layout-Typen auf eine breite Basis gestellt, auch wenn Randfall-Validierungen weiterhin ausbaufähig bleiben.

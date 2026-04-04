@@ -300,33 +300,13 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
             grid_cols = 4
             cell_width, cell_height = 350, 250
             fallback_index = len(canvas_layout["nodes"])
-
-            # Derive occupied slot indices for each organ from the actual y-positions of
-            # already-cached nodes, relative to the organ's fixed anchor (fy).
-            # Strategy: highest occupied slot + 1 (default -1 when no slots exist, yielding
-            # slot 0 for the first node), so new nodes are placed collision-free even when
-            # existing slots are non-contiguous (e.g. slots 0 and 2 occupied → next is 3).
-            organ_slots: Dict[str, set] = {}
-            for rn in relevant_nodes:
-                if rn["id"] in canvas_layout["nodes"]:
-                    for key, (fx, fy) in fixed_positions.items():
-                        if key.lower() in rn.get("title", "").lower() or key.lower() in rn["id"].lower():
-                            dy = canvas_layout["nodes"][rn["id"]]["y"] - fy
-                            if dy >= 0:
-                                organ_slots.setdefault(key, set()).add(round(dy / 200))
-                            break
-
             for n in new_nodes:
                 nid = n["id"]
                 # Heuristic: use title or ID to map
                 found = False
                 for key, (fx, fy) in fixed_positions.items():
                     if key.lower() in n.get("title", "").lower() or key.lower() in nid.lower():
-                        occupied = organ_slots.get(key, set())
-                        next_slot = max(occupied, default=-1) + 1
-                        canvas_layout["nodes"][nid] = {"x": fx, "y": fy + next_slot * 200, "width": 250, "height": 150}
-                        occupied.add(next_slot)
-                        organ_slots[key] = occupied
+                        canvas_layout["nodes"][nid] = {"x": fx, "y": fy, "width": 250, "height": 150}
                         found = True
                         break
                 if not found:
