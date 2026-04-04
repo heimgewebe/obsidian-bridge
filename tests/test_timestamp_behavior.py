@@ -1,30 +1,7 @@
-
-import sys
-from unittest.mock import MagicMock
-import json
-
-# Mock dependencies to allow importing render_canvas
-class MockYaml:
-    def __init__(self):
-        self.spec = {}
-    def safe_load(self, f):
-        content = f.read()
-        if "mock: spec" in content:
-            return self.spec
-        try:
-            return json.loads(content)
-        except:
-            return {}
-    def dump(self, data, f):
-        f.write(json.dumps(data))
-
-mock_yaml = MockYaml()
-sys.modules["yaml"] = mock_yaml
-sys.modules["jsonschema"] = MagicMock()
-
 import unittest
 import os
 import tempfile
+import json
 from scripts.canvas.render_canvas import render_canvas
 
 class TestTimestampBehavior(unittest.TestCase):
@@ -39,14 +16,14 @@ class TestTimestampBehavior(unittest.TestCase):
         self.spec_path = os.path.join(self.temp_dir.name, "spec.yaml")
         with open(self.layout_path, 'w') as f:
             json.dump({"nodes": {}}, f)
-        with open(self.spec_path, 'w') as f:
-            f.write("mock: spec")
 
     def tearDown(self):
         self.temp_dir.cleanup()
 
     def _run_render(self, spec, nodes):
-        mock_yaml.spec = spec
+        with open(self.spec_path, 'w') as f:
+            import yaml
+            yaml.dump(spec, f)
         with open(self.graph_path, 'w') as f:
             json.dump({"nodes": nodes, "edges": []}, f)
         render_canvas(self.spec_path, self.graph_path, self.layout_path, output_root=self.temp_dir.name)
@@ -56,36 +33,37 @@ class TestTimestampBehavior(unittest.TestCase):
             return json.load(f)
 
     def test_mixed_timestamps_sorting(self):
-        # Mixed: valid ISO, naive, missing, invalid
         nodes = [
-            {"id": "naive", "timestamp": "2026-03-01T12:00:00", "file_path": "naive.md"},
-            {"id": "valid", "timestamp": "2026-03-08T12:00:00Z", "file_path": "valid.md"},
-            {"id": "missing", "file_path": "missing.md"},
-            {"id": "invalid", "timestamp": "garbage", "file_path": "invalid.md"}
+            {"id": "naive", "kind": "insight", "timestamp": "2026-03-01T12:00:00", "file_path": "naive.md"},
+            {"id": "valid", "kind": "insight", "timestamp": "2026-03-08T12:00:00Z", "file_path": "valid.md"},
+            {"id": "missing", "kind": "insight", "file_path": "missing.md"},
+            {"id": "invalid", "kind": "insight", "timestamp": "garbage", "file_path": "invalid.md"}
         ]
         spec = {
             "id": "sort",
+            "type": "observatorium",
+            "source": {"artifact_types": ["insight"]},
             "filters": {"prioritize_recent": True},
             "output": "sort.canvas"
         }
         canvas = self._run_render(spec, nodes)
-        # Expected order: valid (03-08), naive (03-01), then others (deterministic by ID)
         files = [n["file"] for n in canvas["nodes"]]
         self.assertEqual(files[0], "valid.md")
         self.assertEqual(files[1], "naive.md")
-        # 'invalid' and 'missing' go last, sorted by ID
         self.assertIn("invalid.md", files[2:])
         self.assertIn("missing.md", files[2:])
 
     def test_date_window_filter(self):
         nodes = [
-            {"id": "new", "timestamp": "2026-03-10T12:00:00Z", "file_path": "new.md"},
-            {"id": "old", "timestamp": "2026-03-01T12:00:00Z", "file_path": "old.md"},
-            {"id": "none", "file_path": "none.md"}
+            {"id": "new", "kind": "insight", "timestamp": "2026-03-10T12:00:00Z", "file_path": "new.md"},
+            {"id": "old", "kind": "insight", "timestamp": "2026-03-01T12:00:00Z", "file_path": "old.md"},
+            {"id": "none", "kind": "insight", "file_path": "none.md"}
         ]
         spec = {
             "id": "window",
-            "filters": {"date_window_days": 5}, # max=10, cutoff=05
+            "type": "observatorium",
+            "source": {"artifact_types": ["insight"]},
+            "filters": {"date_window_days": 5},
             "output": "window.canvas"
         }
         canvas = self._run_render(spec, nodes)
@@ -94,11 +72,13 @@ class TestTimestampBehavior(unittest.TestCase):
 
     def test_calendar_month_filter(self):
         nodes = [
-            {"id": "march", "timestamp": "2026-03-15T12:00:00Z", "file_path": "march.md"},
-            {"id": "april", "timestamp": "2026-04-01T12:00:00Z", "file_path": "april.md"}
+            {"id": "march", "kind": "insight", "timestamp": "2026-03-15T12:00:00Z", "file_path": "march.md"},
+            {"id": "april", "kind": "insight", "timestamp": "2026-04-01T12:00:00Z", "file_path": "april.md"}
         ]
         spec = {
             "id": "month",
+            "type": "observatorium",
+            "source": {"artifact_types": ["insight"]},
             "filters": {"calendar_month": "2026-03"},
             "output": "month.canvas"
         }
