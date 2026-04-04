@@ -1,6 +1,4 @@
 import unittest
-
-
 from scripts.canvas.render_canvas import _get_edge_id, _generate_canvas_edge_id
 
 class TestCanvasUtils(unittest.TestCase):
