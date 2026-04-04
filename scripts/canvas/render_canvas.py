@@ -6,6 +6,11 @@ import hashlib
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
 
+def _generate_canvas_edge_id(base_edge_id: str) -> str:
+    safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
+    fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
+    return f"{safe_prefix}_{fingerprint}"
+
 def _get_edge_id(edge: Dict[str, Any]) -> str:
     edge_id = edge.get("id")
     if edge_id:
@@ -370,10 +375,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
             base_edge_id = _get_edge_id(edge)
 
             # Create a safe and collision-free ID for the canvas
-            # We use a hash of the stable base_edge_id to ensure there are no collisions from normalization
-            safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
-            fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
-            canvas_edge_id = f"{safe_prefix}_{fingerprint}"
+            canvas_edge_id = _generate_canvas_edge_id(base_edge_id)
 
             canvas_model["edges"].append({
                 "id": canvas_edge_id,

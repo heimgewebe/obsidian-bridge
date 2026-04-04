@@ -1,9 +1,11 @@
+
+
 import unittest
 import os
 import json
 import tempfile
 import yaml
-from scripts.canvas.render_canvas import render_canvas
+from scripts.canvas.render_canvas import _get_edge_id, _generate_canvas_edge_id, render_canvas
 
 class TestCanvasRender(unittest.TestCase):
     def setUp(self):
@@ -1062,6 +1064,62 @@ class TestCanvasRender(unittest.TestCase):
         self.assertNotIn("obs/n4.md", node_files)
 
         self.assertEqual(len(canvas["nodes"]), 2)
+
+
+
+
+    def test_render_canvas_edge_id_consistency(self):
+        graph_data = {
+            "nodes": [
+                {"id": "n1", "kind": "insight", "file_path": "obs/n1.md"},
+                {"id": "n2", "kind": "insight", "file_path": "obs/n2.md"},
+            ],
+            "edges": [
+                {"id": "e1", "from": "n1", "to": "n2", "relation": "references"}
+            ]
+        }
+        with open(self.graph_file.name, 'w') as f:
+            json.dump(graph_data, f)
+
+        spec_data = {
+            "id": "test-edge-id",
+            "type": "observatorium",
+            "output": "canvases/test-edge-id.canvas",
+            "source": {"artifact_types": ["insight"]},
+            "relations": ["references"]
+        }
+        with open(self.spec_file.name, 'w') as f:
+            yaml.dump(spec_data, f)
+
+        from scripts.canvas.render_canvas import render_canvas, _get_edge_id, _generate_canvas_edge_id
+        import os
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
+
+        # Let's find the output file
+        output_path = None
+        for root, dirs, files in os.walk(self.temp_dir.name):
+            for file in files:
+                if file.endswith(".canvas"):
+                    output_path = os.path.join(root, file)
+                    break
+            if output_path:
+                break
+
+        if not output_path:
+            self.fail(f"No canvas file found in {self.temp_dir.name}")
+
+        with open(output_path, 'r') as f:
+            canvas = json.load(f)
+
+        self.assertEqual(len(canvas["edges"]), 1)
+
+        input_edge = graph_data["edges"][0]
+        base_edge_id = _get_edge_id(input_edge)
+        expected_id = _generate_canvas_edge_id(base_edge_id)
+
+        self.assertEqual(canvas["edges"][0]["id"], expected_id)
+
+
 
 if __name__ == '__main__':
     unittest.main()
