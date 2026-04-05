@@ -3,24 +3,7 @@ import sys
 from unittest.mock import MagicMock
 import json
 
-# Mock dependencies to allow importing render_canvas
-class MockYaml:
-    def __init__(self):
-        self.spec = {}
-    def safe_load(self, f):
-        content = f.read()
-        if "mock: spec" in content:
-            return self.spec
-        try:
-            return json.loads(content)
-        except:
-            return {}
-    def dump(self, data, f):
-        f.write(json.dumps(data))
-
-mock_yaml = MockYaml()
-sys.modules["yaml"] = mock_yaml
-sys.modules["jsonschema"] = MagicMock()
+import yaml
 
 import unittest
 import os
@@ -39,16 +22,16 @@ class TestTimestampBehavior(unittest.TestCase):
         self.spec_path = os.path.join(self.temp_dir.name, "spec.yaml")
         with open(self.layout_path, 'w') as f:
             json.dump({"nodes": {}}, f)
-        with open(self.spec_path, 'w') as f:
-            f.write("mock: spec")
 
     def tearDown(self):
         self.temp_dir.cleanup()
 
     def _run_render(self, spec, nodes):
-        mock_yaml.spec = spec
         with open(self.graph_path, 'w') as f:
             json.dump({"nodes": nodes, "edges": []}, f)
+        with open(self.spec_path, 'w') as f:
+            import yaml
+            yaml.dump(spec, f)
         render_canvas(self.spec_path, self.graph_path, self.layout_path, output_root=self.temp_dir.name)
         output_file = spec.get("output", "default.canvas")
         output_path = os.path.join(self.temp_dir.name, output_file)
