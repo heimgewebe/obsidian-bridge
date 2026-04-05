@@ -49,14 +49,25 @@ class TestCanvasUtils(unittest.TestCase):
         orig = "node:A->node:B"
         res = _generate_canvas_edge_id(orig)
         self.assertTrue(res.startswith("node_A_node_B_"))
+        self.assertNotIn(":", res)
+        self.assertNotIn("->", res)
 
     def test_generate_canvas_edge_id_consistency(self):
-        # MD5 length 8
-        orig = "some_random_edge_id_123"
-        res1 = _generate_canvas_edge_id(orig)
-        res2 = _generate_canvas_edge_id(orig)
-        self.assertEqual(res1, res2) # Deterministic
-        self.assertEqual(len(res1.split("_")[-1]), 8)
+        base1 = "some_random_edge_id_123"
+        base2 = "another_different_id_456"
+
+        # Deterministic at same input
+        res1_a = _generate_canvas_edge_id(base1)
+        res1_b = _generate_canvas_edge_id(base1)
+        self.assertEqual(res1_a, res1_b)
+
+        # Distinct outputs for different inputs
+        res2 = _generate_canvas_edge_id(base2)
+        self.assertNotEqual(res1_a, res2)
+
+        # Hash suffix length is exactly 8 characters
+        self.assertEqual(len(res1_a.split("_")[-1]), 8)
+        self.assertEqual(len(res2.split("_")[-1]), 8)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1067,20 +1067,22 @@ class TestCanvasRender(unittest.TestCase):
         """Verify the production output remains stable and consistent with utility function results."""
         from scripts.canvas.render_canvas import _generate_canvas_edge_id, _get_edge_id
 
-        # Build test files
+        # Build realistic test files
         graph = {
             "nodes": [
-                {"id": "nodeA", "kind": "concept"},
-                {"id": "nodeB", "kind": "concept"}
+                {"id": "nodeA", "kind": "concept", "file_path": "concepts/nodeA.md"},
+                {"id": "nodeB", "kind": "concept", "file_path": "concepts/nodeB.md"}
             ],
             "edges": [
-                {"id": "edge:1", "from": "nodeA", "to": "nodeB", "relation": "test"}
+                {"id": "edge:1->complex", "from": "nodeA", "to": "nodeB", "relation": "references"}
             ]
         }
         spec = {
-            "id": "edge_test",
-            "output": "edge_test.canvas",
+            "id": "edge-test",
+            "type": "knowledge",
+            "output": "canvases/edge-test.canvas",
             "source": {"artifact_types": ["concept"]},
+            "relations": ["references"],
             "filters": {"max_nodes": 10, "max_edges": 10}
         }
 
@@ -1091,15 +1093,15 @@ class TestCanvasRender(unittest.TestCase):
 
         render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, self.temp_dir.name)
 
-        output_file = os.path.join(self.temp_dir.name, "edge_test.canvas")
+        output_file = os.path.join(self.temp_dir.name, "canvases/edge-test.canvas")
         with open(output_file, 'r') as f:
             canvas = json.load(f)
 
         canvas_edges = canvas.get("edges", [])
-        self.assertEqual(len(canvas_edges), 1)
+        self.assertEqual(len(canvas_edges), 1, "Exactly one edge should be rendered")
 
         expected_edge_id = _generate_canvas_edge_id(_get_edge_id(graph["edges"][0]))
-        self.assertEqual(canvas_edges[0]["id"], expected_edge_id)
+        self.assertEqual(canvas_edges[0]["id"], expected_edge_id, "Edge ID must strictly match utility extraction")
 
 if __name__ == '__main__':
     unittest.main()

@@ -15,9 +15,9 @@ def _get_edge_id(edge: Dict[str, Any]) -> str:
     to = str(edge.get("to", "unknown"))
     return f"{frm}__{rel}__{to}"
 
-def _generate_canvas_edge_id(original_id: str) -> str:
-    safe_prefix = original_id.replace(":", "_").replace("->", "_")[:32]
-    fingerprint = hashlib.md5(original_id.encode('utf-8')).hexdigest()[:8]
+def _generate_canvas_edge_id(base_edge_id: str) -> str:
+    safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
+    fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
     return f"{safe_prefix}_{fingerprint}"
 
 def _parse_timestamp_utc(ts_str: Optional[str]) -> Optional[datetime]:
