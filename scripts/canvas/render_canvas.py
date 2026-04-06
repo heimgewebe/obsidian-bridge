@@ -374,8 +374,9 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         if from_id in node_id_map and to_id in node_id_map:
             base_edge_id = _get_edge_id(edge)
 
-            # Create a safe and collision-free ID for the canvas
-            # We use a hash of the stable base_edge_id to ensure there are no collisions from normalization
+            # Create a safe, stable ID for the canvas.
+            # We use a hash of the stable base_edge_id to reduce collision risk after normalization;
+            # the truncated hash keeps a small residual collision risk.
             canvas_edge_id = _generate_canvas_edge_id(base_edge_id)
 
             canvas_model["edges"].append({

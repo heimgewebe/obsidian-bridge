@@ -1091,7 +1091,7 @@ class TestCanvasRender(unittest.TestCase):
         with open(self.spec_file.name, 'w') as f:
             yaml.dump(spec, f)
 
-        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, self.temp_dir.name)
+        render_canvas(self.spec_file.name, self.graph_file.name, self.layout_file.name, output_root=self.temp_dir.name)
 
         output_file = os.path.join(self.temp_dir.name, "canvases/edge-test.canvas")
         with open(output_file, 'r') as f:
