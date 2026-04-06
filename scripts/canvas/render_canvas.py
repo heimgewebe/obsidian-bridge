@@ -16,6 +16,11 @@ def _get_edge_id(edge: Dict[str, Any]) -> str:
     return f"{frm}__{rel}__{to}"
 
 def _generate_canvas_edge_id(base_edge_id: str) -> str:
+    """
+    Generate a stable canvas edge ID from a stable base edge ID.
+    Normalizes characters that are awkward in canvas IDs and appends
+    a short hash suffix to reduce collision risk.
+    """
     safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
     fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
     return f"{safe_prefix}_{fingerprint}"

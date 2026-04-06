@@ -25,6 +25,7 @@ class TestTimestampBehavior(unittest.TestCase):
         self.temp_dir.cleanup()
 
     def _run_render(self, spec, nodes):
+        # These tests intentionally use real YAML to avoid brittle mock setups and test realistic specs.
         with open(self.graph_path, 'w') as f:
             json.dump({"nodes": nodes, "edges": []}, f)
         with open(self.spec_path, 'w') as f:
