@@ -65,9 +65,13 @@ class TestCanvasUtils(unittest.TestCase):
         res2 = _generate_canvas_edge_id(base2)
         self.assertNotEqual(res1_a, res2)
 
-        # Hash suffix length is exactly 8 characters
-        self.assertEqual(len(res1_a.split("_")[-1]), 8)
-        self.assertEqual(len(res2.split("_")[-1]), 8)
+        # Hash suffix length is exactly 8 characters and valid hex
+        hash_suffix1 = res1_a.split("_")[-1]
+        hash_suffix2 = res2.split("_")[-1]
+        self.assertEqual(len(hash_suffix1), 8)
+        self.assertEqual(len(hash_suffix2), 8)
+        self.assertTrue(all(c in "0123456789abcdef" for c in hash_suffix1))
+        self.assertTrue(all(c in "0123456789abcdef" for c in hash_suffix2))
 
 if __name__ == '__main__':
     unittest.main()

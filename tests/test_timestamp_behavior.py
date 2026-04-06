@@ -28,7 +28,7 @@ class TestTimestampBehavior(unittest.TestCase):
         with open(self.graph_path, 'w') as f:
             json.dump({"nodes": nodes, "edges": []}, f)
         with open(self.spec_path, 'w') as f:
-                yaml.dump(spec, f)
+            yaml.dump(spec, f)
         render_canvas(self.spec_path, self.graph_path, self.layout_path, output_root=self.temp_dir.name)
         output_file = spec.get("output", "default.canvas")
         output_path = os.path.join(self.temp_dir.name, output_file)
