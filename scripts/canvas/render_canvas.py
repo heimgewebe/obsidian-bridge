@@ -1,7 +1,6 @@
 import collections
 import json
 import os
-import yaml
 import hashlib
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone, timedelta
@@ -15,6 +14,16 @@ def _get_edge_id(edge: Dict[str, Any]) -> str:
     rel = str(edge.get("relation", "unknown"))
     to = str(edge.get("to", "unknown"))
     return f"{frm}__{rel}__{to}"
+
+def _generate_canvas_edge_id(base_edge_id: str) -> str:
+    """
+    Generate a stable canvas edge ID from a stable base edge ID.
+    Normalizes characters that are awkward in canvas IDs and appends
+    a short hash suffix to reduce collision risk.
+    """
+    safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
+    fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
+    return f"{safe_prefix}_{fingerprint}"
 
 def _parse_timestamp_utc(ts_str: Optional[str]) -> Optional[datetime]:
     if not ts_str:
@@ -55,6 +64,7 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
     Generates a deterministic .canvas file from a YAML declarative spec.
     Validates against size limits (Guards against graph-spaghetti).
     """
+    import yaml
     # Load spec
     with open(spec_path, 'r') as f:
         spec = yaml.safe_load(f)
@@ -369,11 +379,10 @@ def render_canvas(spec_path: str, graph_path: str, layout_path: str, output_root
         if from_id in node_id_map and to_id in node_id_map:
             base_edge_id = _get_edge_id(edge)
 
-            # Create a safe and collision-free ID for the canvas
-            # We use a hash of the stable base_edge_id to ensure there are no collisions from normalization
-            safe_prefix = base_edge_id.replace(":", "_").replace("->", "_")[:32]
-            fingerprint = hashlib.md5(base_edge_id.encode('utf-8')).hexdigest()[:8]
-            canvas_edge_id = f"{safe_prefix}_{fingerprint}"
+            # Create a safe, stable ID for the canvas.
+            # We use a hash of the stable base_edge_id to reduce collision risk after normalization;
+            # the truncated hash keeps a small residual collision risk.
+            canvas_edge_id = _generate_canvas_edge_id(base_edge_id)
 
             canvas_model["edges"].append({
                 "id": canvas_edge_id,
