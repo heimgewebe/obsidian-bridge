@@ -245,14 +245,13 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
                 "other": 0
             }
 
+            # Pre-compute id_to_kind for O(1) lookup
+            id_to_kind = {n["id"]: n.get("kind", "unknown") for n in relevant_nodes if "id" in n}
+
             # Initialize offsets based on existing nodes in each lane
             for existing_nid, existing_node in canvas_layout.get("nodes", {}).items():
                 # Find kind of existing node
-                existing_kind = "unknown"
-                for rn in relevant_nodes:
-                    if rn["id"] == existing_nid:
-                        existing_kind = rn.get("kind", "unknown")
-                        break
+                existing_kind = id_to_kind.get(existing_nid, "unknown")
 
                 if existing_kind == "concept":
                     x_offsets["concept"] = max(x_offsets["concept"], existing_node.get("x", 0) + 350)
