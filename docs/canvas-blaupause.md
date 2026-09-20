@@ -279,7 +279,8 @@ Ein rein physikalisches Force-Layout ist ungeeignet, weil es bei jedem Rebuild O
   * Entitäten mittig
   * konkrete Artefakte unten
 * **system/*** (Organsystem-Layout)
-  * Feste Positionen für: chronik, semantAH, hausKI, heimlern, heimgeist, leitstand, wgx, metarepo
+  * Feste Positionen für aktuelle Kernkomponenten: chronik, semantAH, leitstand, wgx, metarepo
+  * nicht speziell verankerte oder historische Knoten laufen deterministisch über das Fallback-Grid
 
 ---
 

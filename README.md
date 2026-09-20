@@ -37,7 +37,7 @@ Wir standardisieren Artefakte, z.B.:
 - Search-Ergebnis (Liste + Metadaten)
 - Daily Insights Stub
 
-So kannst du später heimgeist/leitstand sauber anbinden.
+So kannst du später leitstand und weitere aktuelle Consumer sauber anbinden.
 
 ### 3) scripts/ getrennt nach Domänen
 - `observatorium/*` schreibt Artefakte in Vault

@@ -285,13 +285,11 @@ def stabilize_layout(graph_path: str, layout_cache_path: str, specs_dir: str = "
                 }
 
         elif layout_type == "organsystem":
-            # Feste Positionen für: chronik, semantAH, hausKI, heimlern, heimgeist, leitstand, wgx, metarepo
+            # Stable anchors exist only for current system components.
+            # Unknown and retired component IDs use the deterministic fallback grid.
             fixed_positions = {
                 "chronik": (0, 0),
                 "semantAH": (400, 0),
-                "hausKI": (800, 0),
-                "heimlern": (0, 400),
-                "heimgeist": (400, 400),
                 "leitstand": (800, 400),
                 "wgx": (0, 800),
                 "metarepo": (400, 800)

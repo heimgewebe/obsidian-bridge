@@ -8,8 +8,8 @@ import json
 class TestLayoutOrgansystem(unittest.TestCase):
     def test_organsystem_layout_determinism(self):
         """
-        Der Organsystem-Layout-Algorithmus muss Repos/Organe auf feste Positionen
-        platzieren und neue Nodes in diesen Bahnen deterministisch ergänzen.
+        Current components keep their fixed anchors. Retired or unknown names use
+        the deterministic fallback grid and retain cached positions.
         """
         with tempfile.TemporaryDirectory() as temp_dir:
             graph_path = os.path.join(temp_dir, "graph.json")
@@ -17,86 +17,68 @@ class TestLayoutOrgansystem(unittest.TestCase):
             specs_dir = os.path.join(temp_dir, "specs")
             os.makedirs(specs_dir)
 
-            # Create Spec
-            spec = {
-                "id": "test-organsystem",
-                "layout": "organsystem"
-            }
+            spec = {"id": "test-organsystem", "layout": "organsystem"}
             with open(os.path.join(specs_dir, "test-organsystem.yaml"), "w") as f:
                 yaml.dump(spec, f)
 
-            # Create Graph
             graph = {
                 "nodes": [
                     {"id": "node:chronik-1", "title": "Chronik Component"},
                     {"id": "node:hausKI-1", "title": "HausKI Engine"},
-                    {"id": "node:unknown-1", "title": "Random Service"}
+                    {"id": "node:heimlern-1", "title": "Heimlern Legacy"},
+                    {"id": "node:heimgeist-1", "title": "Heimgeist Legacy"},
+                    {"id": "node:unknown-1", "title": "Random Service"},
                 ],
-                "edges": []
+                "edges": [],
             }
             with open(graph_path, "w") as f:
                 json.dump(graph, f)
 
-            # Run 1: initial generation
             layout1 = stabilize_layout(graph_path, cache_path, specs_dir)
-            canvas_nodes1 = layout1["canvases"]["test-organsystem"]["nodes"]
+            nodes1 = layout1["canvases"]["test-organsystem"]["nodes"]
 
-            # chronik: x=0, y=0
-            # hausKI: x=800, y=0
-            # others: below fixed grid (fallback grid) - first index
-            self.assertEqual(canvas_nodes1["node:chronik-1"]["x"], 0)
-            self.assertEqual(canvas_nodes1["node:chronik-1"]["y"], 0)
+            self.assertEqual(nodes1["node:chronik-1"]["x"], 0)
+            self.assertEqual(nodes1["node:chronik-1"]["y"], 0)
 
-            self.assertEqual(canvas_nodes1["node:hausKI-1"]["x"], 800)
-            self.assertEqual(canvas_nodes1["node:hausKI-1"]["y"], 0)
+            fallback_ids = [
+                "node:hausKI-1",
+                "node:heimlern-1",
+                "node:heimgeist-1",
+                "node:unknown-1",
+            ]
+            fallback_positions = []
+            for node_id in fallback_ids:
+                self.assertGreaterEqual(nodes1[node_id]["y"], 1200)
+                fallback_positions.append(
+                    (nodes1[node_id]["x"], nodes1[node_id]["y"])
+                )
+            self.assertEqual(len(fallback_positions), len(set(fallback_positions)))
 
-            # First fallback node is expected to be placed in the fallback grid (y >= 1200).
-            # The exact x-position is an internal implementation detail and not asserted.
-            self.assertTrue(canvas_nodes1["node:unknown-1"]["y"] >= 1200)
-
-            # Verify that stabilize_layout persisted the layout to cache_path
             with open(cache_path, "r") as f:
-                cached_layout = json.load(f)
-            self.assertEqual(cached_layout, layout1)
+                self.assertEqual(json.load(f), layout1)
 
-            # Add more nodes
-            graph["nodes"].extend([
-                {"id": "node:chronik-2", "title": "Another Chronik Component"},
-                {"id": "node:hausKI-2", "title": "Another HausKI Component"},
-                {"id": "node:unknown-2", "title": "Another unknown"}
-            ])
+            graph["nodes"].extend(
+                [
+                    {"id": "node:chronik-2", "title": "Another Chronik Component"},
+                    {"id": "node:hausKI-2", "title": "Another HausKI Component"},
+                ]
+            )
             with open(graph_path, "w") as f:
                 json.dump(graph, f)
 
-            # Run 2: stability check
             layout2 = stabilize_layout(graph_path, cache_path, specs_dir)
-            canvas_nodes2 = layout2["canvases"]["test-organsystem"]["nodes"]
+            nodes2 = layout2["canvases"]["test-organsystem"]["nodes"]
 
-            # Old nodes should not move
-            self.assertEqual(canvas_nodes2["node:chronik-1"]["x"], canvas_nodes1["node:chronik-1"]["x"])
-            self.assertEqual(canvas_nodes2["node:chronik-1"]["y"], canvas_nodes1["node:chronik-1"]["y"])
+            self.assertEqual(nodes2["node:chronik-1"], nodes1["node:chronik-1"])
+            for node_id in fallback_ids:
+                self.assertEqual(nodes2[node_id], nodes1[node_id])
 
-            # Auch alte Fallback-Knoten müssen ihre deterministische Position behalten
-            self.assertEqual(canvas_nodes2["node:unknown-1"]["x"], canvas_nodes1["node:unknown-1"]["x"])
-            self.assertEqual(canvas_nodes2["node:unknown-1"]["y"], canvas_nodes1["node:unknown-1"]["y"])
+            self.assertEqual(nodes2["node:chronik-2"]["x"], 0)
+            self.assertEqual(nodes2["node:chronik-2"]["y"], 200)
 
-            # Das Organsystem-Layout positioniert Nodes auf vordefinierten Ankern und
-            # staffelt mehrere Treffer desselben Organs deterministisch per Y-Offset.
-            self.assertIn("node:chronik-2", canvas_nodes2)
-            self.assertIn("node:hausKI-2", canvas_nodes2)
-            # chronik-1 is cached at y=0 (slot 0); chronik-2 must land on slot 1 (y=200)
-            self.assertEqual(canvas_nodes2["node:chronik-2"]["x"], canvas_nodes1["node:chronik-1"]["x"])
-            self.assertEqual(canvas_nodes2["node:chronik-2"]["y"], 200)
-
-            # Unbekannte Knoten wandern ins Fallback-Grid und werden dort deterministisch ergänzt
-            self.assertIn("node:unknown-2", canvas_nodes2)
-            self.assertTrue(canvas_nodes2["node:unknown-2"]["y"] >= 1200)
-
-            # Sie sollten deterministisch an einem neuen Platz abgelegt werden,
-            # ohne die exakte Implementierung des Grids hier starr zu kodieren.
-            pos1 = (canvas_nodes2["node:unknown-1"]["x"], canvas_nodes2["node:unknown-1"]["y"])
-            pos2 = (canvas_nodes2["node:unknown-2"]["x"], canvas_nodes2["node:unknown-2"]["y"])
-            self.assertNotEqual(pos1, pos2)
+            self.assertGreaterEqual(nodes2["node:hausKI-2"]["y"], 1200)
+            all_positions = [(node["x"], node["y"]) for node in nodes2.values()]
+            self.assertEqual(len(all_positions), len(set(all_positions)))
 
     def test_organsystem_stacks_multiple_nodes_by_y_offset(self):
         """Multiple nodes that map to the same organ must be stacked vertically (y += 200 per node).
